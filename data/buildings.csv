@@ -1,0 +1,24 @@
+Type,Category,Description,Blueprint,Turns to Build,Max Health,MIL,TEC,NAT,DIP,COM,IND,POP,HAP
+Small House,Residential,A small terraced house.,1x1:1,1,10,1,1,1,1,1,1,5,1
+Large House,Residential,A large semi-detached house.,2x1:11,2,25,2,2,2,2,2,2,12,1
+Small Flats,Residential,A tower block of small apartments.,1x1:1,2,15,1,0,0,0,0,2,8,0
+Large Flats,Residential,A tall tower block containing many well-sized apartments.,2x2:1101,3,25,3,1,0,1,1,6,21,0
+Small Estate,Residential,A collection of expensive houses in a fenced resident-only area.,2x2:1111,3,20,1,2,3,3,4,1,16,2
+Large Estate,Residential,A myriad of lavish houses apread across a secure residential compound.,3x3:111111110,5,30,2,4,6,5,8,3,35,2
+Small Apartments,Residential,A small block of middle-class apartments.,3x2:111100,3,20,2,1,1,2,2,2,45,2
+Large Apartments,Residential,A large block of well-built apartments.,3x3:111100100,5,30,4,1,2,3,2,4,60,2
+Bunker,Residential,An underground bunker designed for citizen protection| or for poor permanent living.,1x1:1,4,120,5,0,0,1,0,1,20,-2
+Mansion,Residential,A luxurious manor created for the incredibly wealthy.,2x2:1111,4,25,2,3,4,5,8,1,12,3
+Playground,Happiness,A collection of climbing equipment and swings for children to enjoy.,1x1:1,1,10,0,0,2,0,0,0,0,2
+Pub,Happiness,A street-corner pub| open from morning till midnight.,1x2:11,2,20,1,0,0,0,1,1,0,3
+Bar,Happiness,A lively bar for dancing the night away.,2x2:1011,2,20,0,0,0,0,1,0,0,5
+Bowling Alley,Happiness,A ten-lane bowling venue for children and adults alike.,3x1:111,2,30,0,0,0,0,0,0,0,4
+Cinema,Happiness,A multi-screen film venue| with cheap popcorn and drinks.,2x2:1111,3,40,0,1,0,1,0,0,0,5
+Café,Happiness,A street-side café| serving fresh croissants and coffee.,2x3:111100,3,30,0,0,1,1,1,0,0,6
+Restaurant,Happiness,A luxury restaurant| with different menus for each continent of thr world.,2x3:111110,4,30,0,0,0,1,1,0,0,8
+Military Buildings (Barracks:Tough Buildings:Airforce),Military,N/A,1x1:1,3,100,10,0,0,0,0,0,-5,0
+Technology Building (Labs:Media Stations:Secretive Buildings),Technology,N/A,1x1:1,3,100,0,10,0,0,0,0,-5,0
+Nature Building (Parks:Forests:Recycling),Nature,N/A,1x1:1,3,100,0,0,10,0,0,0,-5,0
+Diplomacy Building (Embassies:Airports:Cultural Buildings),Diplomacy,N/A,1x1:1,3,100,0,0,0,10,0,0,-5,0
+Commerce Building (Shops:Offices:Trading Buildings),Commerce,N/A,1x1:1,3,100,0,0,0,0,10,0,-5,0
+Industry Building (Landfills:Factories:Farms),Industry,N/A,1x1:1,3,100,0,0,0,0,0,10,-5,0

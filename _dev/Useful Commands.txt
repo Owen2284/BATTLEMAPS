@@ -1,0 +1,2 @@
+javac -d "bin" src/*.java		(Compilation)
+java -classpath "bin" myMain/Main	(Running)

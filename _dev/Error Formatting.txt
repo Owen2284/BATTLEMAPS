@@ -1,0 +1,4 @@
+Should be in format:
+ERROR > CLASS > FUNCTION + PARAMS > DESCRIPTION
+
+"ERROR: GridWindow, addGridWindow(99,100) has invalid coordinates."
