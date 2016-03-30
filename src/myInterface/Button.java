@@ -32,6 +32,8 @@ public class Button extends Sprite {
 	private String add;
 	private boolean useAdd;
 	private String belongsTo;
+	private int ownerX;
+	private int ownerY;
 
 	// Constructors
 	public Button(int x, int y) {
@@ -45,6 +47,8 @@ public class Button extends Sprite {
 		this.add = "";
 		this.useAdd = false;
 		this.belongsTo = "Basic";
+		this.ownerX = this.x;
+		this.ownerY = this.y;
 
 	}
 
@@ -60,6 +64,8 @@ public class Button extends Sprite {
 		this.add = "";
 		this.useAdd = false;
 		this.belongsTo = "Basic";
+		this.ownerX = this.x;
+		this.ownerY = this.y;
 
 	}
 
@@ -74,6 +80,8 @@ public class Button extends Sprite {
 		this.add = "";
 		this.useAdd = false;
 		this.belongsTo = "Basic";
+		this.ownerX = this.x;
+		this.ownerY = this.y;
 
 	}
 
@@ -88,6 +96,8 @@ public class Button extends Sprite {
 		this.add = add_str;
 		this.useAdd = true;
 		this.belongsTo = "Basic";
+		this.ownerX = this.x;
+		this.ownerY = this.y;
 
 	}
 
@@ -102,6 +112,8 @@ public class Button extends Sprite {
 		this.add = "";
 		this.useAdd = false;
 		this.belongsTo = "Basic";
+		this.ownerX = this.x;
+		this.ownerY = this.y;
 
 	}
 
@@ -116,6 +128,8 @@ public class Button extends Sprite {
 		this.add = add_str;
 		this.useAdd = true;
 		this.belongsTo = "Basic";
+		this.ownerX = this.x;
+		this.ownerY = this.y;
 
 	}
 
@@ -133,6 +147,8 @@ public class Button extends Sprite {
 		this.colorBorder = that.getColorBorder();
 		this.colorText = that.getColorText();
 		this.colorHover = that.getColorHover();
+		this.ownerX = that.getOwnerX();
+		this.ownerY = that.getOwnerY();
 	}
 
 	// Accessors
@@ -155,6 +171,10 @@ public class Button extends Sprite {
 	public boolean hasAdditionalString() {return this.useAdd;}
 
 	public String getOwner() {return this.belongsTo;}
+	
+	public int getOwnerX() {return this.ownerX;}
+	
+	public int getOwnerY() {return this.ownerY;}
 
 	// Mutators
 	public void setID(String in) {this.id = in;}
@@ -180,7 +200,11 @@ public class Button extends Sprite {
 	public void setAdditionalStringUsage(boolean in) {this.useAdd = in;}
 
 	public void setOwner(String in) {this.belongsTo = in;}
+	
+	public void setOwnerX(int in) {this.ownerX = in;}
 
+	public void setOwnerY(int in) {this.ownerY = in;}
+	
 	public void setCenterText(boolean in) {this.centerText = in;}
 
 	public void setResizeText(boolean in) {this.resizeText = in;};

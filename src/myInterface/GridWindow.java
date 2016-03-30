@@ -9,8 +9,6 @@ package myInterface;
 
 import myMain.Board;
 
-import java.awt.Color;
-import java.awt.Graphics;
 import java.awt.Point;
 import java.util.ArrayList;
 
@@ -108,7 +106,7 @@ public class GridWindow extends InfoWindow {
 		// Updates grid buttons.
 		for (int row = 0; row < gridButtons.length; ++row) {
 			for (int col = 0; col < gridButtons[row].length; ++col) {
-				// Sets buttons coordinates and dimentions appropriately.
+				// Sets buttons coordinates and dimensions appropriately.
 				Button curr = gridButtons[row][col];
 				if (open) {	
 					if (curr != null) {

@@ -15,7 +15,6 @@ import myMain.Board;
 
 import java.awt.Color;
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.Graphics;
 import java.util.ArrayList;
 
@@ -32,6 +31,7 @@ public class MyInterfaceManager {
 	private Point mousePos = new Point(0,0);
 	private Point prevMousePos;
 	private String mouseMode = "Pointer";
+	private boolean mouseHeld = false;
 	private Building mouseBuilding;
 
 	// Constructor
@@ -117,10 +117,19 @@ public class MyInterfaceManager {
 
 	// Mutators
 	public void setMousePos(Point in) {this.prevMousePos = this.mousePos; this.mousePos = in;}
-	public void setMouseMode(String in) {this.mouseMode = in;}
+	public void setMouseMode(String in) {this.mouseMode = in; this.mouseBuilding = null;}
 	public void setMouseBuilding(Building in) {this.mouseBuilding = in;}
-	public void addWindow(InfoWindow window) {windows.add(window);}
-
+	public void addWindow(InfoWindow window) {
+		if (!checkWindowsFor(window.getTitle())) {windows.add(window);}
+	}
+	
+	public void addWindowForce(InfoWindow window) {windows.add(window);}
+	
+	public void addWindowSwap(InfoWindow window) {
+		removeWindowMaxFull(window.getTitle());
+		addWindowForce(window);
+	}
+	
 	public void addWindowFull(InfoWindow window) {
 		if (!checkWindowsFor(window.getTitle())) {addWindowFullForce(window);}
 	}
@@ -137,6 +146,14 @@ public class MyInterfaceManager {
 		for (int i = 0; i < the_buttons.size(); ++i) {
 			buttons.add(the_buttons.get(i));
 		}
+	}
+	
+	public void removeWindowFull(InfoWindow inWindow) {
+		inWindow.close();
+		for (Button item : inWindow.getAllButtons()) {
+			buttons.remove(item);
+		}
+		windows.remove(inWindow);
 	}
 
 	public void removeWindowFull(String in_title) {
@@ -155,12 +172,46 @@ public class MyInterfaceManager {
 			System.out.println("ERROR: MyInterfaceManager, removeWindowFull(" + in_title + ") exited without finding the specified window.");
 		}
 	}
+	
+	public void removeWindowFull(String in_title, int start, int end) {
+		InfoWindow window_to_remove = new InfoWindow("1995", 15, 10);
+		for (InfoWindow window : this.windows) {
+			try {
+				if (window.getTitle().substring(start, end).equals(in_title)) {window_to_remove = window;}
+			} catch (StringIndexOutOfBoundsException e) {
+				// Continue running.
+			}
+		}
+		window_to_remove.close();
+		for (Button item : window_to_remove.getAllButtons()) {
+			buttons.remove(item);
+		}
+		windows.remove(window_to_remove);
+		if (Board.DEBUG_ERROR && window_to_remove.getTitle().equals("1995")) {
+			System.out.println("ERROR: MyInterfaceManager, removeWindowFull(" + in_title + ") exited without finding the specified window.");
+		}
+	}
+	
+	public void removeWindowMaxFull(String titleIn) {
+		while (checkWindowsFor(titleIn)) {
+			removeWindowFull(titleIn);
+		}
+	}
+	
+	public void removeWindowMaxFull(String titleIn, int start, int end) {
+		while (checkWindowsFor(titleIn, start, end)) {
+			removeWindowFull(titleIn, start, end);
+		}
+	}
 
 	public void setInterface(String in, Game game, int player_whose_go_it_is) {
 
 		// Clears lists.
 		this.buttons.clear();
 		this.windows.clear();
+		
+		// Reset mouse.
+		this.setMouseMode("Pointer");
 
 		if (Board.DEBUG_LAUNCH) {System.out.println("Initialising interface for " + in + ".");}
 
@@ -294,12 +345,14 @@ public class MyInterfaceManager {
 
 		// Places the buttons.
 		for (Button item : in_buttons) {
-			if (draw_shadows) {item.drawShadow(g);}
-			if (item.isHovering(mousePos)) {
-				item.drawHover(g);
-			} else {
-				item.drawButton(g);
-			}          
+			if (item != null) {
+				if (draw_shadows) {item.drawShadow(g);}
+				if (item.isHovering(mousePos)) {
+					item.drawHover(g);
+				} else {
+					item.drawButton(g);
+				}
+			}
 		}
 
 	}
@@ -309,12 +362,14 @@ public class MyInterfaceManager {
 		// Loops through all windows.
 		for (InfoWindow window : windows) {
 
-			// Draws the window.
-			window.draw(g, b, il);
-
-			// Draws the window's buttons if the window is open.
-			if (window.getAnimationStatus().equals("Open")) {
-				this.drawButtons(g, window.getAllButtons(), false);
+			if (!window.getAnimationStatus().equals("Closed")) {
+				// Draws the window.
+				window.draw(g, b, il);
+	
+				// Draws the window's buttons if the window is open.
+				if (window.getAnimationStatus().equals("Open")) {
+					this.drawButtons(g, window.getAllButtons(), false);
+				}
 			}
 
 		}
@@ -338,25 +393,55 @@ public class MyInterfaceManager {
 
 	// Updaters
 	public void updateWindows() {
-		for (int i = 0; i < this.windows.size(); ++i) {
-			MyWindow currentWindow = this.windows.get(i);
-			currentWindow.update(mousePos);            
+		
+		// Storage for windows to remove.
+		ArrayList<InfoWindow> windowsToGo = new ArrayList<InfoWindow>();
+		
+		for (InfoWindow window : windows) {
+			
+			// Check if the window is open or not.
+			if (window.isOpen()) {
+			
+				// Window movement and boundary updating.
+				if ((window.isOverTopBar(mousePos) && mouseHeld) || (window.isMoving())) {
+					window.setMoving(true);
+					window.setX(window.getX() + getMouseDiff()[0]);
+					window.setY(window.getY() + getMouseDiff()[1]);
+				}
+				if (!mouseHeld) {
+					window.setMoving(false);
+				}
+				if (window.getX() < 0) {window.setX(0);}
+				if (window.getX() > this.windowWidth - window.getWidth()) {window.setX(this.windowWidth - window.getWidth());}
+				if (window.getY() < 0) {window.setY(0);}
+				if (window.getY() > this.windowHeight - window.getHeight()) {window.setY(this.windowHeight - window.getHeight());} 
+				
+			}
+			else {
+				
+				// Check window to see if it needs to be removed.
+				if (window.getAnimationStatus().equals("Closed")) {windowsToGo.add(window);}
+				
+			}
+			
+			// Internal window updating.
+			window.update(mousePos); 			
+			
 		}
+		
+		// Window removal.
+		if (windowsToGo.size() > 0) {
+			for (InfoWindow window : windowsToGo) {
+				this.removeWindowFull(window);
+			}
+		}
+				
 	}
 
 	// MouseListener methods.
-	public void mousePressed() {
+	public void mousePressed() {mouseHeld = true;}
 
-		for (InfoWindow window : windows) {
-			if (window.isOverTopBar(mousePos)) {
-				window.setX(window.getX() + getMouseDiff()[0]);
-				window.setY(window.getY() + getMouseDiff()[1]);
-			}
-		}
-
-	}
-
-
+	public void mouseReleased() {mouseHeld = false;}
 
 	// Debug methods
 	public void debug(String s) {

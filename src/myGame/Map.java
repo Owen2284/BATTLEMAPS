@@ -8,12 +8,9 @@
 package myGame;
 
 import java.util.ArrayList;
-import java.util.Vector;
 import java.util.Random;
-import java.lang.Math;
 import java.awt.Point;
 import java.awt.geom.Line2D;
-import java.awt.geom.Point2D;
 
 public class Map {
 
@@ -70,6 +67,7 @@ public class Map {
 	}
 
 	// Constructor for an inputted map.
+	@SuppressWarnings("unchecked")
 	public Map(Map that) {
 		this.length = that.getLength();
 		this.width = that.getWidth();
@@ -138,10 +136,9 @@ public class Map {
 
 	}
 
+	@SuppressWarnings("unchecked")
 	private ArrayList<Route> randomRoutes() {
 
-		// Variable declaration.
-		Random x = new Random();
 		int arraySize = 0;
 		for (int k = 0; k < this.cities.size(); ++k) {
 			arraySize += k;
@@ -268,6 +265,7 @@ public class Map {
 	}
 
 	// Checks the routes and removes any with overlapping paths.
+	@SuppressWarnings("unchecked")
 	private ArrayList<Route> intersectionTesting(ArrayList<Route> in) {
 		// Clone initial route list.
 		ArrayList<Route> full = (ArrayList<Route>)in.clone();
@@ -362,6 +360,7 @@ public class Map {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	public ArrayList<Route> getRoutesFromName(String cityName) {
 		
 		ArrayList<Route> returnVector = new ArrayList<Route>();

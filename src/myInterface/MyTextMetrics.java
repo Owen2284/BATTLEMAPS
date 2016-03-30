@@ -4,7 +4,6 @@ import java.awt.Font;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.AffineTransform;
 import java.awt.Graphics;
-import java.awt.Rectangle;
 
 public class MyTextMetrics {
 

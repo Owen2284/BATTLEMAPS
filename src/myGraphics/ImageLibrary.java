@@ -10,7 +10,6 @@ package myGraphics;
 import myMain.Board;
 
 import java.awt.Image;
-import java.awt.Graphics;
 import java.io.File;
 import javax.swing.ImageIcon;
 

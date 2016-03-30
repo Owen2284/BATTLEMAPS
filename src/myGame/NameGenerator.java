@@ -8,7 +8,6 @@
 package myGame;
 
 import java.io.*;
-import java.io.File;
 import java.util.Vector;
 import java.util.Random;
 
@@ -16,6 +15,7 @@ public class NameGenerator {
 
     private Vector<String> syllables;
     private Vector<String> prefixes;
+    private Vector<String> suffixes;
     private Random gen = new Random();
 
     // Constructor
@@ -23,6 +23,7 @@ public class NameGenerator {
         // Retrieve syllables list.
         this.syllables = this.loadTextFile("data/syllables.txt");
         this.prefixes = this.loadTextFile("data/prefixes.txt");
+        this.suffixes = this.loadTextFile("data/suffixes.txt");
     }
 
     // Private constructor code.
@@ -92,7 +93,7 @@ public class NameGenerator {
         }
 
         // Add on a prefix.
-        int chance = gen.nextInt(40);
+        int chance = gen.nextInt(10);
         if (chance == 0) {
 
             // Generate index.
@@ -100,6 +101,18 @@ public class NameGenerator {
 
             // Adds prefix to the name.
             name = this.prefixes.get(index) + " " + name;
+
+        }
+        
+     // Add on a suffix.
+        chance = gen.nextInt(20);
+        if (chance == 0) {
+
+            // Generate index.
+            index = gen.nextInt(this.suffixes.size());
+
+            // Adds prefix to the name.
+            name = name + this.suffixes.get(index);
 
         }
 

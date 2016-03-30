@@ -10,10 +10,8 @@ package myInterface;
 import myMain.Board;
 import myGraphics.ImageLibrary;
 
-import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Point;
-import java.awt.Rectangle;
 
 public interface MyWindow {
 

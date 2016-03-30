@@ -17,7 +17,7 @@ public class Player {
     private String type = "CPU";
     private String commander = "NONE";
     private String colour = "Grey";
-    private HashMap stats = new HashMap();
+    private HashMap<String, Integer> stats = new HashMap<String, Integer>();
 
     // Constructor for only a player number and name.
     public Player(int inNumber, String inName) {
@@ -60,11 +60,11 @@ public class Player {
     }
 
     public int getStat(String key) {
-        return (int)this.stats.get(key);
+        return this.stats.get(key);
     }
 
     public boolean hasStatOver(String key, int dc) {
-        return (int)this.stats.get(key) > dc;
+        return this.stats.get(key) > dc;
     }
 
     // Mutators
@@ -85,7 +85,7 @@ public class Player {
     }
 
     public void incStat(String key, int amt) {
-        this.stats.put(key, (int)this.stats.get(key) + amt);
+        this.stats.put(key, this.stats.get(key) + amt);
     }
 
     // Overwrites.

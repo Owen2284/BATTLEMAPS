@@ -7,8 +7,11 @@
 package myGame;
 
 import java.util.HashMap;
+
+import myMain.Board;
+
+import java.awt.Color;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class Building {
 
@@ -22,9 +25,10 @@ public class Building {
 	private int build_time;
 	private final int max_health;
 	private int current_health;
-	private final HashMap stats;
-	private int x = 0;
-	private int y = 0;
+	private final HashMap<String, Integer> stats;
+	private int x = -1;
+	private int y = -1;
+	private Color color;
 
 	public static final String[] KEYS = {"Population", "Happiness", "Military", "Technology", "Nature", "Diplomacy", "Commerce", "Industry"};
 
@@ -47,7 +51,33 @@ public class Building {
 
 		// Constructing stats hashmap.
 		String[] readKeys = {"Military", "Technology", "Nature", "Diplomacy", "Commerce", "Industry", "Population", "Happiness"};
-		this.stats = new HashMap();
+		this.stats = new HashMap<String, Integer>();
+		for (int i = 0; i < readKeys.length; ++i) {
+			stats.put(readKeys[i], stat_arr[i]);
+		}
+
+	}
+	
+	public Building(String in_name, String in_id, String in_type, String in_category, String in_description, String in_blueprint_string, int in_initial_build_time, int in_max_health, int[] stat_arr, Color in_col) {
+
+		// Assigning variable values.
+		this.name = in_name;
+		this.id = in_id;
+		this.type = in_type;
+		this.category = in_category;
+		this.status = "Normal";
+		this.description = in_description;
+		this.build_time = in_initial_build_time;
+		this.max_health = in_max_health;
+		this.current_health = in_max_health;
+		this.color = in_col;
+
+		// Constructing blueprint.		(String format = "2x3:011110")
+		this.blueprint = createBlueprint(in_blueprint_string);
+
+		// Constructing stats hashmap.
+		String[] readKeys = {"Military", "Technology", "Nature", "Diplomacy", "Commerce", "Industry", "Population", "Happiness"};
+		this.stats = new HashMap<String, Integer>();
 		for (int i = 0; i < readKeys.length; ++i) {
 			stats.put(readKeys[i], stat_arr[i]);
 		}
@@ -67,9 +97,10 @@ public class Building {
 		this.build_time = that.getBuildTime();
 		this.max_health = that.getMaxHealth();
 		this.current_health = that.getCurrentHealth();
+		this.color = that.getColor();
 
 		// Copying the stats hash map.
-		this.stats = new HashMap();
+		this.stats = new HashMap<String, Integer>();
 		for (String key : KEYS) {
 			this.stats.put(key, (int)that.getStat(key));
 		}
@@ -184,6 +215,7 @@ public class Building {
 	}
 	public int getX() {return this.x;}
 	public int getY() {return this.y;}
+	public Color getColor() {return this.color;}
 
 	// Mutators
 	public void setName(String in) {this.name = in;}
@@ -197,6 +229,26 @@ public class Building {
 	public void setCurrentHealth(int in) {current_health = in; if (current_health > max_health) {current_health = max_health;} if (current_health < 0) {current_health = 0;}}
 	public void setX(int in) {this.x = in;}
 	public void setY(int in) {this.y = in;}
+	public void setColor(Color in) {this.color = in;}
+	
+	public void varyColor(int rVar, int gVar, int bVar) {
+		int red = (this.color.getRed() + rVar + 256) % 256; 
+		int green = (this.color.getGreen() + gVar + 256) % 256;
+		int blue = (this.color.getBlue() + bVar + 256) % 256;
+		this.color = new Color(red, green, blue);
+	}
+	
+	public void rotate() {
+		boolean[][] oldBlpt = this.getBlueprint();
+		boolean[][] newBlpt = new boolean[this.getBlueprintSize()[1]][this.getBlueprintSize()[0]];
+		for (int i = 0; i < oldBlpt.length; ++i) {
+			for (int j = 0; j < oldBlpt[0].length; ++j) {
+				newBlpt[j][i] = oldBlpt[i][(oldBlpt[0].length - j) - 1];
+			}
+		}
+		this.blueprint = newBlpt;
+		if (Board.DEBUG_TRACE) {System.out.println("Rotating " + this.type + ".");}
+	}
 
 	// Updaters
 	public void update() {

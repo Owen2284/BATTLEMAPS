@@ -13,37 +13,30 @@ import myGame.BuildingFactory;
 import myGame.City;
 import myGame.Game;
 import myGame.Map;
-import myGame.NameGenerator;
 import myGame.Player;
 import myGame.Route;
 import myGraphics.ImageLibrary;
-import myGraphics.ImageToken;
 import myInterface.Button;
+import myInterface.ErrorWindow;
 import myInterface.GridWindow;
 import myInterface.HoverWindow;
 import myInterface.InfoWindow;
 import myInterface.ListWindow;
 import myInterface.MyInterfaceManager;
 import myInterface.MyTextMetrics;
-import myInterface.MyWindow;
 
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.MouseInfo;
-import java.awt.PointerInfo;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseEvent;
-import java.awt.event.WindowEvent;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Random;
@@ -61,6 +54,7 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 	
 	private long randomMapSeed = System.currentTimeMillis();
 	private Random randomEvents = new Random();
+	private Random randomTrivial = new Random();
 	private Random randomMap = new Random(randomMapSeed);
 	private Game game;
 	private BuildingFactory buildDex = new BuildingFactory();
@@ -69,14 +63,16 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 	private String state = "";
 	private MyInterfaceManager mim;
 	private HoverWindow mouseWindow = new HoverWindow(0,0);
-
-	private int playerWhoseGoItIs = 1;										// OWEN: Move into game.
+	
+	// TODO: Move into game.
+	private int playerWhoseGoItIs = 1;										
 
 	// Constants
-	private final String GAME_NAME = "BATTLEMAPS";
-	private final String VERSION_NUMBER = "InDev version 0.2";
-	private final String VERSION_GOAL = "";
-	private final String VERSION_INFO = "";
+	private final String GAMENAME = "BATTLEMAPS";
+	private final String VERSIONNUMBER = "InDev version 0.2";
+	private final String VERSIONGOAL = "The City Update";
+	private final String VERSIONINFO = "This version of the game is currently focussed on inplementing the functionality of the city screen.";
+	private final String VERSIONCOMPLETION = "20%";
 	private final int BORDER_SIZE = 40;
 	private final int DELAY = 15;
 	public static int WINDOW_CENTER_X;
@@ -97,10 +93,13 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 	// Construction and initialisation.
 	public Board(int width, int height) {
 
-		// Store neccessary values.
+		// Store necessary values.
 		windowWidth = width;
 		windowHeight = height;
 		WINDOW_CENTER_X = (windowWidth - 400) / 2;
+		
+		// Outputs the game's version info.
+		initMessage();
 
 		// Sets up graphical interface.
 		initBoard();
@@ -129,6 +128,19 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 		// Sorts out hover window.
 		mouseWindow.setOpen(false);
 
+	}
+	
+	private void initMessage() {
+		System.out.println("");
+		System.out.println("-----------------------------------------------");
+		System.out.println(GAMENAME);
+		System.out.println("-----------------------------------------------");
+		System.out.println(VERSIONNUMBER);
+		System.out.println(VERSIONGOAL);
+		System.out.println(VERSIONINFO);
+		System.out.println(VERSIONCOMPLETION);
+		System.out.println("-----------------------------------------------");
+		System.out.println("");
 	}
 
 	private void initBoard() {
@@ -402,38 +414,89 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 		String cityName = state.substring(5);
 		City thisCity = game.getMap().getCityByName(cityName);
 
+		// Check to see if any city block are being hovered over.
+		Point blockPoint = thisCity.getMousePosOnGrid(mim.getMousePos());
+		
 		// Draws city squares.
 		ArrayList<Block> cityBlocks = thisCity.getGrid();
 		for (int i = 0; i < cityBlocks.size(); ++i) {
 			Block currentBlock = cityBlocks.get(i);
-			if (currentBlock.isOver(mim.getMousePos())) {
-				g.setColor(Color.RED);
-			} else {
-				g.setColor(Color.WHITE);
-			}
+			g.setColor(Color.WHITE);
 			g.fillRect(City.GRID_OFFSET_X + (currentBlock.getX() * Block.BLOCK_SIZE), City.GRID_OFFSET_Y + (currentBlock.getY() * Block.BLOCK_SIZE), Block.BLOCK_SIZE, Block.BLOCK_SIZE);
 			g.setColor(Color.BLACK);
 			g.drawRect(City.GRID_OFFSET_X + (currentBlock.getX() * Block.BLOCK_SIZE), City.GRID_OFFSET_Y + (currentBlock.getY() * Block.BLOCK_SIZE), Block.BLOCK_SIZE, Block.BLOCK_SIZE);
+		}
+		
+		// Draws buildings.
+		for (Building building : thisCity.getBuildings()) {
+			String blueprint = building.getBlueprintAsString();
+			int blptX = City.GRID_OFFSET_X + (building.getX() * Block.BLOCK_SIZE);
+			int blptY = City.GRID_OFFSET_Y + (building.getY() * Block.BLOCK_SIZE);
+			for (String line : blueprint.split("\n")) {
+				for (String character : line.split("|")) {
+					if (character.equals("T")) {
+						g.setColor(building.getColor());
+						g.fillRect(blptX, blptY, Block.BLOCK_SIZE, Block.BLOCK_SIZE);
+						g.setColor(Color.BLACK);
+						g.drawRect(blptX, blptY, Block.BLOCK_SIZE, Block.BLOCK_SIZE);
+					}
+					blptX += Block.BLOCK_SIZE;
+				}
+				blptX = City.GRID_OFFSET_X + (building.getX() * Block.BLOCK_SIZE);
+				blptY += Block.BLOCK_SIZE;
+			}
+		}
+		
+		// Carries out additional block drawing if there is a mouse collision.
+		if (blockPoint.x >= 0 && blockPoint.x <= thisCity.getWidth()) {
+			
+			// Draw mouse over'd city square.
+			g.setColor(Color.RED);
+			g.fillRect(City.GRID_OFFSET_X + (blockPoint.x * Block.BLOCK_SIZE), City.GRID_OFFSET_Y + (blockPoint.y * Block.BLOCK_SIZE), Block.BLOCK_SIZE, Block.BLOCK_SIZE);
+			g.setColor(Color.BLACK);
+			g.drawRect(City.GRID_OFFSET_X + (blockPoint.x * Block.BLOCK_SIZE), City.GRID_OFFSET_Y + (blockPoint.y * Block.BLOCK_SIZE), Block.BLOCK_SIZE, Block.BLOCK_SIZE);
+			
+			// Draw building blueprint.		
+			if (mim.getMouseBuilding() != null) {
+				Building mB = mim.getMouseBuilding();
+				String mBString = mB.getBlueprintAsString();
+				int blptX = City.GRID_OFFSET_X + (blockPoint.x * Block.BLOCK_SIZE);
+				int blptY = City.GRID_OFFSET_Y + (blockPoint.y * Block.BLOCK_SIZE);
+				for (String line : mBString.split("\n")) {
+					for (String character : line.split("|")) {
+						if (character.equals("T")) {
+							if (blptX < City.GRID_OFFSET_X + (thisCity.getWidth() * Block.BLOCK_SIZE) && blptY < City.GRID_OFFSET_Y + (thisCity.getWidth() * Block.BLOCK_SIZE)) {
+								g.setColor(Color.BLUE);
+								g.fillRect(blptX, blptY, Block.BLOCK_SIZE, Block.BLOCK_SIZE);
+							}
+							g.setColor(Color.BLACK);
+							g.drawRect(blptX, blptY, Block.BLOCK_SIZE, Block.BLOCK_SIZE);
+						}
+						blptX += Block.BLOCK_SIZE;
+					}
+					blptX = City.GRID_OFFSET_X + (blockPoint.x * Block.BLOCK_SIZE);
+					blptY += Block.BLOCK_SIZE;
+				}
+			
+			}
+			
 		}
 
 		// Draws GUI.
 		g.setColor(Color.WHITE);
 		g.fillRect(0, 0, 80, 21);															// Turn counter.
-		g.fillRect(0, windowHeight - 40, windowWidth, 40);								// Bottom bar.
-		g.fillRect(750, 0, 250, windowHeight - 40);										// City buttons box.
-		g.fillRect((windowWidth / 2) - 64, 0, 128, 32);									// City name box.
-		g.fillRect(0, windowHeight / 2, City.GRID_OFFSET_X - 20, windowHeight - 40);		// Stats box.
+		g.fillRect(0, windowHeight - 40, windowWidth, 40);									// Bottom bar.
+		g.fillRect(750, 0, 250, windowHeight - 40);											// City buttons box.
+		g.fillRect(0, windowHeight / 2, City.GRID_OFFSET_X - 50, windowHeight - 40);		// Stats box.
 
 		g.setColor(Color.BLACK);
 		g.drawRect(0, 0, 80, 21); 															// Turn counter.
 		g.drawRect(0, windowHeight - 40, windowWidth, windowHeight);						// Bottom bar.
-		g.drawRect(750, 0, 250, windowHeight - 40);										// City buttons box.
-		g.drawRect((windowWidth / 2) - 64, 0, 128, 32);									// City name box.
-		g.drawRect(0, windowHeight / 2, City.GRID_OFFSET_X - 20, (windowHeight / 2) - 40);	// Stats box.
+		g.drawRect(750, 0, 250, windowHeight - 40);											// City buttons box.
+		g.drawRect(0, windowHeight / 2, City.GRID_OFFSET_X - 50, (windowHeight / 2) - 40);	// Stats box.
 
 		// Draws text.
 		g.drawString("Turn " + Integer.toString(game.getTurn()), 4, 16);
-		g.drawString(cityName, (windowWidth / 2) - (5 * cityName.length()), 22);
 		g.drawString(cityName, 5, windowHeight / 2 + 5 + MyTextMetrics.getTextSize("Text")[1]);
 		int offset = 3;
 		String[] theKeys = {"Population", "Happiness", "Military", "Technology", "Nature", "Diplomacy", "Commerce", "Industry"};
@@ -441,7 +504,7 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 			if (theKeys[i].equals("Military")) {++offset;}
 			g.drawString(theKeys[i] + ": \t " + thisCity.getStat(theKeys[i]), 5, windowHeight / 2 + (5 + MyTextMetrics.getTextSize("Text")[1]) * (i + offset));
 		}
-
+		
 	}
 
 	public void drawDebug(Graphics g) {
@@ -549,29 +612,26 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 
 	@Override
 	public void mousePressed(MouseEvent e) {
-		System.out.println("PRESSED RUNNING");
 		mim.mousePressed();
 	}
 
 	@Override
 	public void mouseReleased(MouseEvent e) {
-		System.out.println("RELEASED RUNNING");
+		mim.mouseReleased();
 	}
 
 	@Override
 	public void mouseEntered(MouseEvent e) {
-		System.out.println("ENTERED RUNNING");
+		mim.mouseReleased();
 	}
 
 	@Override
 	public void mouseExited(MouseEvent e) {
-		System.out.println("EXITED RUNNING");
+		mim.mouseReleased();
 	}
 
 	@Override
 	public void mouseClicked(MouseEvent e) {
-
-		System.out.println("CLICKED RUNNING");
 
 		// Allows for only 1 button press.
 		boolean clickThisFrame = false;
@@ -581,7 +641,7 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 
 		// Execute code of clicked button.
 		for (Button button : hoveredButtons) {
-			if (!clickThisFrame) {
+			if (!clickThisFrame && (e.getButton() == MouseEvent.BUTTON1) ) {
 				clickThisFrame = true;
 				if (button.hasAdditionalString()) {
 					buttonExecution(button.getExecutionNumber(), button.getAdditionalString());
@@ -591,7 +651,7 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 			}
 		}
 
-		// Checks other menu objects.
+		// Checks other clickable objects.
 		if (state.equals("Map")) {
 
 			// Check for clicking on cities.
@@ -605,7 +665,7 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 				// Determines the image to be used for the city.
 				Rectangle cityBounds = currentCity.getBounds();
 
-				if (cityBounds.contains(mim.getMousePos())) {
+				if (cityBounds.contains(mim.getMousePos()) && e.getButton() == MouseEvent.BUTTON1) {
 					state = "City-" + currentCity.getName();
 					mim.setInterface(state, game, playerWhoseGoItIs);
 				}
@@ -615,7 +675,76 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 		} else if (state.substring(0,4).equals("Menu")) {
 			// Nothing.
 		} else if (state.substring(0,4).equals("City")) {
-			// Nothing.
+			
+			// Gets the city name and city.
+			String cityName = state.substring(5);
+			City thisCity = game.getMap().getCityByName(cityName);
+			
+			// Building placement checks.
+			Point blockPoint = thisCity.getMousePosOnGrid(mim.getMousePos());
+			
+			// Runs left click events.
+			if (e.getButton() == MouseEvent.BUTTON1 && !clickThisFrame) {
+			
+				// Checks if there is a blueprint to be placed.
+				if (mim.getMouseBuilding() != null) {
+					// Checks that the mouse is over the grid.
+					if (blockPoint.x >= 0 && blockPoint.x < thisCity.getWidth() && blockPoint.y >= 0 && blockPoint.y < thisCity.getLength()) {
+						// Checks if the building is within the boundaries of the city.
+						Building bldg = mim.getMouseBuilding();
+						int[] bldgSize = bldg.getBlueprintSize();
+						if ((blockPoint.x + bldgSize[0] <= thisCity.getWidth()) && (blockPoint.y + bldgSize[1] <= thisCity.getLength())) {
+							// Checks if building collides with another building.
+							if (thisCity.hasSpaceFor(bldg, blockPoint.x, blockPoint.y)) {
+								// Places building into the city.
+								if (!mim.getMouseMode().equals("Move")) {
+									bldg.varyColor(randomTrivial.nextInt(41) - 20, randomTrivial.nextInt(41) - 20, randomTrivial.nextInt(41) - 20);
+								}
+								thisCity.addBuilding(bldg, blockPoint.x, blockPoint.y);
+								if (!mim.getMouseMode().equals("Move")) {
+									mim.setMouseMode("Pointer");
+								} else {
+									mim.setMouseMode("Move");
+								}
+							} else {
+								mim.addWindow(new ErrorWindow("ERROR", 0, 40, "Building overlaps with other building(s)."));
+							}
+						} else {
+							mim.addWindow(new ErrorWindow("ERROR", 0, 40, "Building is partially outside of the city grid."));
+						}
+					} else {
+						mim.addWindow(new ErrorWindow("ERROR", 0, 40, "Building is off of the city grid."));
+					}
+				}
+				// Run checks for building movement and deletion selection.
+				else {
+					if (mim.getMouseMode().equals("Move")) {
+						if (blockPoint.x > 0 && blockPoint.y > 0) {
+							Building moveBldg = thisCity.popBuildingAt(blockPoint.x, blockPoint.y);
+							if (moveBldg != null) {
+								mim.setMouseBuilding(moveBldg);
+							}
+						}
+					} else if (mim.getMouseMode().equals("Destroy")) {
+						if (blockPoint.x > 0 && blockPoint.y > 0) {
+							thisCity.removeBuildingAt(blockPoint.x, blockPoint.y);
+						}
+					}
+				}
+			}
+			
+			// Runs right click events.
+			else if (e.getButton() == MouseEvent.BUTTON3 && !clickThisFrame) {
+				mim.setMouseMode("Pointer");
+			}
+			
+			// Runs middle click events.
+			else if (e.getButton() == MouseEvent.BUTTON2 && !clickThisFrame) {
+				if (mim.getMouseBuilding() != null) {
+					mim.getMouseBuilding().rotate();
+				}
+			}
+			
 		}
 
 	}
@@ -635,12 +764,8 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 		InfoWindow wind;
 		Button butt;
 		String cont;
-		ArrayList vect;
-		ArrayList arr;
 		GridWindow gridow;
 		Player currentPlayer;
-		InfoWindow currentWindow;
-		boolean found;
 		ListWindow listow;
 		Building bldg;
 
@@ -648,329 +773,377 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 		String[] theKeys = {"Residential", "Happiness", "Military", "Diplomacy", "Technology", "Commerce", "Nature", "Industry"};
 		Color[] theColors = {new Color(200,200,200), new Color(234,242,10), new Color(194,2,50), new Color(235,237,175), new Color(10,242,231), new Color(83,74,240), new Color(17,153,42), new Color(245,155,66)};
 
-		switch (exec) {
-			case -1: break;                                                 // Null action.
-			case 0: break;                                                  // Null action.
-			case 1: state = "Map"; mim.setInterface(state, game, playerWhoseGoItIs); break;              // Go to map action.
-			case 2: state = "City-" + add; mim.setInterface(state, game, playerWhoseGoItIs); break;      // Go to city action. 
-			case 3: state = "Menu-" + add; mim.setInterface(state, game, playerWhoseGoItIs); break;      // Go to menu action.
-			case 4:                                                         // End turn action.
-				// Move to the next player.
-				playerWhoseGoItIs += 1;
-				if (playerWhoseGoItIs > game.getPlayers().size()) {
-					// Other end of turn code.
-					// Increment game turn.
-					playerWhoseGoItIs = 1;
-					game.incTurn();
+		// Executing the code.
+		if (exec <= 0) {													// Null action.
+		} 
+		else if (exec == 1) {												// Go to map action.
+			state = "Map"; 
+			mim.setInterface(state, game, playerWhoseGoItIs);
+		}
+		else if (exec == 2) {												// Go to city action. 
+			state = "City-" + add; 
+			mim.setInterface(state, game, playerWhoseGoItIs);
+		}
+		else if (exec == 3) {												// Go to menu action.
+			state = "Menu-" + add; 
+			mim.setInterface(state, game, playerWhoseGoItIs);
+		}
+		else if (exec == 4) { 												// End turn action.
+			// Move to the next player.
+			playerWhoseGoItIs += 1;
+			if (playerWhoseGoItIs > game.getPlayers().size()) {
+				// Other end of turn code.
+				// Increment game turn.
+				game.incTurn();
+				playerWhoseGoItIs = 1;
+			}
+		}
+		else if (exec == 5)	{												// View players.
+			if (!mim.checkWindowsFor("Player Info")) {
+				// Creating the new window.
+				wind = new InfoWindow("Player Info", (windowWidth - 400) / 2, 100);
+				butt = wind.getCloseButton();
+				cont = "| Player Name\t| Commander Name\n|------------------------------------------------------------\n";
+				for (int i = 0; i < game.getPlayers().size(); ++i) {
+					// Generate table rows.
+					currentPlayer = game.getPlayers().get(i);
+					cont += "| " + currentPlayer.getName() + "\t";
+					cont += "| " + currentPlayer.getCommander() + "\t";
+					cont += "\n";
+					// Generate player buttons.
+					Button pb = new Button(218, 26 + i * (MyTextMetrics.getTextSize("TEST")[1] + wind.getLineSpacing() + 5) + 2 * (MyTextMetrics.getTextSize("TEST")[1] + wind.getLineSpacing()));
+					pb.setHeight(MyTextMetrics.getTextSize("View Player")[1] + 4);
+					pb.setWidth(MyTextMetrics.getTextSize("View Player")[0] + 2);
+					pb.setID(wind.getTitle() + "_" + currentPlayer.getName());
+					pb.setButtonText("View Player");
+					pb.setExecutionNumber(8);
+					pb.setAdditionalString(currentPlayer.getName());
+					pb.setAdditionalStringUsage(true);
+					pb.setOwner("Window");
+					wind.addWindowButton(pb);
 				}
-				break;
-			case 5:                                                         // View players.
-				if (!mim.checkWindowsFor("Player Info")) {
-					// Creating the new window.
-					wind = new InfoWindow("Player Info", (windowWidth - 400) / 2, 100);
-					butt = wind.getCloseButton();
-					cont = "| Player Name\t| Commander Name\n|------------------------------------------------------------\n";
-					int COL_WIDTH = 30;
-					for (int i = 0; i < game.getPlayers().size(); ++i) {
-						// Generate table rows.
-						currentPlayer = game.getPlayers().get(i);
-						cont += "| " + currentPlayer.getName() + "\t";
-						cont += "| " + currentPlayer.getCommander() + "\t";
-						cont += "\n";
-						// Generate player buttons.
-						Button pb = new Button(wind.getX() + 218, wind.getY() + 26 + InfoWindow.TOP_BAR_HEIGHT + i * (MyTextMetrics.getTextSize("TEST")[1] + wind.getLineSpacing() + 5) + 2 * (MyTextMetrics.getTextSize("TEST")[1] + wind.getLineSpacing()));
-						pb.setHeight(MyTextMetrics.getTextSize("View Player")[1] + 4);
-						pb.setWidth(MyTextMetrics.getTextSize("View Player")[0] + 2);
-						pb.setID(wind.getTitle() + "_" + currentPlayer.getName());
-						pb.setButtonText("View Player");
-						pb.setExecutionNumber(8);
-						pb.setAdditionalString(currentPlayer.getName());
-						pb.setAdditionalStringUsage(true);
-						pb.setOwner("Window");
-						wind.addWindowButton(pb);
-					}
-					wind.setContent(cont);
-					wind.setLineSpacing(5);
-					mim.addWindowFull(wind);
-				}
-				if (DEBUG_TRACE) {mim.debug("Buttons");}
-				break;
-			case 6:                                                         // View stats.
-				if (!mim.checkWindowsFor("Game Stats")) {
-					// Creating window.
-					wind = new InfoWindow("Game Stats", (windowWidth - 400) / 2, 100);
-					butt = wind.getCloseButton();
-					cont = "Stats\n------\nWhat do I even put here.";
-					wind.setContent(cont);
-					mim.addWindowFull(wind);
-				}
-				break;
-			case 7:                                                         // Close window.
-				mim.removeWindowFull(add);
-				break;
-			case 8:                                                         // Open full player window.
-				if (!mim.checkWindowsFor("Player - " + add)) {
-					// Create window.
-					wind = new InfoWindow("Player - " + add, (windowWidth - 400) / 2, 100);
-					butt = wind.getCloseButton();
-					cont = add;
-					wind.setContent(cont);
-					wind.addReturnButton(5, "");
-					// Close Player Info window.
-					mim.removeWindowFull("Player Info");
-					// Add window to manager.
-					mim.addWindowFull(wind);
-				}
-				break;
-			case 9:                                                         // Opens debug info window.
-				if (!mim.checkWindowsFor("DEBUG_INFO_WINDOW")) {
-					// Create window.
-					wind = new InfoWindow("DEBUG_INFO_WINDOW", (windowWidth - 400) / 2, 100);
-					butt = wind.getCloseButton();
-					cont = "Current map seed:- " + randomMapSeed;
-					wind.setContent(cont);
-					mim.addWindowFull(wind);
-				}
-				break;
-			case 10:                                                        // Opens debug action window.
-				if (!mim.checkWindowsFor("DEBUG_ACTION_WINDOW")) {
-					// Create window.
-					int DEBUG_GRID_ROWS = 5;
-					int DEBUG_GRID_COLS = 5;
-					gridow = new GridWindow("DEBUG_ACTION_WINDOW", (windowWidth - 400) / 2, 100, DEBUG_GRID_ROWS, DEBUG_GRID_COLS);
-					gridow.setGridX(10);
-					gridow.setGridY(10);
-					gridow.setButtonWidth(60);
-					gridow.setButtonHeight(30);
-					butt = gridow.getCloseButton();
-					// Creating grid buttons.
-					if (true) {
-						// Button 1: New game.
-						Button d1 = new Button(0, 0);
-						d1.setID("DEBUG_B_New_Game");
-						d1.setColorInner(Color.GREEN);
-						d1.setExecutionNumber(15);
-						d1.setButtonText("New Game");
-						gridow.addGridButton(0, 0, d1);
-						// Button 2: Show debug routes.
-						Button d2 = new Button(0, 0);
-						d2.setID("DEBUG_B_Switch_Routes");
-						d2.setColorInner(Color.GREEN);
-						d2.setExecutionNumber(13);
-						d2.setButtonText("Switch Routes");
-						gridow.addGridButton(0, 1, d2);
-						// Button 21: Print buttons.
-						Button d21 = new Button(0, 0, "DEBUG_B_Print_Buttons", "Print Buttons", 25); d21.setColorInner(Color.GREEN);
-						gridow.addGridButton(4, 0, d21);
-						// Button 22: Print windows.
-						Button d22 = new Button(0, 0, "DEBUG_B_Print_Windows", "Print Windows", 26); d22.setColorInner(Color.GREEN);
-						gridow.addGridButton(4, 1, d22);
-						// Button 23: Print mouse.
-						Button d23 = new Button(0, 0, "DEBUG_B_Print_Mouse", "Print Mouse", 32); d23.setColorInner(Color.GREEN);
-						gridow.addGridButton(4, 2, d23);
-						// Button 25: Close game.
-						Button d25 = new Button(0, 0);
-						d25.setID("DEBUG_B_Close");
-						d25.setColorInner(Color.GREEN);
-						d25.setExecutionNumber(11);
-						d25.setButtonText("Close Game");
-						gridow.addGridButton(4, 4, d25);
-					}
-					mim.addWindowFull(gridow);
-				}
-				break;
-			case 11:                                                        // Closes the game.
-				// OWEN: Broken atm.
-				break;
-			case 12:														// Generates a new random game.
-				// Sets up the game state.
-				game = initGame(add);
-				state = "Map";
-				mim.setInterface(state, game, playerWhoseGoItIs);
-				mim.removeWindowFull("DEBUG_LAUNCH");
-				break;
-			case 13:														// Toggles map between optimised and initial routes.
-				// Changes the map's display mode.
-				game.toggleDRD();
-				break;
-			case 14:														// Random map seed entry.
-				Scanner r = new Scanner(System.in);
-				System.out.print("New seed:- ");
-				randomMapSeed = r.nextLong();
-				randomMap = new Random(randomMapSeed);
-				if (DEBUG_TRACE) {System.out.println("New seed accepted.");}
-				break;
-			case 15: 														// Jump to debug start screen.
-				state = "DEBUG"; 
-				mim.setInterface(state, game, playerWhoseGoItIs); 
-				break; 
-			case 16:														// Open city add building menu.
-				gridow = new GridWindow("Add Building", WINDOW_CENTER_X, 100, 5, 2);
-				gridow.setButtonWidth(175);
-				gridow.setButtonHeight(40);
-				gridow.setButtonGap(10);
-				int lalala = 0;
-				int lololo = 0;
-				for (int lelele = 0; lelele < theKeys.length; ++lelele) {
-					String key = theKeys[lelele];
-					Color lliw = theColors[lelele];
-					Button gwb = new Button(0,0,"City_Build_" + key, key, 21, key);
-					gwb.setColorInner(theColors[lelele]);
-					gridow.addGridButton(lololo, lalala, gwb);
-					++lalala;
-					if (lalala >= 2) {lalala = 0; ++lololo;}
-					if (key.equals("Happiness")) {++lololo;}
+				wind.setContent(cont);
+				wind.setLineSpacing(5);
+				mim.addWindowFull(wind);
+			}
+			if (DEBUG_TRACE) {mim.debug("Buttons");}
+		}
+		else if (exec == 6) { 												// View stats.
+			if (!mim.checkWindowsFor("Game Stats")) {
+				// Creating window.
+				wind = new InfoWindow("Game Stats", (windowWidth - 400) / 2, 100);
+				butt = wind.getCloseButton();
+				cont = "Stats\n------\nWhat do I even put here.";
+				wind.setContent(cont);
+				mim.addWindowFull(wind);
+			}
+		}
+		else if (exec == 7) {												// Close window.
+			mim.getWindow(add).close();
+		}
+		else if (exec == 8) { 												// Open full player window.
+			if (!mim.checkWindowsFor("Player - " + add)) {
+				// Create window.
+				wind = new InfoWindow("Player - " + add, (windowWidth - 400) / 2, 100);
+				butt = wind.getCloseButton();
+				cont = add;
+				wind.setContent(cont);
+				wind.addReturnButton(5, "");
+				// Close Player Info window.
+				mim.removeWindowFull("Player Info");
+				// Add window to manager.
+				mim.addWindowFull(wind);
+			}
+		}
+		else if (exec == 9) {												// Opens debug info window.
+			if (!mim.checkWindowsFor("DEBUG_INFO_WINDOW")) {
+				// Create window.
+				wind = new InfoWindow("DEBUG_INFO_WINDOW", (windowWidth - 400) / 2, 100);
+				butt = wind.getCloseButton();
+				cont = "Current map seed:- " + randomMapSeed;
+				wind.setContent(cont);
+				mim.addWindowFull(wind);
+			}
+		}
+		else if (exec == 10) {												// Opens debug action window.
+			if (!mim.checkWindowsFor("DEBUG_ACTION_WINDOW")) {
+				// Create window.
+				int DEBUG_GRID_ROWS = 5;
+				int DEBUG_GRID_COLS = 5;
+				gridow = new GridWindow("DEBUG_ACTION_WINDOW", (windowWidth - 400) / 2, 100, DEBUG_GRID_ROWS, DEBUG_GRID_COLS);
+				gridow.setGridX(10);
+				gridow.setGridY(10);
+				gridow.setButtonWidth(60);
+				gridow.setButtonHeight(30);
+				butt = gridow.getCloseButton();
+				// Creating grid buttons.
+				// TODO: Tidying.
+				if (true) {
+					// Button 1: New game.
+					Button d1 = new Button(0, 0);
+					d1.setID("DEBUG_B_New_Game");
+					d1.setColorInner(Color.GREEN);
+					d1.setExecutionNumber(15);
+					d1.setButtonText("New Game");
+					gridow.addGridButton(0, 0, d1);
+					// Button 2: Show debug routes.
+					Button d2 = new Button(0, 0);
+					d2.setID("DEBUG_B_Switch_Routes");
+					d2.setColorInner(Color.GREEN);
+					d2.setExecutionNumber(13);
+					d2.setButtonText("Switch Routes");
+					gridow.addGridButton(0, 1, d2);
+					// Button 20: BuildDex dump.
+					Button d20 = new Button(0, 0, "DEBUG_B_Dump_BuildDex", "Dump BuildDex", 33); d20.setColorInner(Color.GREEN);
+					gridow.addGridButton(3, 4, d20);
+					// Button 21: Print buttons.
+					Button d21 = new Button(0, 0, "DEBUG_B_Print_Buttons", "Print Buttons", 25); d21.setColorInner(Color.GREEN);
+					gridow.addGridButton(4, 0, d21);
+					// Button 22: Print windows.
+					Button d22 = new Button(0, 0, "DEBUG_B_Print_Windows", "Print Windows", 26); d22.setColorInner(Color.GREEN);
+					gridow.addGridButton(4, 1, d22);
+					// Button 23: Print mouse.
+					Button d23 = new Button(0, 0, "DEBUG_B_Print_Mouse", "Print Mouse", 32); d23.setColorInner(Color.GREEN);
+					gridow.addGridButton(4, 2, d23);
+					// Button 25: Close game.
+					Button d25 = new Button(0, 0);
+					d25.setID("DEBUG_B_Close");
+					d25.setColorInner(Color.GREEN);
+					d25.setExecutionNumber(11);
+					d25.setButtonText("Close Game");
+					gridow.addGridButton(4, 4, d25);
 				}
 				mim.addWindowFull(gridow);
-				break;
-			case 17:														// Activate city build building mode.
-				mim.setMouseMode("Build");
-				break;
-			case 18:														// Activate city move building mode.
+			}
+		}
+		else if (exec == 11) {												// Closes the game.
+			// TODO: Implement quitting.
+		}
+		else if (exec == 12) { 												// Generates a new random game.
+			// Sets up the game state.
+			game = initGame(add);
+			state = "Map";
+			mim.setInterface(state, game, playerWhoseGoItIs);
+			mim.removeWindowFull("DEBUG_LAUNCH");
+		}
+		else if (exec == 13) {												// Toggles map between optimised and initial routes.
+			game.toggleDRD();
+		}
+		else if (exec == 14) { 												// Random map seed entry.
+			Scanner r = new Scanner(System.in);
+			System.out.print("New seed:- ");
+			randomMapSeed = r.nextLong();
+			randomMap = new Random(randomMapSeed);
+			if (DEBUG_TRACE) {System.out.println("New seed accepted.");}
+			r.close();
+		}
+		else if (exec == 15) {												// Jump to debug start screen.
+			state = "DEBUG"; 
+			mim.setInterface(state, game, playerWhoseGoItIs); 
+		}														
+		else if (exec == 16) {												// Open city add building menu.
+			
+			// Reset mouse data.
+			mim.setMouseMode("Pointer");
+			
+			// Creating window.
+			gridow = new GridWindow("Add Building", WINDOW_CENTER_X, 100, 5, 2);
+			gridow.setButtonWidth(175);
+			gridow.setButtonHeight(40);
+			gridow.setButtonGap(10);
+			
+			// Placing buttons itno the window grid.
+			int lalala = 0;
+			int lololo = 0;
+			for (int lelele = 0; lelele < theKeys.length; ++lelele) {
+				String key = theKeys[lelele];
+				Color lliw = theColors[lelele];
+				Button gwb = new Button(0,0,"City_Build_" + key, key, 21, key);
+				gwb.setColorInner(lliw);
+				gridow.addGridButton(lololo, lalala, gwb);
+				++lalala;
+				if (lalala >= 2) {lalala = 0; ++lololo;}
+				if (key.equals("Happiness")) {++lololo;}
+			}
+			
+			// Add window to the MIM.
+			mim.addWindowFull(gridow);
+			
+		}
+		else if (exec == 17) { 												// Activate city build building mode.
+			// Gets the city name and city.
+			String cityName = state.substring(5);
+			City thisCity = game.getMap().getCityByName(cityName);
+						
+			if (thisCity.hasAreaFor(buildDex.getBuilding(add))) {
+				mim.setMouseMode("Build");			
+				mim.setMouseBuilding(buildDex.getBuilding(add));
+				mim.removeWindowMaxFull("Add Building", 0, 12);
+			}
+		}
+		else if (exec == 18) { 												// Activate city move building mode.
+			// Gets the city name and city.
+			String cityName = state.substring(5);
+			City thisCity = game.getMap().getCityByName(cityName);
+			
+			// Checks building count.
+			if (thisCity.getBuildings().size() > 0) {
 				mim.setMouseMode("Move");
-				break;
-			case 19:														// Activate city remove building mode.
+			}
+		}
+		else if (exec == 19) {												// Activate city remove building mode.
+			// Gets the city name and city.
+			String cityName = state.substring(5);
+			City thisCity = game.getMap().getCityByName(cityName);
+			
+			// Checks building count.
+			if (thisCity.getBuildings().size() > 0) {
 				mim.setMouseMode("Destroy");
-				break;
-			case 20:														// Open city rename city window.
-				
-				break;
-			case 21:														// Open city builing category window.
-				List<String> the_buildings = buildDex.getCategory(add);
-				listow = new ListWindow("Add Building - " + add + " Buildings", WINDOW_CENTER_X, 50, 7);
-				listow.setHeight(500);
-				listow.setGridY(60);
-				listow.setButtonHeight(30);
-				listow.setContentX(175);
-				listow.setContentY(0);
-				butt = new Button(listow.getContentX() + (listow.getWidth() / 4), listow.getHeight() - 60, "Begin_Mouse_Placement_Button", "Place Building", 17, "NULL");
-				butt.setVisible(false);
-				listow.addWindowButton(butt);
-				listow.addReturnButton(16, "");
-				Color this_color = new Color(255,255,255);
-				for (int i = 0; i < theKeys.length; ++i) {
-					if (theKeys[i].equals(add)) {
-						this_color = theColors[i];
-					}
+			}
+		}
+		else if (exec == 20) { 												// Open city rename city window.
+			mim.setMouseMode("Pointer");
+			// TODO: Add city rename window.
+		}
+		else if (exec == 21) {												// Open city building category window.
+			List<String> the_buildings = buildDex.getCategory(add);
+			listow = new ListWindow("Add Building - " + add + " Buildings", WINDOW_CENTER_X, 50, 7);
+			listow.setHeight(500);
+			listow.setGridY(60);
+			listow.setButtonHeight(30);
+			listow.setContentX(175);
+			listow.setContentY(0);
+			butt = new Button(listow.getContentX() + (listow.getWidth() / 8), listow.getHeight() - 60, "Begin_Mouse_Placement_Button", "Place Building", 17, "NULL");
+			butt.setVisible(false);
+			listow.addWindowButton(butt);
+			listow.addReturnButton(16, "");
+			Color this_color = new Color(255,255,255);
+			for (int i = 0; i < theKeys.length; ++i) {
+				if (theKeys[i].equals(add)) {
+					this_color = theColors[i];
 				}
-				listow.setContent("Click on a button to select\na building.");
-				for (String bld : the_buildings) {
-					Button bldb = new Button(0, 50, "Build_" + bld.replace(" ", "_"), bld, 22, listow.getTitle() + "|" + bld);
-					bldb.setColorInner(this_color);
-					listow.addListButton(bldb);
+			}
+			listow.setContent("Click on a button to select\na building.");
+			for (String bld : the_buildings) {
+				Button bldb = new Button(0, 50, "Build_" + bld.replace(" ", "_"), bld, 22, listow.getTitle() + "|" + bld);
+				bldb.setColorInner(this_color);
+				listow.addListButton(bldb);
+			}
+			listow.fillGridList();
+			listow.setUpExec(30);
+			listow.setDownExec(31);
+			mim.addWindowFull(listow);
+			mim.removeWindowFull("Add Building");
+		}
+		else if (exec == 22) {														// Add building info to city building category window.
+			// Splits the additional string into the necessary parts.
+			String windowTitle = add.split("\\|")[0];
+			String buildingType = add.split("\\|")[1];
+
+			// Retrieves the window and building specified in the additional string.
+			listow = (ListWindow) mim.getWindow(windowTitle);
+			bldg = buildDex.getBuilding(buildingType);
+
+			// Begins preparing the text content.
+			cont = bldg.getType().toUpperCase() + "\n" + bldg.getCategory() + " Building\n \n";
+			String startingDescription = bldg.getDescription();
+			String formattedDescription = "";
+
+			// Splits the description over multiple lines if it is too long.
+			while (MyTextMetrics.getTextSize(startingDescription)[0] > listow.getWidth() + 20 - (listow.getWidth() - listow.getContentX())) {
+				startingDescription = "Description too long.";
+			}
+			formattedDescription += startingDescription;
+			cont += formattedDescription + "\n \n";
+
+			// Continues adding text to the content variable.
+			cont += "Max Health: " + bldg.getMaxHealth() + "\nTurns to Build: " + (bldg.getBuildTime() * -1) + "\n \n";
+			cont += "Stats: \n" + bldg.getAllStatsAsString() + "\n";
+			cont += "Blueprint: \n \n";
+
+			// Creates the images to display the building blueprint.
+			String bldgBlpt = bldg.getBlueprintAsString();
+			int blptX = listow.getX() + listow.getContentX() + InfoWindow.TOP_BAR_HEIGHT;
+			int blptY = listow.getY() + listow.getContentY() + (MyTextMetrics.getTextSize(cont)[1] * MyTextMetrics.getCountOf("\n", cont)) + InfoWindow.TOP_BAR_HEIGHT + 5;
+			listow.clearImages();
+			for (String line : bldgBlpt.split("\n")) {
+				for (String character : line.split("|")) {
+					if (character.equals("T")) {listow.addImage(blptX, blptY, 31);}
+					blptX += 15;
 				}
-				listow.fillGridList();
-				listow.setUpExec(30);
-				listow.setDownExec(31);
-				mim.addWindowFull(listow);
-				mim.removeWindowFull("Add Building");
-				break;
-			case 22:														// Add building info to city building category window.
+				blptX = listow.getX() + listow.getContentX() + InfoWindow.TOP_BAR_HEIGHT;
+				blptY += 15;
+			}
 
-				// Splits the addtional string into the neccessary parts.
-				String windowTitle = add.split("\\|")[0];
-				String buildingType = add.split("\\|")[1];
+			// Sets the content in the window.
+			listow.setContent(cont);
 
-				// Retrieves the window and building specified in the additional string.
-				listow = (ListWindow) mim.getWindow(windowTitle);
-				bldg = buildDex.getBuilding(buildingType);
+			// Edits the visibility of the Place Building button.
+			listow.getWindowButtons().get(0).setVisible(true);
+			listow.getWindowButtons().get(0).setAdditionalString(buildingType);
+			
+		}
+		else if (exec == 23) {												// Open city ordinances window.
+			mim.setMouseMode("Pointer");
+			// TODO: City ordinances window.
+		}
+		else if (exec == 24) {												// Open city info window.
+			mim.setMouseMode("Pointer");
+			// TODO: City info window.
+		}
+		else if (exec == 25) {												// Print buttons.
+			mim.debug("Buttons");
+		}
+		else if (exec == 26) { 												// Print windows.
+			mim.debug("Windows");
+		}
+		else if (exec == 27) {												// Up button in ListWindow.
+			listow = (ListWindow) mim.getWindow(add);
+			listow.decPageNumber();
+			listow.fillGridList();
+			listow.setDownVis(true);
+			listow.setUpVis(!listow.isAtMin());
+		}
+		else if (exec == 28) {												// Down button in ListWindow.
+			listow = (ListWindow) mim.getWindow(add);
+			listow.incPageNumber();
+			listow.fillGridList();
+			listow.setUpVis(true);
+			listow.setDownVis(!listow.isAtMax());
+		}														
+		else if (exec == 29) {												// Return button handling.
+			// Split execution string into window to open's exec code, window to open's add string, and the window to close's name.
+			String[] breakdown = add.split("\\|");
+			
+			if (DEBUG_TRACE) {System.out.println("RETURN BUTTON EXECUTION: " + breakdown[0] + ", " + breakdown[1] + ", " + breakdown[2] + ".");}
 
-				// Begins preparing the text content.
-				cont = bldg.getType().toUpperCase() + "\n" + bldg.getCategory() + " Building\n \n";
-				String startingDescription = bldg.getDescription();
-				String formattedDescription = "";
-
-				// Splits the description over multiple lines if it is too long.
-				while (MyTextMetrics.getTextSize(startingDescription)[0] > listow.getWidth() + 20 - (listow.getWidth() - listow.getContentX())) {
-					startingDescription = "Description too long.";
-				}
-				formattedDescription += startingDescription;
-				cont += formattedDescription + "\n \n";
-
-				// COntinues adding text to the content variable.
-				cont += "Max Health: " + bldg.getMaxHealth() + "\nTurns to Build: " + (bldg.getBuildTime() * -1) + "\n \n";
-				cont += "Stats: \n" + bldg.getAllStatsAsString() + "\n \n";
-				cont += "Blueprint: \n \n";
-
-				// Creates the images to display the building blueprint.
-				String bldgBlpt = bldg.getBlueprintAsString();
-				int blptX = listow.getX() + listow.getContentX() + InfoWindow.TOP_BAR_HEIGHT;
-				int blptY = listow.getY() + listow.getContentY() + (MyTextMetrics.getTextSize(cont)[1] * MyTextMetrics.getCountOf("\n", cont)) + InfoWindow.TOP_BAR_HEIGHT + 5;
-				listow.clearImages();
-				for (String line : bldgBlpt.split("\n")) {
-					for (String character : line.split("|")) {
-						if (character.equals("T")) {listow.addImage(blptX, blptY, 31);}
-						blptX += 15;
-					}
-					blptX = listow.getX() + listow.getContentX() + InfoWindow.TOP_BAR_HEIGHT;
-					blptY += 15;
-				}
-
-				// Sets the content in the window.
-				listow.setContent(cont);
-
-				// Edits the visibility of the Place Building button.
-				listow.getWindowButtons().get(0).setVisible(true);
-				listow.getWindowButtons().get(0).setAdditionalString(buildingType);
-
-				break;
-			case 23:														// Open city ordinances window.
-
-				break;
-			case 24:														// Open city info window.
-
-				break;
-			case 25:														// Print buttons.
-				mim.debug("Buttons");
-				break;
-			case 26:														// Print windows.
-				mim.debug("Windows");
-				break;
-			case 27:														// Up button in ListWindow.
-				listow = (ListWindow) mim.getWindow(add);
-				listow.decPageNumber();
-				listow.fillGridList();
-				listow.setDownVis(true);
-				listow.setUpVis(!listow.isAtMin());
-				break;
-			case 28:														// Down button in ListWindow.
-				listow = (ListWindow) mim.getWindow(add);
-				listow.incPageNumber();
-				listow.fillGridList();
-				listow.setUpVis(true);
-				listow.setDownVis(!listow.isAtMax());
-				break;
-			case 29:														// Return button handling.
-				
-				// Split execution string into windowto open's exec code, window to open's add string, and the window to close's name.
-				String[] breakdown = add.split("\\|");
-				
-				if (DEBUG_TRACE) {System.out.println("RETURN BUTTON EXECUTION: " + breakdown[0] + ", " + breakdown[1] + ", " + breakdown[2] + ".");}
-
-				// Opens the window to open.
-				buttonExecution(Integer.parseInt(breakdown[0]), breakdown[1]);
-				
-				// Closes the window to close.
-				mim.removeWindowFull(breakdown[2]);
-				break;
-			case 30:														// Up button in Add Building ListWindow.
-				listow = (ListWindow) mim.getWindow(add);
-				buttonExecution(27, add);
-				listow.setContent("Click on a button to select\na building.");
-				listow.getWindowButtons().get(0).setVisible(false);
-				listow.clearImages();
-				break;
-			case 31:														// Down button in Add Building ListWindow.
-				listow = (ListWindow) mim.getWindow(add);
-				buttonExecution(28, add);
-				listow.setContent("Click on a button to select\na building.");
-				listow.getWindowButtons().get(0).setVisible(false);
-				listow.clearImages();
-				break;
-			case 32:
-				mim.debug("Mouse");
-				break;
-		}    
+			// Opens the window to open.
+			buttonExecution(Integer.parseInt(breakdown[0]), breakdown[1]);
+			
+			// Closes the window to close.
+			mim.removeWindowFull(breakdown[2]);
+		}
+		else if (exec == 30) {												// Up button in Add Building ListWindow.
+			listow = (ListWindow) mim.getWindow(add);
+			buttonExecution(27, add);
+			listow.setContent("Click on a button to select\na building.");
+			listow.getWindowButtons().get(0).setVisible(false);
+			listow.clearImages();
+		}
+		else if (exec == 31) {												// Down button in Add Building ListWindow.
+			listow = (ListWindow) mim.getWindow(add);
+			buttonExecution(28, add);
+			listow.setContent("Click on a button to select\na building.");
+			listow.getWindowButtons().get(0).setVisible(false);
+			listow.clearImages();
+		}
+		else if (exec == 32) { 												// Mouse display.
+			mim.debug("Mouse");
+		}
+		else if (exec == 33) {												// BuildDex dumper.
+			// TODO: Dump BuildDex.
+			System.out.println("Not done yet!");
+		}
 
 	}
 

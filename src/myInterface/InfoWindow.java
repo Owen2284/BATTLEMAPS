@@ -32,7 +32,9 @@ public class InfoWindow implements MyWindow {
 
 	protected int animationWidth = 0;
 	protected int animationHeight = 0;
-
+	protected int animationSpeed = 1;
+	protected boolean isMoving = false;
+	
 	protected int lineSpacing = 0;
 
 	protected ArrayList<ImageToken> windowImages = new ArrayList<ImageToken>();
@@ -73,6 +75,7 @@ public class InfoWindow implements MyWindow {
 	public ArrayList<Button> getWindowButtons() {return this.windowButtons;}
 	public Button getCloseButton() {return this.closeButton;}
 
+	@SuppressWarnings("unchecked")
 	public ArrayList<Button> getAllButtons() {
 		ArrayList<Button> allButtons = (ArrayList<Button>)this.windowButtons.clone();
 		allButtons.add(closeButton);
@@ -110,6 +113,7 @@ public class InfoWindow implements MyWindow {
 	}
 
 	public boolean isOverTopBar(Point p) {return this.getTopBarBounds().contains(p);}
+	public boolean isMoving() {return this.isMoving;}
 
 	// Mutators
 	public void setX(int in) {this.x = in;}
@@ -122,7 +126,11 @@ public class InfoWindow implements MyWindow {
 	public void setContentX(int in) {this.contentX = in;}
 	public void setContentY(int in) {this.contentY = in;}
 	public void setLineSpacing(int in) {this.lineSpacing = in;}
-	public void addWindowButton(Button in) {this.windowButtons.add(in);}
+	public void addWindowButton(Button in) {
+		in.setOwnerX(in.getOwnerX());
+		in.setOwnerY(in.getOwnerY());
+		this.windowButtons.add(in);
+	}
 
 	public void addReturnButton(int exec, String add) {
 		this.returnButton.setExecutionNumber(29);
@@ -131,9 +139,10 @@ public class InfoWindow implements MyWindow {
 		this.returnButton.setVisible(true);
 	}
 
-	public void removeAllButtons() {this.closeButton = null; this.windowButtons.clear();}
+	public void removeAllButtons() {this.closeButton = null; this.returnButton = null; this.windowButtons.clear();}
 	public void addImage(int inX, int inY, int inImg) {this.windowImages.add(new ImageToken(inX, inY, inImg));}
 	public void clearImages() {this.windowImages.clear();}
+	public void setMoving(boolean in) {this.isMoving = in;}
 
 	// Graphical methods
 	public void draw(Graphics g, Board b, ImageLibrary il) {
@@ -148,7 +157,7 @@ public class InfoWindow implements MyWindow {
 		if (this.getAnimationStatus().equals("Open")) {
 
 			// Draws top bar.
-			g.drawRect(this.x, this.y, this.animationWidth - TOP_BAR_HEIGHT, TOP_BAR_HEIGHT);
+			g.drawRect(this.x, this.y, this.animationWidth, TOP_BAR_HEIGHT);
 			g.drawString(this.title, this.x + (this.animationWidth / 2) - (this.title.length() * 4), this.y + (TOP_BAR_HEIGHT / 2) + 5);
 
 			// Draws content.
@@ -174,32 +183,54 @@ public class InfoWindow implements MyWindow {
 	public void update(Point p) {
 
 		// Code that handles the expanding and contracting of a window.
-		if (open) {
-			if (animationWidth <= width) {
-				animationWidth += (width / 20) + 1;
-				if (animationWidth > width) {
-					animationWidth = width;
+		if (this.open) {
+			if (this.animationWidth <= this.width) {
+				this.animationWidth += ((this.width / 20) * this.animationSpeed) + 1;
+				if (this.animationWidth > this.width) {
+					this.animationWidth = this.width;
 				}
 			}
-			if (animationHeight <= height) {
-				animationHeight += (height / 20) + 1;
-				if (animationHeight > height) {
-					animationHeight = height;
+			if (this.animationHeight <= this.height) {
+				this.animationHeight += ((this.height / 20) * this.animationSpeed) + 1;
+				if (this.animationHeight > this.height) {
+					this.animationHeight = this.height;
 				}
 			}
 		} else {
-			if (animationWidth >= 0) {
-				animationWidth -= (width / 20) + 1;
-				if (animationWidth < width) {
-					animationWidth = 0;
+			if (this.animationWidth >= 0) {
+				this.animationWidth -= ((this.width / 20) * this.animationSpeed) + 1;
+				if (this.animationWidth < 0) {
+					this.animationWidth = 0;
 				}
 			}
-			if (animationHeight >= 0) {
-				animationHeight -= (height / 20) + 1;
-				if (animationHeight < 0) {
-					animationHeight = 0;
+			if (this.animationHeight >= 0) {
+				this.animationHeight -= ((this.height / 20) * this.animationSpeed) + 1;
+				if (this.animationHeight < 0) {
+					this.animationHeight = 0;
 				}
 			}
+		}
+		
+		// Code for updating window buttons.
+		for (int i = 0; i < windowButtons.size(); ++i) {
+			// Sets buttons coordinates and dimensions appropriately.
+			Button curr = windowButtons.get(i);
+			if (this.open) {	
+				curr.setX(this.x + curr.getOwnerX());
+				curr.setY(this.y + TOP_BAR_HEIGHT + curr.getOwnerY());
+			}
+		}
+		
+		// Code for moving close button.
+		if (this.closeButton != null) {
+			this.closeButton.setX(this.width - TOP_BAR_HEIGHT + this.x);
+			this.closeButton.setY(this.y);
+		}
+		
+		// Code for moving return button.
+		if (this.returnButton != null) {
+			this.returnButton.setX(this.x);
+			this.returnButton.setY(this.y);
 		}
 
 	}
