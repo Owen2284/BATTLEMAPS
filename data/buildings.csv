@@ -16,9 +16,27 @@ Bowling Alley,Happiness,A ten-lane bowling venue for children and adults alike.,
 Cinema,Happiness,A multi-screen film venue| with cheap popcorn and drinks.,2x2:1111,3,40,0,1,0,1,0,0,0,5
 Café,Happiness,A street-side café| serving fresh croissants and coffee.,2x3:111100,3,30,0,0,1,1,1,0,0,6
 Restaurant,Happiness,A luxury restaurant| with different menus for each continent of thr world.,2x3:111110,4,30,0,0,0,1,1,0,0,8
-Military Buildings (Barracks:Tough Buildings:Airforce),Military,N/A,1x1:1,3,100,10,0,0,0,0,0,-5,0
-Technology Building (Labs:Media Stations:Secretive Buildings),Technology,N/A,1x1:1,3,100,0,10,0,0,0,0,-5,0
-Nature Building (Parks:Forests:Recycling),Nature,N/A,1x1:1,3,100,0,0,10,0,0,0,-5,0
-Diplomacy Building (Embassies:Airports:Cultural Buildings),Diplomacy,N/A,1x1:1,3,100,0,0,0,10,0,0,-5,0
-Commerce Building (Shops:Offices:Trading Buildings),Commerce,N/A,1x1:1,3,100,0,0,0,0,10,0,-5,0
-Industry Building (Landfills:Factories:Farms),Industry,N/A,1x1:1,3,100,0,0,0,0,0,10,-5,0
+Artillery Station,Military,-,1x1:1,3,50,0,0,0,0,0,0,0,0
+Watch Tower,Military,-,1x1:1,3,40,0,0,0,0,0,0,0,0
+Barracks,Military,-,1x2:11,4,70,0,0,0,0,0,0,0,0
+Munitions Depo,Military,-,2x2:1111,5,80,0,0,0,0,0,0,0,0
+Airfield,Military,-,2x4:11111111,6,90,0,0,0,0,0,0,0,0
+Broadcasting Tower,Technology,-,1x1:1,2,20,0,0,0,0,0,0,0,0
+School,Technology,-,1x2:11,3,30,0,0,0,0,0,0,0,0
+University,Technology,-,2x3:111111,4,40,0,0,0,0,0,0,0,0
+Observatory,Technology,-,2x2:1110,4,40,0,0,0,0,0,0,0,0
+Research Institute,Technology,-,3x3:111111101,5,30,0,0,0,0,0,0,0,0
+Park,Nature,-,2x2:1111,2,20,0,0,0,0,0,0,0,0
+Zoo,Nature,-,3x3:011111111,4,30,0,0,0,0,0,0,0,0
+Recycling Centre,Nature,-,3x2::111111,4,30,0,0,0,0,0,0,0,0
+Hospital,Diplomacy,-,4x2:11111111,3,60,0,0,0,0,0,0,0,0
+Embassy,Diplomacy,-,2x3:111101,3,80,0,0,0,0,0,0,0,0
+Parliament,Diplomacy,-,4x3:111111110110,4,90,0,0,0,0,0,0,0,0
+Airport,Diplomacy,-,3x4:111111111111,6,60,0,0,0,0,0,0,0,0
+Shopping Centre,Commerce,-,4x3:111101110011,4,40,0,0,0,0,0,0,0,0
+Business Tower,Commerce,-,2x2:1111,4,40,0,0,0,0,0,0,0,0
+Bank,Commerce,-,3x2:111010,4,50,0,0,0,0,0,0,0,0
+Trade Union,Commerce,-,3x3:111100110,5,40,0,0,0,0,0,0,0,0
+Farm,Industry,-,3x3:111111111,3,20,0,0,0,0,0,0,0,0
+Factory,Industry,-,3x2:011111,4,50,0,0,0,0,0,0,0,0
+Landfill,Industry,-,4x4:1111111111111111,4,60,0,0,0,0,0,0,0,0

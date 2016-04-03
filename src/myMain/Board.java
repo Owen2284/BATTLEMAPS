@@ -47,6 +47,8 @@ import javax.swing.SwingUtilities;
 
 public class Board extends JPanel implements ActionListener, MouseListener {
 
+	private static final long serialVersionUID = 7198933434060052457L;
+	
 	// Variables
 	private Timer timer;
 	private int windowWidth;
@@ -63,24 +65,24 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 	private String state = "";
 	private MyInterfaceManager mim;
 	private HoverWindow mouseWindow = new HoverWindow(0,0);
-	
-	// TODO: Move into game.
-	private int playerWhoseGoItIs = 1;										
 
 	// Constants
 	private final String GAMENAME = "BATTLEMAPS";
 	private final String VERSIONNUMBER = "InDev version 0.2";
 	private final String VERSIONGOAL = "The City Update";
 	private final String VERSIONINFO = "This version of the game is currently focussed on inplementing the functionality of the city screen.";
-	private final String VERSIONCOMPLETION = "20%";
+	private final String VERSIONCOMPLETION = "50%";
 	private final int BORDER_SIZE = 40;
 	private final int DELAY = 15;
+	private final int ERRORX = 0;
+	private final int ERRORY = 40;
+	
 	public static int WINDOW_CENTER_X;
 	public static final String DEFAULT_FONT_TYPE = "Trebuchet MS";
 	public static final int DEFAULT_FONT_ATT = Font.PLAIN;
 	public static final int DEFAULT_FONT_SIZE = 14; 
 	public static final Font DEFAULT_FONT = new Font(DEFAULT_FONT_TYPE, DEFAULT_FONT_ATT, DEFAULT_FONT_SIZE);
-
+	
 	// Debug constants
 	public static final boolean DEBUG_EVENTS = true;			// Reports mouse clicks, screen changing, etc.
 	public static final boolean DEBUG_TRACE = true;				// Displays data about variables and data structures.
@@ -113,7 +115,7 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 		// Checks for debug screen choice.
 		if (DEBUG_MAPS) {
 			state = "DEBUG";
-			mim.setInterface(state, game, playerWhoseGoItIs);
+			mim.setInterface(state, game);
 		} else {
 			// Sets up the game state.
 			game = initGame("Normal");
@@ -122,7 +124,7 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 			state = "Map";
 
 			// Sets up buttons.
-			mim.setInterface(state, game, playerWhoseGoItIs);
+			mim.setInterface(state, game);
 		}
 
 		// Sorts out hover window.
@@ -667,7 +669,7 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 
 				if (cityBounds.contains(mim.getMousePos()) && e.getButton() == MouseEvent.BUTTON1) {
 					state = "City-" + currentCity.getName();
-					mim.setInterface(state, game, playerWhoseGoItIs);
+					mim.setInterface(state, game);
 				}
 
 			}
@@ -707,13 +709,13 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 									mim.setMouseMode("Move");
 								}
 							} else {
-								mim.addWindow(new ErrorWindow("ERROR", 0, 40, "Building overlaps with other building(s)."));
+								mim.addWindow(new ErrorWindow("ERROR", ERRORX, ERRORY, "Building overlaps with other building(s)."));
 							}
 						} else {
-							mim.addWindow(new ErrorWindow("ERROR", 0, 40, "Building is partially outside of the city grid."));
+							mim.addWindow(new ErrorWindow("ERROR", ERRORX, ERRORY, "Building is partially outside of the city grid."));
 						}
 					} else {
-						mim.addWindow(new ErrorWindow("ERROR", 0, 40, "Building is off of the city grid."));
+						mim.addWindow(new ErrorWindow("ERROR", ERRORX, ERRORY, "Building is off of the city grid."));
 					}
 				}
 				// Run checks for building movement and deletion selection.
@@ -778,25 +780,18 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 		} 
 		else if (exec == 1) {												// Go to map action.
 			state = "Map"; 
-			mim.setInterface(state, game, playerWhoseGoItIs);
+			mim.setInterface(state, game);
 		}
 		else if (exec == 2) {												// Go to city action. 
 			state = "City-" + add; 
-			mim.setInterface(state, game, playerWhoseGoItIs);
+			mim.setInterface(state, game);
 		}
 		else if (exec == 3) {												// Go to menu action.
 			state = "Menu-" + add; 
-			mim.setInterface(state, game, playerWhoseGoItIs);
+			mim.setInterface(state, game);
 		}
 		else if (exec == 4) { 												// End turn action.
-			// Move to the next player.
-			playerWhoseGoItIs += 1;
-			if (playerWhoseGoItIs > game.getPlayers().size()) {
-				// Other end of turn code.
-				// Increment game turn.
-				game.incTurn();
-				playerWhoseGoItIs = 1;
-			}
+			game.nextPlayer();
 		}
 		else if (exec == 5)	{												// View players.
 			if (!mim.checkWindowsFor("Player Info")) {
@@ -923,7 +918,7 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 			// Sets up the game state.
 			game = initGame(add);
 			state = "Map";
-			mim.setInterface(state, game, playerWhoseGoItIs);
+			mim.setInterface(state, game);
 			mim.removeWindowFull("DEBUG_LAUNCH");
 		}
 		else if (exec == 13) {												// Toggles map between optimised and initial routes.
@@ -939,7 +934,7 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 		}
 		else if (exec == 15) {												// Jump to debug start screen.
 			state = "DEBUG"; 
-			mim.setInterface(state, game, playerWhoseGoItIs); 
+			mim.setInterface(state, game); 
 		}														
 		else if (exec == 16) {												// Open city add building menu.
 			
@@ -979,6 +974,8 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 				mim.setMouseMode("Build");			
 				mim.setMouseBuilding(buildDex.getBuilding(add));
 				mim.removeWindowMaxFull("Add Building", 0, 12);
+			} else {
+				mim.addWindowSwap(new ErrorWindow("ERROR", ERRORX, ERRORY, "No room in the city for the building."));
 			}
 		}
 		else if (exec == 18) { 												// Activate city move building mode.
@@ -989,6 +986,8 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 			// Checks building count.
 			if (thisCity.getBuildings().size() > 0) {
 				mim.setMouseMode("Move");
+			} else {
+				mim.addWindowSwap(new ErrorWindow("ERROR", ERRORX, ERRORY, "No buildings to move."));
 			}
 		}
 		else if (exec == 19) {												// Activate city remove building mode.
@@ -999,6 +998,8 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 			// Checks building count.
 			if (thisCity.getBuildings().size() > 0) {
 				mim.setMouseMode("Destroy");
+			} else {
+				mim.addWindowSwap(new ErrorWindow("ERROR", ERRORX, ERRORY, "No buildings to remove."));
 			}
 		}
 		else if (exec == 20) { 												// Open city rename city window.
@@ -1063,15 +1064,15 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 
 			// Creates the images to display the building blueprint.
 			String bldgBlpt = bldg.getBlueprintAsString();
-			int blptX = listow.getX() + listow.getContentX() + InfoWindow.TOP_BAR_HEIGHT;
-			int blptY = listow.getY() + listow.getContentY() + (MyTextMetrics.getTextSize(cont)[1] * MyTextMetrics.getCountOf("\n", cont)) + InfoWindow.TOP_BAR_HEIGHT + 5;
+			int blptX = listow.getContentX() + InfoWindow.TOP_BAR_HEIGHT;
+			int blptY = listow.getContentY() + (MyTextMetrics.getTextSize(cont)[1] * MyTextMetrics.getCountOf("\n", cont)) + 5;
 			listow.clearImages();
 			for (String line : bldgBlpt.split("\n")) {
 				for (String character : line.split("|")) {
 					if (character.equals("T")) {listow.addImage(blptX, blptY, 31);}
 					blptX += 15;
 				}
-				blptX = listow.getX() + listow.getContentX() + InfoWindow.TOP_BAR_HEIGHT;
+				blptX = listow.getContentX() + InfoWindow.TOP_BAR_HEIGHT;
 				blptY += 15;
 			}
 

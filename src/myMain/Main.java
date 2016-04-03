@@ -5,7 +5,9 @@ import javax.swing.JFrame;
 
 public class Main extends JFrame {
 
-    public Main() {
+	private static final long serialVersionUID = 6282844503926506907L;
+
+	public Main() {
         
         initUI();
 

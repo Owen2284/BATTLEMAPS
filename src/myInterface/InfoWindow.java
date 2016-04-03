@@ -35,6 +35,8 @@ public class InfoWindow implements MyWindow {
 	protected int animationSpeed = 1;
 	protected boolean isMoving = false;
 	
+	protected Color topBarColor = Color.WHITE;
+	
 	protected int lineSpacing = 0;
 
 	protected ArrayList<ImageToken> windowImages = new ArrayList<ImageToken>();
@@ -127,6 +129,7 @@ public class InfoWindow implements MyWindow {
 	public void setContentY(int in) {this.contentY = in;}
 	public void setLineSpacing(int in) {this.lineSpacing = in;}
 	public void addWindowButton(Button in) {
+		in.setOwner("Window");
 		in.setOwnerX(in.getOwnerX());
 		in.setOwnerY(in.getOwnerY());
 		this.windowButtons.add(in);
@@ -157,6 +160,9 @@ public class InfoWindow implements MyWindow {
 		if (this.getAnimationStatus().equals("Open")) {
 
 			// Draws top bar.
+			g.setColor(this.topBarColor);
+			g.fillRect(this.x, this.y, this.animationWidth, TOP_BAR_HEIGHT);
+			g.setColor(Color.BLACK);			
 			g.drawRect(this.x, this.y, this.animationWidth, TOP_BAR_HEIGHT);
 			g.drawString(this.title, this.x + (this.animationWidth / 2) - (this.title.length() * 4), this.y + (TOP_BAR_HEIGHT / 2) + 5);
 
@@ -213,11 +219,21 @@ public class InfoWindow implements MyWindow {
 		
 		// Code for updating window buttons.
 		for (int i = 0; i < windowButtons.size(); ++i) {
-			// Sets buttons coordinates and dimensions appropriately.
+			// Sets buttons coordinates appropriately.
 			Button curr = windowButtons.get(i);
 			if (this.open) {	
 				curr.setX(this.x + curr.getOwnerX());
 				curr.setY(this.y + TOP_BAR_HEIGHT + curr.getOwnerY());
+			}
+		}
+		
+		// Code for updating images.
+		for (int i = 0; i < windowImages.size(); ++i) {
+			// Sets image coordinates appropriately.
+			ImageToken curr = windowImages.get(i);
+			if (this.open) {	
+				curr.setX(this.x + curr.getInitX());
+				curr.setY(this.y + TOP_BAR_HEIGHT + curr.getInitY());
 			}
 		}
 		

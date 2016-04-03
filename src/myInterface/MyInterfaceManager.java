@@ -204,7 +204,7 @@ public class MyInterfaceManager {
 		}
 	}
 
-	public void setInterface(String in, Game game, int player_whose_go_it_is) {
+	public void setInterface(String in, Game game) {
 
 		// Clears lists.
 		this.buttons.clear();
@@ -265,21 +265,17 @@ public class MyInterfaceManager {
 			City the_city = game.getCityByName(in.substring(5));
 
 			// Back to map button.
-			Button btm = new Button(windowWidth - 192, windowHeight - 36);
-			btm.setID("Back to Map");
-			btm.setExecutionNumber(1);
-			btm.setButtonText("Back to Map");
-			buttons.add(btm);
+			buttons.add(new Button(windowWidth - 192, windowHeight - 36, "CityBackToMap", "Back to Map", 1));
 
 			// City editing buttons.
-			if (game.getActivePlayer(player_whose_go_it_is).getID().equals(the_city.getOwner())) {
-				Button ab = new Button(770, 20, windowWidth - 790, 40, "City_Build", "Add Building", 16); buttons.add(ab);
-				Button mb = new Button(770, 90, windowWidth - 790, 40, "City_Move", "Move Building", 18); buttons.add(mb);
-				Button db = new Button(770, 160, windowWidth - 790, 40, "City_Remove", "Remove Building", 19); buttons.add(db);
-				Button co = new Button(770, 290, windowWidth - 790, 40, "City_Ordinances", "City Ordinances", 23); buttons.add(co);
-				Button rc = new Button(770, 400, windowWidth - 790, 40, "City_Rename", "Rename City", 20); buttons.add(rc);
+			if (game.getActivePlayer().getID().equals(the_city.getOwner())) {
+				buttons.add(new Button(770, 20, windowWidth - 790, 40, "City_Build", "Add Building", 16));
+				buttons.add(new Button(770, 90, windowWidth - 790, 40, "City_Move", "Move Building", 18));
+				buttons.add(new Button(770, 160, windowWidth - 790, 40, "City_Remove", "Remove Building", 19));
+				buttons.add(new Button(770, 290, windowWidth - 790, 40, "City_Ordinances", "City Ordinances", 23));
+				buttons.add(new Button(770, 400, windowWidth - 790, 40, "City_Rename", "Rename City", 20));
 			}
-			Button ci = new Button(770, 470, windowWidth - 790, 40, "City_Info", "View City Info", 24); buttons.add(ci);
+			buttons.add(new Button(770, 470, windowWidth - 790, 40, "City_Info", "View City Info", 24));
 
 		} else if (in.substring(0,4).equals("Menu")) {
 

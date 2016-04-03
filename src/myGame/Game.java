@@ -16,6 +16,7 @@ public class Game {
 	private ArrayList<Player> players = new ArrayList<Player>();
 	private String victory = "Conquer";
 	private int turnNumber = 0;
+	private int playerWhoseGoItIs = 1;
 
 	// Base constructor.
 	public Game() {
@@ -167,7 +168,7 @@ public class Game {
 
 	}
 
-	public Player getActivePlayer(int player_whose_turn_it_is) {return players.get(player_whose_turn_it_is - 1);}
+	public Player getActivePlayer() {return players.get(this.playerWhoseGoItIs - 1);}
 	public Map getMap() {return this.map;}
 	public String getVictoryCondition() {return this.victory;}
 	public int getTurn() {return this.turnNumber;}
@@ -195,6 +196,17 @@ public class Game {
 	public void setTurn(int inTurn) {this.turnNumber = inTurn;}
 	public void incTurn() {this.turnNumber += 1;}
 	public void decTurn() {this.turnNumber -= 1;}
+	public void nextPlayer() {
+		// Move to the next player.
+		playerWhoseGoItIs += 1;
+		// TODO: Check if player is still in game.
+		// Increment turn counter if all players have acted.
+		if (playerWhoseGoItIs > this.players.size()) {
+			// TODO: Other end of turn code.
+			this.incTurn();
+			playerWhoseGoItIs = 1;
+		}
+	}
 
 	// Map super-mutators.
 	public void addCity(City inCity) {this.map.addCity(inCity);}
