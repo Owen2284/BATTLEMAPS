@@ -64,6 +64,7 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 
 	private String state = "";
 	private MyInterfaceManager mim;
+	private HoverWindow mouseWindow = new HoverWindow(0,0);
 
 	// Constants
 	private final String GAMENAME = "BATTLEMAPS";

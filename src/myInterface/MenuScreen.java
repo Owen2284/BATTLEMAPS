@@ -5,10 +5,12 @@ import java.awt.Graphics;
 import myGraphics.ImageLibrary;
 import myMain.Board;
 
-public class MenuScreen implements MyScreen {
-
-	public MenuScreen() {
-		// TODO Auto-generated constructor stub
+public class MenuScreen extends MyScreen {
+	
+	public MenuScreen(int inWidth, int inHeight) {
+		this.title = "Menu Screen";
+		this.width = inWidth;
+		this.height = inHeight;
 	}
 
 	@Override

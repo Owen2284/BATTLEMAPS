@@ -113,8 +113,8 @@ public class HoverWindow implements MyWindow {
 	}
 
 	public void update(Point p) {
-		x = p.x + 5;
-		y = p.y + 5;
+		this.x = p.x + 5;
+		this.y = p.y + 5;
 		if (active) {
 			if (animation_width <= width) {
 				animation_width += (width / 20) + 1;

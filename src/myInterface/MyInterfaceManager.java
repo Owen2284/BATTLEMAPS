@@ -33,6 +33,7 @@ public class MyInterfaceManager {
 	private String mouseMode = "Pointer";
 	private boolean mouseHeld = false;
 	private Building mouseBuilding;
+	private HoverWindow mouseWindow = new HoverWindow(0,0);
 
 	// Constructor
 	public MyInterfaceManager(int wid, int hei, ImageLibrary imgs) {
@@ -119,6 +120,7 @@ public class MyInterfaceManager {
 	public void setMousePos(Point in) {this.prevMousePos = this.mousePos; this.mousePos = in;}
 	public void setMouseMode(String in) {this.mouseMode = in; this.mouseBuilding = null;}
 	public void setMouseBuilding(Building in) {this.mouseBuilding = in;}
+	public void setMouseWindow(HoverWindow in) {this.mouseWindow = in;}
 	public void addWindow(InfoWindow window) {
 		if (!checkWindowsFor(window.getTitle())) {windows.add(window);}
 	}
@@ -317,7 +319,7 @@ public class MyInterfaceManager {
 		this.drawButtons(g, "Basic", true);
 		this.drawWindows(g, b);
 		this.drawMouse(g, b);
-		// Mouse window		
+		this.drawMouseWindow(g, b);
 	} 
 
 	public void drawButtons(Graphics g, String type, boolean draw_shadows) {
@@ -355,6 +357,9 @@ public class MyInterfaceManager {
 
 	public void drawWindows(Graphics g, Board b) {
 
+		// Draws mouse hover window.
+		if (mouseWindow.isOpen()) {mouseWindow.draw(g, b, il);}
+		
 		// Loops through all windows.
 		for (InfoWindow window : windows) {
 
@@ -382,9 +387,13 @@ public class MyInterfaceManager {
 			case "Destroy": mouse_img=4; break;
 		}
 
-
 		// Draws the mouse
 		g.drawImage(il.getImage(mouse_img), (int) mousePos.getX(), (int) mousePos.getY(), the_board);
+
+	}
+	
+	public void drawMouseWindow(Graphics g, Board b) {
+		this.mouseWindow.draw(g, b, il);
 	}
 
 	// Updaters

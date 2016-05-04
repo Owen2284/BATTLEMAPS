@@ -5,10 +5,12 @@ import java.awt.Graphics;
 import myGraphics.ImageLibrary;
 import myMain.Board;
 
-public class CityScreen implements MyScreen {
-
-	public CityScreen() {
-		// TODO Auto-generated constructor stub
+public class CityScreen extends MyScreen {
+	
+	public CityScreen(int inWidth, int inHeight) {
+		this.title = "City Screen";
+		this.width = inWidth;
+		this.height = inHeight;
 	}
 
 	@Override
