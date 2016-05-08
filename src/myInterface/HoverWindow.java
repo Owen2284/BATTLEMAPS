@@ -108,14 +108,14 @@ public class HoverWindow implements MyWindow {
 		g.setColor(Color.BLACK);
 		g.drawRect(this.x, this.y, this.animation_width, this.animation_height);
 		if (this.getAnimationStatus().equals("Open")) {
-			g.drawString(this.content, this.x + (this.width / 2) - (MyTextMetrics.getTextSize("View Player")[0] / 2) + 5, this.y + 15);
+			g.drawString(this.content, this.x + (this.width / 2) - (MyTextMetrics.getTextSize(this.content)[0] / 2) + 5, this.y + 15);
 		}
 	}
 
 	public void update(Point p) {
 		this.x = p.x + 5;
 		this.y = p.y + 5;
-		if (active) {
+		if (open) {
 			if (animation_width <= width) {
 				animation_width += (width / 20) + 1;
 				if (animation_width > width) {
@@ -128,7 +128,21 @@ public class HoverWindow implements MyWindow {
 					animation_height = height;
 				}
 			}
+		} else {
+			if (animation_width >= 0) {
+				animation_width -= (width / 20) + 1;
+				if (animation_width < 0) {
+					animation_width = 0;
+				}
+			}
+			if (animation_height >= 0) {
+				animation_height -= (height / 20) + 1;
+				if (animation_height < 0) {
+					animation_height = 0;
+				}
+			}
 		}
+		
 	}
 
 	public void close() {

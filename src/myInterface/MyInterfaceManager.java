@@ -89,6 +89,8 @@ public class MyInterfaceManager {
 		diffs[1] = this.mousePos.y - this.prevMousePos.y;
 		return diffs;
 	}
+	
+	public HoverWindow getMouseWindow() {return this.mouseWindow;}
 
 	public Building getMouseBuilding() {return this.mouseBuilding;}
 
@@ -441,6 +443,37 @@ public class MyInterfaceManager {
 			}
 		}
 				
+	}
+	
+	public void updateHoverWindow(boolean stillHovered) {
+		
+		if (!stillHovered) {
+			this.mouseWindow.setActive(false);
+			this.mouseWindow.setOpen(false);
+		} else {
+			// Sorts out the window if there is a hover.
+			if (this.mouseWindow.isOpen()) {
+				if ((this.mouseWindow.getX() + this.mouseWindow.getWidth()) > windowWidth) {
+					this.mouseWindow.setX(windowWidth - this.mouseWindow.getWidth());
+				}
+				if ((this.mouseWindow.getY() + this.mouseWindow.getHeight()) > windowHeight - 40) {
+					this.mouseWindow.setY(windowHeight - this.mouseWindow.getHeight() - 40);
+				}                
+			} else {
+				this.mouseWindow = new HoverWindow(this.mousePos.x, this.mousePos.y);
+				this.mouseWindow.setActive(true);
+				this.mouseWindow.update(mousePos);
+				if ((this.mouseWindow.getX() + this.mouseWindow.getWidth()) > windowWidth) {
+					this.mouseWindow.setX(windowWidth - this.mouseWindow.getWidth());
+				}
+				if ((this.mouseWindow.getY() + this.mouseWindow.getHeight()) > windowHeight - 40) {
+					this.mouseWindow.setY(windowHeight - this.mouseWindow.getHeight() - 40);
+				}
+			}
+		}
+		
+		this.mouseWindow.update(this.mousePos);
+		
 	}
 
 	// MouseListener methods.

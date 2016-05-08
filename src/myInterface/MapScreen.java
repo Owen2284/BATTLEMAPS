@@ -10,25 +10,27 @@ import myGame.Game;
 import myGame.Map;
 import myGame.Player;
 import myGame.Route;
-import myGraphics.ImageLibrary;
 import myMain.Board;
 
 public class MapScreen extends MyScreen {
-	
-	private Game game;
 
-	public MapScreen(int inWidth, int inHeight, Game inGame) {
+	public MapScreen(Board b, int inWidth, int inHeight) {
+		super(b);
 		this.title = "Map Screen";
 		this.width = inWidth;
 		this.height = inHeight;
-		this.game = inGame;
+		this.init();
+	}
+	
+	public MapScreen(Board b) {
+		super(b);
+		this.title = "Map Screen";
+		this.width = b.windowWidth;
+		this.height = b.windowHeight;
 	}
 
-	public String getTitle() {return title;}
-	public void setTitle(String title) {this.title = title;}
-
 	@Override
-	public void act(Point p) {
+	public void act() {
 		
 		// Initialisation
 		Map tempMap = this.game.getMap();
@@ -44,45 +46,20 @@ public class MapScreen extends MyScreen {
 
 			// Checks if city is being hovered over.
 			Rectangle cityBounds = currentCity.getBounds();
-			if (cityBounds.contains(p)) {
+			if (cityBounds.contains(mim.getMousePos())) {
 				stillHovered = true;
 				hoveredCity = currentCity.getName();
+				mim.getMouseWindow().setContent(hoveredCity);
 			}
 
 		}
-
-		// Closes mouse hover window if no hover is detected.
-		if (!stillHovered) {
-			mouseWindow.setActive(false);
-			mouseWindow.setOpen(false);
-		} else {
-			// Sorts out the window if there is a hover.
-			if (mouseWindow.isOpen()) {
-				mouseWindow.update(mim.getMousePos());
-				if ((mouseWindow.getX() + mouseWindow.getWidth()) > windowWidth) {
-					mouseWindow.setX(windowWidth - mouseWindow.getWidth());
-				}
-				if ((mouseWindow.getY() + mouseWindow.getHeight()) > windowHeight - 40) {
-					mouseWindow.setY(windowHeight - mouseWindow.getHeight() - 40);
-				}                
-			} else {
-				mouseWindow = new HoverWindow(mim.getMousePos().x, mim.getMousePos().y);
-				mouseWindow.setActive(true);
-				mouseWindow.setContent(hoveredCity);
-				mouseWindow.update(mim.getMousePos());
-				if ((mouseWindow.getX() + mouseWindow.getWidth()) > windowWidth) {
-					mouseWindow.setX(windowWidth - mouseWindow.getWidth());
-				}
-				if ((mouseWindow.getY() + mouseWindow.getHeight()) > windowHeight - 40) {
-					mouseWindow.setY(windowHeight - mouseWindow.getHeight() - 40);
-				}
-			}
-		}
+		
+		mim.updateHoverWindow(stillHovered);
 		
 	}
 
 	@Override
-	public void draw(Graphics g, Board b, ImageLibrary il, MyInterfaceManager mim) {
+	public void draw(Graphics g) {
 		
 		// Draws map of all cities and routes.
 		Map tempMap = game.getMap();
@@ -177,11 +154,15 @@ public class MapScreen extends MyScreen {
 		g.drawString("Turn " + Integer.toString(game.getTurn()), 4, 16);
 		
 	}
+	
+	@Override
+	public void init() {
+		this.mim.setInterface(this.b.state, this.game);
+	}
 
 	@Override
 	public void transition() {
 		// TODO: Transition system.
-
 	}
 
 }

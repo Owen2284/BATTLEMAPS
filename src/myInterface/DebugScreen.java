@@ -1,14 +1,15 @@
 package myInterface;
 
+import java.awt.Color;
 import java.awt.Graphics;
 
 import myMain.Board;
 
-public class MenuScreen extends MyScreen {
-	
-	public MenuScreen(Board b, int inWidth, int inHeight) {
+public class DebugScreen extends MyScreen {
+
+	public DebugScreen(Board b, int inWidth, int inHeight) {
 		super(b);
-		this.title = "Menu Screen";
+		this.title = "Debug Screen";
 		this.width = inWidth;
 		this.height = inHeight;
 		this.init();
@@ -22,7 +23,8 @@ public class MenuScreen extends MyScreen {
 
 	@Override
 	public void draw(Graphics g) {
-		// TODO Auto-generated method stub
+		// Sets background color.
+		b.setBackground(Color.BLACK);
 	}
 	
 	@Override

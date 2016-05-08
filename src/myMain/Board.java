@@ -19,10 +19,11 @@ import myGraphics.ImageLibrary;
 import myInterface.Button;
 import myInterface.ErrorWindow;
 import myInterface.GridWindow;
-import myInterface.HoverWindow;
 import myInterface.InfoWindow;
 import myInterface.ListWindow;
+import myInterface.MapScreen;
 import myInterface.MyInterfaceManager;
+import myInterface.MyScreen;
 import myInterface.MyTextMetrics;
 
 import java.awt.Color;
@@ -51,19 +52,22 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 	
 	// Variables
 	private Timer timer;
-	private int windowWidth;
-	private int windowHeight;
+	public int windowWidth;
+	public int windowHeight;
 	
-	private long randomMapSeed = System.currentTimeMillis();
-	private Random randomEvents = new Random();
-	private Random randomTrivial = new Random();
-	private Random randomMap = new Random(randomMapSeed);
-	private Game game;
-	private BuildingFactory buildDex = new BuildingFactory();
-	private ImageLibrary il = new ImageLibrary(100);
-
-	private String state = "";
-	private MyInterfaceManager mim;
+	private MyScreen scr;
+	public MyInterfaceManager mim;
+	public ImageLibrary il = new ImageLibrary(100);
+	public Game game;
+	public BuildingFactory buildDex = new BuildingFactory();
+	
+	public long randomMapSeed = System.currentTimeMillis();
+	public Random randomEvents = new Random();
+	public Random randomTrivial = new Random();
+	public Random randomMap = new Random(randomMapSeed);
+	
+	public String state = "";
+	
 
 	// Constants
 	private final String GAMENAME = "BATTLEMAPS";
@@ -88,7 +92,7 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 	public static final boolean DEBUG_LAUNCH = true;			// Shows progress of game launch.
 	public static final boolean DEBUG_LOAD = true;				// Outputs status of files loaded into the game.
 	public static final boolean DEBUG_WINDOW = true;			// Allows opening of debug windows.
-	public static final boolean DEBUG_MAPS = true;				// Begins game on map select.
+	public static final boolean DEBUG_MAPS = false;				// Begins game on map select.
 	public static final boolean DEBUG_ERROR = true;				// Details any errors that occur at runtime.
 
 	// Construction and initialisation.
@@ -122,12 +126,12 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 			// Sets game state.
 			state = "Map";
 
+			// Creates and sets the screen.
+			scr = new MapScreen(this);
+			
 			// Sets up buttons.
 			mim.setInterface(state, game);
 		}
-
-		// Sorts out hover window.
-		mouseWindow.setOpen(false);
 
 	}
 	
@@ -398,11 +402,6 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 		g.drawRect(0, windowHeight - 40, windowWidth, windowHeight);
 		g.drawString("Turn " + Integer.toString(game.getTurn()), 4, 16);
 
-		// Draws mouse hover window.
-		if (mouseWindow.isOpen()) {
-			mouseWindow.draw(g, this, il);          
-		}
-
 	}
 
 	private void drawCity(Graphics g) {
@@ -565,37 +564,12 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 			if (cityBounds.contains(mim.getMousePos())) {
 				stillHovered = true;
 				hoveredCity = currentCity.getName();
+				mim.getMouseWindow().setContent(hoveredCity);
 			}
 
 		}
-
-		// Closes mouse hover window if no hover is detected.
-		if (!stillHovered) {
-			mouseWindow.setActive(false);
-			mouseWindow.setOpen(false);
-		} else {
-			// Sorts out the window if there is a hover.
-			if (mouseWindow.isOpen()) {
-				mouseWindow.update(mim.getMousePos());
-				if ((mouseWindow.getX() + mouseWindow.getWidth()) > windowWidth) {
-					mouseWindow.setX(windowWidth - mouseWindow.getWidth());
-				}
-				if ((mouseWindow.getY() + mouseWindow.getHeight()) > windowHeight - 40) {
-					mouseWindow.setY(windowHeight - mouseWindow.getHeight() - 40);
-				}                
-			} else {
-				mouseWindow = new HoverWindow(mim.getMousePos().x, mim.getMousePos().y);
-				mouseWindow.setActive(true);
-				mouseWindow.setContent(hoveredCity);
-				mouseWindow.update(mim.getMousePos());
-				if ((mouseWindow.getX() + mouseWindow.getWidth()) > windowWidth) {
-					mouseWindow.setX(windowWidth - mouseWindow.getWidth());
-				}
-				if ((mouseWindow.getY() + mouseWindow.getHeight()) > windowHeight - 40) {
-					mouseWindow.setY(windowHeight - mouseWindow.getHeight() - 40);
-				}
-			}
-		}
+		
+		mim.updateHoverWindow(stillHovered);
 
 	}
 
@@ -917,6 +891,8 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 			// Sets up the game state.
 			game = initGame(add);
 			state = "Map";
+			scr = new MapScreen(this);
+			scr.init();
 			mim.setInterface(state, game);
 			mim.removeWindowFull("DEBUG_LAUNCH");
 		}
