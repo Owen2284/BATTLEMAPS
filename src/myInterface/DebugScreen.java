@@ -14,6 +14,10 @@ public class DebugScreen extends MyScreen {
 		this.height = inHeight;
 		this.init();
 	}
+	
+	public DebugScreen(Board b) {
+		this(b, b.windowWidth, b.windowHeight);
+	}
 
 	@Override
 	public void act() {

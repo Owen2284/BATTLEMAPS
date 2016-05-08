@@ -216,6 +216,9 @@ public class MyInterfaceManager {
 		
 		// Reset mouse.
 		this.setMouseMode("Pointer");
+		
+		// Removes hover window.
+		this.mouseWindow = new HoverWindow(-200, -200);
 
 		if (Board.DEBUG_LAUNCH) {System.out.println("Initialising interface for " + in + ".");}
 

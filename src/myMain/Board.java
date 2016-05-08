@@ -7,21 +7,22 @@
 
 package myMain;
 
-import myGame.Block;
 import myGame.Building;
 import myGame.BuildingFactory;
 import myGame.City;
 import myGame.Game;
 import myGame.Map;
 import myGame.Player;
-import myGame.Route;
 import myGraphics.ImageLibrary;
 import myInterface.Button;
+import myInterface.CityScreen;
+import myInterface.DebugScreen;
 import myInterface.ErrorWindow;
 import myInterface.GridWindow;
 import myInterface.InfoWindow;
 import myInterface.ListWindow;
 import myInterface.MapScreen;
+import myInterface.MenuScreen;
 import myInterface.MyInterfaceManager;
 import myInterface.MyScreen;
 import myInterface.MyTextMetrics;
@@ -92,7 +93,7 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 	public static final boolean DEBUG_LAUNCH = true;			// Shows progress of game launch.
 	public static final boolean DEBUG_LOAD = true;				// Outputs status of files loaded into the game.
 	public static final boolean DEBUG_WINDOW = true;			// Allows opening of debug windows.
-	public static final boolean DEBUG_MAPS = false;				// Begins game on map select.
+	public static final boolean DEBUG_MAPS = true;				// Begins game on map select.
 	public static final boolean DEBUG_ERROR = true;				// Details any errors that occur at runtime.
 
 	// Construction and initialisation.
@@ -117,20 +118,13 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 
 		// Checks for debug screen choice.
 		if (DEBUG_MAPS) {
-			state = "DEBUG";
-			mim.setInterface(state, game);
+			switchScreen("DEBUG", "");
 		} else {
 			// Sets up the game state.
 			game = initGame("Normal");
 
-			// Sets game state.
-			state = "Map";
-
-			// Creates and sets the screen.
-			scr = new MapScreen(this);
-			
-			// Sets up buttons.
-			mim.setInterface(state, game);
+			// Sets game state and screen.
+			switchScreen("Map", "");
 		}
 
 	}
@@ -187,6 +181,7 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 
 	}
 
+	@SuppressWarnings("unused")
 	public Game initGame(String mapType) {
 
 		// Initialisation.
@@ -286,231 +281,14 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 		// Draws screen border.
 		g.drawRect(0,0,windowWidth-1,windowHeight-1);
 
-		// Draws appropriate screen.
-		if (state.equals("Map")) {
-			drawMap(g);
-		} else if (state.substring(0,4).equals("Menu")) {
-			drawMenu(g);
-		} else if (state.substring(0,4).equals("City")) {
-			drawCity(g);
-		} else if (state.equals("DEBUG")) {
-			drawDebug(g);
-		}
+		// Draws the screen.
+		scr.draw(g);
 
 		// Draws the MIM objects.
 		mim.drawAll(g, this);
 
-		// Ensures all stuff sync up on all platforms.
+		// Ensures all stuff syncs up on all platforms.
 		Toolkit.getDefaultToolkit().sync();
-
-	}
-
-	private void drawMenu(Graphics g) {
-		// Nothing
-	}
-
-	private void drawMap(Graphics g) {
-
-		// Draws map of all cities and routes.
-		Map tempMap = game.getMap();
-		ArrayList<City> tempCities = tempMap.getCities();
-		Color routeColor = new Color(255,255,255);
-		Color borderColor = new Color(0,0,0);
-		Color islandColor = new Color(0,200,0);
-
-		// Sets background color.
-		this.setBackground(Color.BLUE);
-
-		// Island drawing loop.
-		for (int i = 0; i < tempCities.size(); ++i) {
-			
-			// Gets the city being operated on.
-			City currentCity = tempCities.get(i);
-
-			// Draws island for the city.
-			g.setColor(islandColor);
-			g.fillOval(currentCity.getX() - City.CITY_SIZE / 2, currentCity.getY() - City.CITY_SIZE / 2, City.CITY_SIZE * 2, City.CITY_SIZE * 2);
-			g.setColor(borderColor);
-			g.drawOval(currentCity.getX() - City.CITY_SIZE / 2, currentCity.getY() - City.CITY_SIZE / 2, City.CITY_SIZE * 2, City.CITY_SIZE * 2);
-
-		}
-
-		// Route drawing loop.
-		g.setColor(routeColor);
-		for (int i = 0; i < tempCities.size(); ++i) {
-			
-			// Gets the city being operated on.
-			City currentCity = tempCities.get(i);
-
-			// Gets all routes from the selected city.
-			ArrayList<Route> tempRoutes = tempMap.getRoutesFromName(currentCity.getName());
-
-			// Draws all routes from the city.
-			for (int j = 0; j < tempRoutes.size(); ++j) {
-				Route currentRoute = tempRoutes.get(j);
-				City otherCity = tempMap.getCityByName(currentRoute.getDestination(currentCity.getName()));
-				g.drawLine(currentCity.getX() + City.CITY_SIZE / 2, currentCity.getY() + City.CITY_SIZE / 2, otherCity.getX() + City.CITY_SIZE / 2, otherCity.getY() + City.CITY_SIZE /2);
-			}
-
-		}
-
-		// Hover over drawing loop.
-		for (int i = 0; i < tempCities.size(); ++i) {
-			
-			// Gets the city being operated on.
-			City currentCity = tempCities.get(i);
-
-			// Determines the image to be used for the city.
-			Rectangle cityBounds = currentCity.getBounds();
-			if (cityBounds.contains(mim.getMousePos())) {
-				g.drawImage(il.getImage(21), currentCity.getX() - 2, currentCity.getY() - 2, this);
-				ArrayList<City> currentCityNeighbours = tempMap.getNeighboursOf(currentCity.getName());
-				for (City neighbour : currentCityNeighbours) {
-					g.drawImage(il.getImage(22), neighbour.getX() - 2, neighbour.getY() - 2, this);
-				}
-			}
-
-		}
-
-		// City drawing loop.
-		for (int i = 0; i < tempCities.size(); ++i) {
-			
-			// Gets the city being operated on.
-			City currentCity = tempCities.get(i);
-
-			// Determines the image to be used for the city.
-			int cityImage = 11;
-			if (!currentCity.getOwner().equals("NONE")){
-				ArrayList<Player> allPlayers = game.getPlayers();
-				for (int j = 0; j < allPlayers.size(); ++j) {
-					if (allPlayers.get(j).getID().equals(currentCity.getOwner())) {
-						cityImage += j + 1;
-					}
-				}
-			}
-
-			// Draws the city and it's name.
-			g.drawImage(il.getImage(cityImage), currentCity.getX(), currentCity.getY(), this);
-		}
-
-		// Draws GUI.
-		g.setColor(Color.WHITE);
-		g.fillRect(0, 0, 80, 21);
-		g.fillRect(0, windowHeight - 40, windowWidth, windowHeight);
-		g.setColor(Color.BLACK);
-		g.drawRect(0, 0, 80, 21);
-		g.drawRect(0, windowHeight - 40, windowWidth, windowHeight);
-		g.drawString("Turn " + Integer.toString(game.getTurn()), 4, 16);
-
-	}
-
-	private void drawCity(Graphics g) {
-
-		// Sets background color.
-		Color backgroundColor = new Color(0,200,0);
-		this.setBackground(backgroundColor);
-
-		// Gets the city name and city.
-		String cityName = state.substring(5);
-		City thisCity = game.getMap().getCityByName(cityName);
-
-		// Check to see if any city block are being hovered over.
-		Point blockPoint = thisCity.getMousePosOnGrid(mim.getMousePos());
-		
-		// Draws city squares.
-		ArrayList<Block> cityBlocks = thisCity.getGrid();
-		for (int i = 0; i < cityBlocks.size(); ++i) {
-			Block currentBlock = cityBlocks.get(i);
-			g.setColor(Color.WHITE);
-			g.fillRect(City.GRID_OFFSET_X + (currentBlock.getX() * Block.BLOCK_SIZE), City.GRID_OFFSET_Y + (currentBlock.getY() * Block.BLOCK_SIZE), Block.BLOCK_SIZE, Block.BLOCK_SIZE);
-			g.setColor(Color.BLACK);
-			g.drawRect(City.GRID_OFFSET_X + (currentBlock.getX() * Block.BLOCK_SIZE), City.GRID_OFFSET_Y + (currentBlock.getY() * Block.BLOCK_SIZE), Block.BLOCK_SIZE, Block.BLOCK_SIZE);
-		}
-		
-		// Draws buildings.
-		for (Building building : thisCity.getBuildings()) {
-			String blueprint = building.getBlueprintAsString();
-			int blptX = City.GRID_OFFSET_X + (building.getX() * Block.BLOCK_SIZE);
-			int blptY = City.GRID_OFFSET_Y + (building.getY() * Block.BLOCK_SIZE);
-			for (String line : blueprint.split("\n")) {
-				for (String character : line.split("|")) {
-					if (character.equals("T")) {
-						g.setColor(building.getColor());
-						g.fillRect(blptX, blptY, Block.BLOCK_SIZE, Block.BLOCK_SIZE);
-						g.setColor(Color.BLACK);
-						g.drawRect(blptX, blptY, Block.BLOCK_SIZE, Block.BLOCK_SIZE);
-					}
-					blptX += Block.BLOCK_SIZE;
-				}
-				blptX = City.GRID_OFFSET_X + (building.getX() * Block.BLOCK_SIZE);
-				blptY += Block.BLOCK_SIZE;
-			}
-		}
-		
-		// Carries out additional block drawing if there is a mouse collision.
-		if (blockPoint.x >= 0 && blockPoint.x <= thisCity.getWidth()) {
-			
-			// Draw mouse over'd city square.
-			g.setColor(Color.RED);
-			g.fillRect(City.GRID_OFFSET_X + (blockPoint.x * Block.BLOCK_SIZE), City.GRID_OFFSET_Y + (blockPoint.y * Block.BLOCK_SIZE), Block.BLOCK_SIZE, Block.BLOCK_SIZE);
-			g.setColor(Color.BLACK);
-			g.drawRect(City.GRID_OFFSET_X + (blockPoint.x * Block.BLOCK_SIZE), City.GRID_OFFSET_Y + (blockPoint.y * Block.BLOCK_SIZE), Block.BLOCK_SIZE, Block.BLOCK_SIZE);
-			
-			// Draw building blueprint.		
-			if (mim.getMouseBuilding() != null) {
-				Building mB = mim.getMouseBuilding();
-				String mBString = mB.getBlueprintAsString();
-				int blptX = City.GRID_OFFSET_X + (blockPoint.x * Block.BLOCK_SIZE);
-				int blptY = City.GRID_OFFSET_Y + (blockPoint.y * Block.BLOCK_SIZE);
-				for (String line : mBString.split("\n")) {
-					for (String character : line.split("|")) {
-						if (character.equals("T")) {
-							if (blptX < City.GRID_OFFSET_X + (thisCity.getWidth() * Block.BLOCK_SIZE) && blptY < City.GRID_OFFSET_Y + (thisCity.getWidth() * Block.BLOCK_SIZE)) {
-								g.setColor(Color.BLUE);
-								g.fillRect(blptX, blptY, Block.BLOCK_SIZE, Block.BLOCK_SIZE);
-							}
-							g.setColor(Color.BLACK);
-							g.drawRect(blptX, blptY, Block.BLOCK_SIZE, Block.BLOCK_SIZE);
-						}
-						blptX += Block.BLOCK_SIZE;
-					}
-					blptX = City.GRID_OFFSET_X + (blockPoint.x * Block.BLOCK_SIZE);
-					blptY += Block.BLOCK_SIZE;
-				}
-			
-			}
-			
-		}
-
-		// Draws GUI.
-		g.setColor(Color.WHITE);
-		g.fillRect(0, 0, 80, 21);															// Turn counter.
-		g.fillRect(0, windowHeight - 40, windowWidth, 40);									// Bottom bar.
-		g.fillRect(750, 0, 250, windowHeight - 40);											// City buttons box.
-		g.fillRect(0, windowHeight / 2, City.GRID_OFFSET_X - 50, windowHeight - 40);		// Stats box.
-
-		g.setColor(Color.BLACK);
-		g.drawRect(0, 0, 80, 21); 															// Turn counter.
-		g.drawRect(0, windowHeight - 40, windowWidth, windowHeight);						// Bottom bar.
-		g.drawRect(750, 0, 250, windowHeight - 40);											// City buttons box.
-		g.drawRect(0, windowHeight / 2, City.GRID_OFFSET_X - 50, (windowHeight / 2) - 40);	// Stats box.
-
-		// Draws text.
-		g.drawString("Turn " + Integer.toString(game.getTurn()), 4, 16);
-		g.drawString(cityName, 5, windowHeight / 2 + 5 + MyTextMetrics.getTextSize("Text")[1]);
-		int offset = 3;
-		String[] theKeys = {"Population", "Happiness", "Military", "Technology", "Nature", "Diplomacy", "Commerce", "Industry"};
-		for (int i = 0; i < theKeys.length; ++i) {
-			if (theKeys[i].equals("Military")) {++offset;}
-			g.drawString(theKeys[i] + ": \t " + thisCity.getStat(theKeys[i]), 5, windowHeight / 2 + (5 + MyTextMetrics.getTextSize("Text")[1]) * (i + offset));
-		}
-		
-	}
-
-	public void drawDebug(Graphics g) {
-
-		// Sets background color.
-		this.setBackground(Color.BLACK);
 
 	}
 
@@ -531,57 +309,9 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 		mim.setMousePos(mp);
 
 		// Performs screen-specific actions.
-		if (state.equals("Map")) {
-			actMap();
-		} else if (state.substring(0,4).equals("Menu")) {
-			actMenu();
-		} else if (state.substring(0,4).equals("City")) {
-			actCity();
-		} else if (state.equals("DEBUG")) {
-			actDebug();
-		}
+		scr.act();
 
 		mim.updateWindows();
-
-	}
-
-	public void actMap() {
-
-		// Initialisation
-		Map tempMap = this.game.getMap();
-		ArrayList<City> tempCities = tempMap.getCities();        
-		boolean stillHovered = false;
-		String hoveredCity = "";
-
-		// Check for mouse hover windows.
-		for (int i = 0; i < tempCities.size(); ++i) {
-			
-			// Gets the city being operated on.
-			City currentCity = tempCities.get(i);
-
-			// Checks if city is being hovered over.
-			Rectangle cityBounds = currentCity.getBounds();
-			if (cityBounds.contains(mim.getMousePos())) {
-				stillHovered = true;
-				hoveredCity = currentCity.getName();
-				mim.getMouseWindow().setContent(hoveredCity);
-			}
-
-		}
-		
-		mim.updateHoverWindow(stillHovered);
-
-	}
-
-	public void actMenu() {
-
-	}
-
-	public void actCity() {
-
-	}
-
-	public void actDebug() {
 
 	}
 
@@ -641,8 +371,7 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 				Rectangle cityBounds = currentCity.getBounds();
 
 				if (cityBounds.contains(mim.getMousePos()) && e.getButton() == MouseEvent.BUTTON1) {
-					state = "City-" + currentCity.getName();
-					mim.setInterface(state, game);
+					switchScreen("City", currentCity.getName());
 				}
 
 			}
@@ -723,7 +452,34 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 		}
 
 	}
-
+	
+	// Screen transition function.
+	public void switchScreen(String screenName, String extra) {
+		switch (screenName) {
+			case "Map":
+				if (DEBUG_EVENTS) {System.out.println("Switching to Map Screen.");}
+				state = "Map";
+				scr = new MapScreen(this);
+				break;
+			case "City":
+				if (DEBUG_EVENTS) {System.out.println("Switching to City Screen.");}
+				state = "City-" + extra;
+				scr = new CityScreen(this);
+				break;
+			case "Menu":
+				if (DEBUG_EVENTS) {System.out.println("Switching to Menu Screen.");}
+				state = "Menu-" + extra;
+				scr = new MenuScreen(this);
+				break;
+			case "DEBUG":
+				if (DEBUG_EVENTS) {System.out.println("Switching to Debug Screen.");}
+				state = "DEBUG";
+				scr = new DebugScreen(this);
+				break;
+		}
+	}
+	
+	// Function that runs the appropriate code for buttons than are clicked on.
 	private void buttonExecution(int exec, String add) {
 
 		if (DEBUG_TRACE) {
@@ -752,16 +508,13 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 		if (exec <= 0) {													// Null action.
 		} 
 		else if (exec == 1) {												// Go to map action.
-			state = "Map"; 
-			mim.setInterface(state, game);
+			switchScreen("Map", "");
 		}
 		else if (exec == 2) {												// Go to city action. 
-			state = "City-" + add; 
-			mim.setInterface(state, game);
+			switchScreen("City", add);
 		}
 		else if (exec == 3) {												// Go to menu action.
-			state = "Menu-" + add; 
-			mim.setInterface(state, game);
+			switchScreen("Menu", add);
 		}
 		else if (exec == 4) { 												// End turn action.
 			game.nextPlayer();
@@ -870,9 +623,12 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 					// Button 22: Print windows.
 					Button d22 = new Button(0, 0, "DEBUG_B_Print_Windows", "Print Windows", 26); d22.setColorInner(Color.GREEN);
 					gridow.addGridButton(4, 1, d22);
-					// Button 23: Print mouse.
-					Button d23 = new Button(0, 0, "DEBUG_B_Print_Mouse", "Print Mouse", 32); d23.setColorInner(Color.GREEN);
+					// Button 23: Print screen.
+					Button d23 = new Button(0, 0, "DEBUG_B_Print_Screen", "Print Screen", 34); d23.setColorInner(Color.GREEN);
 					gridow.addGridButton(4, 2, d23);
+					// Button 24: Print mouse.
+					Button d24 = new Button(0, 0, "DEBUG_B_Print_Mouse", "Print Mouse", 32); d24.setColorInner(Color.GREEN);
+					gridow.addGridButton(4, 3, d24);
 					// Button 25: Close game.
 					Button d25 = new Button(0, 0);
 					d25.setID("DEBUG_B_Close");
@@ -890,11 +646,7 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 		else if (exec == 12) { 												// Generates a new random game.
 			// Sets up the game state.
 			game = initGame(add);
-			state = "Map";
-			scr = new MapScreen(this);
-			scr.init();
-			mim.setInterface(state, game);
-			mim.removeWindowFull("DEBUG_LAUNCH");
+			switchScreen("Map", "");
 		}
 		else if (exec == 13) {												// Toggles map between optimised and initial routes.
 			game.toggleDRD();
@@ -908,8 +660,7 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 			r.close();
 		}
 		else if (exec == 15) {												// Jump to debug start screen.
-			state = "DEBUG"; 
-			mim.setInterface(state, game); 
+			switchScreen("DEBUG", "");
 		}														
 		else if (exec == 16) {												// Open city add building menu.
 			
@@ -922,7 +673,7 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 			gridow.setButtonHeight(40);
 			gridow.setButtonGap(10);
 			
-			// Placing buttons itno the window grid.
+			// Placing buttons into the window grid.
 			int lalala = 0;
 			int lololo = 0;
 			for (int lelele = 0; lelele < theKeys.length; ++lelele) {
@@ -1119,6 +870,9 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 		else if (exec == 33) {												// BuildDex dumper.
 			// TODO: Dump BuildDex.
 			System.out.println("Not done yet!");
+		}
+		else if (exec == 34) {												// Screen state printer.
+			System.out.println(scr.getTitle());
 		}
 
 	}

@@ -6,7 +6,6 @@ import java.awt.Rectangle;
 import java.util.ArrayList;
 
 import myGame.City;
-import myGame.Game;
 import myGame.Map;
 import myGame.Player;
 import myGame.Route;
@@ -23,10 +22,7 @@ public class MapScreen extends MyScreen {
 	}
 	
 	public MapScreen(Board b) {
-		super(b);
-		this.title = "Map Screen";
-		this.width = b.windowWidth;
-		this.height = b.windowHeight;
+		this(b, b.windowWidth, b.windowHeight);
 	}
 
 	@Override
@@ -69,8 +65,7 @@ public class MapScreen extends MyScreen {
 		Color islandColor = new Color(0,200,0);
 
 		// Sets background color.
-		g.setColor(Color.BLUE);
-		g.drawRect(0, 0, this.width, this.height);
+		b.setBackground(Color.BLUE);
 
 		// Island drawing loop.
 		for (int i = 0; i < tempCities.size(); ++i) {

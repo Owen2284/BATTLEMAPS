@@ -13,6 +13,10 @@ public class MenuScreen extends MyScreen {
 		this.height = inHeight;
 		this.init();
 	}
+	
+	public MenuScreen(Board b) {
+		this(b, b.windowWidth, b.windowHeight);
+	}
 
 	@Override
 	public void act() {
