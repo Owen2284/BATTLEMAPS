@@ -195,7 +195,10 @@ public class Button extends Sprite {
 
 	public void setExecutionNumber(int in) {this.exec = in;}
 
-	public void setAdditionalString(String in) {this.add = in;}
+	public void setAdditionalString(String in) {
+		this.add = in;
+		this.useAdd = true;
+	}
 
 	public void setAdditionalStringUsage(boolean in) {this.useAdd = in;}
 

@@ -9,7 +9,11 @@ package myGame;
 
 import java.util.ArrayList;
 import java.util.Random;
+
+import myMain.Board;
+
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.geom.Line2D;
 
 public class Map {
@@ -19,6 +23,9 @@ public class Map {
 	private int length;
 	private int width;
 	private int border_size = 0;
+	
+	private int scrollX = 0;
+	private int scrollY = 0;
 
 	private ArrayList<String> debug_log = new ArrayList<String>();
 	private ArrayList<Route> debug_routes;
@@ -30,6 +37,7 @@ public class Map {
 		this.width = 2000;
 		this.cities = randomCities(10, length, width, new Random());
 		this.routes = randomRoutes();
+		debug_log.add("Final map is: \n  " + this.toString());
 	}
 
 	// Constructor for number of cities.
@@ -38,6 +46,7 @@ public class Map {
 		this.width = 2000;
 		this.cities = randomCities(cityCount, length, width, new Random());
 		this.routes = randomRoutes();
+		debug_log.add("Final map is: \n  " + this.toString());
 	}
 
 	// Constructor for number of cities, and map dimansions.
@@ -46,6 +55,7 @@ public class Map {
 		this.width = inWidth;
 		this.cities = randomCities(cityCount, length, width, new Random());
 		this.routes = randomRoutes();
+		debug_log.add("Final map is: \n  " + this.toString());
 	}
 
 	// Constructor for number of cities, map dimansions, and a map border.
@@ -55,18 +65,20 @@ public class Map {
 		this.border_size = inBorder;
 		this.cities = randomCities(cityCount, length, width, new Random());
 		this.routes = randomRoutes();
+		debug_log.add("Final map is: \n  " + this.toString());
 	}
 
-	// Constructor for number of cities, map dimansions, and a map border.
+	// Constructor for number of cities, map dimensions, and a map border.
 	public Map(int cityCount, int inLength, int inWidth, int inBorder, Random in_random) {
 		this.length = inLength;
 		this.width = inWidth;
 		this.border_size = inBorder;
 		this.cities = randomCities(cityCount, length, width, in_random);
 		this.routes = randomRoutes();
+		debug_log.add("Final map is: \n  " + this.toString());
 	}
 
-	// Constructor for an inputted map.
+	// Constructor for an input map.
 	@SuppressWarnings("unchecked")
 	public Map(Map that) {
 		this.length = that.getLength();
@@ -84,7 +96,7 @@ public class Map {
 
 	// Constructor for map templates.
 	public Map(MapTemplate inMap) {
-		// OWEN: LATER
+		// TODO: Good luck with this.
 	}
 
 	// Private construction code.
@@ -206,8 +218,6 @@ public class Map {
 		debug_log.add("End intersection testing.");
 		debug_log.add("");
 
-		debug_log.add("Final map is: \n  " + this.toString());
-
 		// Return routes.
 		return returnVector;
 
@@ -323,7 +333,30 @@ public class Map {
 		return overlaps;
 	}
 
-	// Accessors
+	public int getScrollX() {
+		return scrollX;
+	}
+	
+	public void setScrollX(int in) {
+		this.scrollX = in;
+	}
+
+	public void incScrollX(int in) {
+		this.scrollX += in;
+	}
+
+	public int getScrollY() {
+		return scrollY;
+	}
+	
+	public void setScrollY(int in) {
+		this.scrollY = in;
+	}
+
+	public void incScrollY(int in) {
+		this.scrollY += in;
+	}
+
 	public ArrayList<City> getCities() {return this.cities;}
 
 	public City getCityByName(String cityName) {
@@ -350,6 +383,16 @@ public class Map {
 		}
 
 		return null;
+	}
+	
+	public Rectangle getScrolledBoundsName(String inName) {
+		City target = getCityByName(inName);
+		if (target != null) {
+			return new Rectangle(target.getX() + this.scrollX, target.getY() + this.scrollY, City.CITY_SIZE, City.CITY_SIZE);
+		} else {
+			if (Board.DEBUG_ERROR) {System.out.println("ERROR: Map, getScrolledBoundsName(" + inName+ ") could not find a city.");}
+			return null;
+		}
 	}
 
 	public ArrayList<Route> getRoutes() {
@@ -402,11 +445,11 @@ public class Map {
 
 	}
 
-
-
 	public int getLength() {return this.length;}
 
 	public int getWidth() {return this.width;}
+	
+	public int getBorder() {return this.border_size;}
 
 	public ArrayList<String> getDebugLog() {return this.debug_log;}
 
@@ -449,6 +492,20 @@ public class Map {
 
 	public void addRoute(Route inRoute) {
 		this.routes.add(inRoute);
+	}
+	
+	public void updateName(String oldS, String newS) {
+		City theCity = this.getCityByName(oldS);
+		ArrayList<Route> theRoutes = this.getRoutesFromName(theCity.getName());
+		theCity.setName(newS);
+		for (Route r : theRoutes) {
+			String[] p = r.getPoints();
+			for (int i = 0; i < p.length; ++i) {
+				if (p[i].equals(oldS)) {
+					p[i] = newS;
+				}
+			}
+		}
 	}
 
 	public void setDRD(boolean in) {
@@ -522,25 +579,25 @@ public class Map {
 	// Display methods.
 	public String toString() {
 
-		String toFormat = "Map of size " + Integer.toString(this.getLength()) + " by " + Integer.toString(this.getWidth()) + ". It contains:- %n %n ";
+		String toFormat = "Map of size " + this.getLength() + " by " + this.getWidth() + ". It contains:- \n \n ";
 
+		toFormat += this.cities.size() + " Cities:\n ";
 		if (!this.cities.isEmpty()) {
 			for (int i = 0; i < (this.cities.size()); ++i) {
-				toFormat += "    " + this.cities.get(i).toString() + " %n ";
+				toFormat += "    " + this.cities.get(i).toString() + " \n ";
 			}
 		}
 
-		toFormat += " %n ";
+		toFormat += " \n ";
 
+		toFormat += this.routes.size() + " Routes:\n ";
 		if (!this.routes.isEmpty()) {
-			toFormat += "A";
 			for (int j = 0; j < (this.routes.size()); ++j) {
-				toFormat += "    " + this.routes.get(j).toString() + " %n ";
-				toFormat += "O";
+				toFormat += "    " + this.routes.get(j).toString() + " \n ";
 			}
 		}
 
-		return String.format(toFormat);
+		return toFormat;
 
 	}
 

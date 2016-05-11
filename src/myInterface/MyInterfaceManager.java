@@ -15,8 +15,11 @@ import myMain.Board;
 
 import java.awt.Color;
 import java.awt.Point;
+import java.awt.event.MouseEvent;
 import java.awt.Graphics;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MyInterfaceManager {
 
@@ -31,22 +34,37 @@ public class MyInterfaceManager {
 	private Point mousePos = new Point(0,0);
 	private Point prevMousePos;
 	private String mouseMode = "Pointer";
-	private boolean mouseHeld = false;
+	private boolean[] mouseHeld = {false, false, false};
 	private Building mouseBuilding;
 	private HoverWindow mouseWindow = new HoverWindow(0,0);
-
+	
+	private Map<String, Boolean> letters = new HashMap<String, Boolean>();
+	String[] ACCEPTEDLETTERS = {"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l",
+			"m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "A", "B",
+			"C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R",
+			"S", "T", "U", "V", "W", "X", "Y", "Z", "0", "1", "2", "3", "4", "5", "6", "7",
+			"8", "9", " ", "-"};
+	private String[] inputString = {""};
+	
 	// Constructor
 	public MyInterfaceManager(int wid, int hei, ImageLibrary imgs) {
 		windowWidth = wid; 
 		windowHeight = hei;
 		il = imgs;
+		buildLetters();
+	}
+	
+	public void buildLetters() {
+		for (String l : ACCEPTEDLETTERS) {
+			letters.put(l, false);
+		}
 	}
 
 	// Accessors
 	public ArrayList<Button> getButtonsOfOwner(String type) {
 		ArrayList<Button> returner = new ArrayList<Button>();
 		for (Button item : this.buttons) {
-			if (item.getOwner().equals(type)) {
+			if (item != null && item.getOwner().equals(type)) {
 				returner.add(item);
 			}
 		}
@@ -56,7 +74,7 @@ public class MyInterfaceManager {
 	public ArrayList<Button> getHoveredButtons() {
 		ArrayList<Button> returner = new ArrayList<Button>();
 		for (Button item : this.buttons) {
-			if (item.isHovering(mousePos) && item.isVisible()) {
+			if (item != null && item.isHovering(mousePos) && item.isVisible()) {
 				returner.add(item);
 			}
 		}
@@ -116,7 +134,7 @@ public class MyInterfaceManager {
 		if (Board.DEBUG_TRACE) {System.out.println("WINDOW PRESENCE CHECK: " + in + " = " + f);}
 		
 		return f;
-	}
+	}	
 
 	// Mutators
 	public void setMousePos(Point in) {this.prevMousePos = this.mousePos; this.mousePos = in;}
@@ -223,23 +241,14 @@ public class MyInterfaceManager {
 		if (Board.DEBUG_LAUNCH) {System.out.println("Initialising interface for " + in + ".");}
 
 		if (Board.DEBUG_WINDOW && !in.equals("DEBUG")) {
-			// Debug info window button.
-			Button db = new Button((windowWidth / 4), windowHeight - 36);
-			db.setID("DEBUG_INFO_WINDOW");
-			db.setColorInner(Color.GREEN);
-			db.setExecutionNumber(9);
-			db.setButtonText("DEBUG_INFO");
-			buttons.add(db);
 
 			// Debug action window button.
-			db = new Button(3*(windowWidth / 4) - 128, windowHeight - 36);
+			Button db = new Button(3*(windowWidth / 4) - 128, windowHeight - 36);
 			db.setID("DEBUG_ACTION_WINDOW");
 			db.setColorInner(Color.GREEN);
 			db.setExecutionNumber(10);
 			db.setButtonText("DEBUG_ACTION");
 			buttons.add(db);
-
-			// OWEN: Maybe add in debug log?
 
 		}
 
@@ -251,6 +260,10 @@ public class MyInterfaceManager {
 			et.setExecutionNumber(4);
 			et.setButtonText("End Turn");
 			buttons.add(et);
+			
+			// Actions window button.
+			Button ac = new Button((windowWidth / 4), windowHeight - 36, "Actions", "View Actions", 35);
+			buttons.add(ac);
 
 			// View players button.
 			Button vp = new Button((windowWidth / 2) - 64, windowHeight - 36);
@@ -269,18 +282,19 @@ public class MyInterfaceManager {
 		} else if (in.substring(0,4).equals("City")) {
 
 			// Get the city.
-			City the_city = game.getCityByName(in.substring(5));
+			String theName = in.substring(5);
+			City theCity = game.getCityByName(theName);
 
 			// Back to map button.
 			buttons.add(new Button(windowWidth - 192, windowHeight - 36, "CityBackToMap", "Back to Map", 1));
 
 			// City editing buttons.
-			if (game.getActivePlayer().getID().equals(the_city.getOwner())) {
+			if (game.getActivePlayer().getID().equals(theCity.getOwner())) {
 				buttons.add(new Button(770, 20, windowWidth - 790, 40, "City_Build", "Add Building", 16));
 				buttons.add(new Button(770, 90, windowWidth - 790, 40, "City_Move", "Move Building", 18));
 				buttons.add(new Button(770, 160, windowWidth - 790, 40, "City_Remove", "Remove Building", 19));
 				buttons.add(new Button(770, 290, windowWidth - 790, 40, "City_Ordinances", "City Ordinances", 23));
-				buttons.add(new Button(770, 400, windowWidth - 790, 40, "City_Rename", "Rename City", 20));
+				buttons.add(new Button(770, 400, windowWidth - 790, 40, "City_Rename", "Rename City", 20, theName));
 			}
 			buttons.add(new Button(770, 470, windowWidth - 790, 40, "City_Info", "View City Info", 24));
 
@@ -291,11 +305,12 @@ public class MyInterfaceManager {
 			GridWindow dw = new GridWindow("DEBUG_LAUNCH", (windowWidth - 400) / 2, 100, 4, 4);
 			dw.setGridX(10);
 			dw.setGridY(10);
+			dw.removeCloseButton();
 
 			Button dwb = new Button(0, 0, "DEBUG_MENU_Normal", "Normal Map", 12, "Normal");
 			dwb.setColorInner(Color.RED);
 			dw.addGridButton(0, 0, dwb); buttons.add(dwb);
-			dwb = new Button(0, 0, "DEBUG_MENU_Small", "Small Map", 12, "Small");
+			dwb = new Button(0, 0, "DEBUG_MENU_Small", "Small Map", -1, "Small");
 			dwb.setColorInner(Color.RED);
 			dw.addGridButton(1, 0, dwb); buttons.add(dwb);
 			dwb = new Button(0, 0, "DEBUG_MENU_Large", "Large Map", 12, "Large");
@@ -318,6 +333,21 @@ public class MyInterfaceManager {
 		}
 
 	}
+	
+	public void setLetter(String ch, boolean bo) {
+		boolean found = false;
+		// Checks for text input.
+		for (String l : ACCEPTEDLETTERS) {
+			if (l.equals(ch)) {
+				found = true;
+			}
+		}
+		// TODO: Enter check.
+		// TODO: Backspace check.
+		if (found) {
+			this.letters.put(ch, bo);
+		}
+	}
 
 	// Graphical methods
 	public void drawAll(Graphics g, Board b) {
@@ -325,7 +355,7 @@ public class MyInterfaceManager {
 		this.drawWindows(g, b);
 		this.drawMouse(g, b);
 		this.drawMouseWindow(g, b);
-	} 
+	}
 
 	public void drawButtons(Graphics g, String type, boolean draw_shadows) {
 
@@ -402,6 +432,17 @@ public class MyInterfaceManager {
 	}
 
 	// Updaters
+	public void act() {
+		// Processes key strokes into inputString.
+		for (String l : ACCEPTEDLETTERS) {
+			if (letters.get(l)) {
+				inputString[0] += l;
+				letters.put(l, false);
+				System.out.println(inputString[0]);
+			}
+		}
+	}
+	
 	public void updateWindows() {
 		
 		// Storage for windows to remove.
@@ -413,12 +454,12 @@ public class MyInterfaceManager {
 			if (window.isOpen()) {
 			
 				// Window movement and boundary updating.
-				if ((window.isOverTopBar(mousePos) && mouseHeld) || (window.isMoving())) {
+				if ((window.isOverTopBar(mousePos) && mouseHeld[0]) || (window.isMoving())) {
 					window.setMoving(true);
 					window.setX(window.getX() + getMouseDiff()[0]);
 					window.setY(window.getY() + getMouseDiff()[1]);
 				}
-				if (!mouseHeld) {
+				if (!mouseHeld[0]) {
 					window.setMoving(false);
 				}
 				if (window.getX() < 0) {window.setX(0);}
@@ -480,9 +521,28 @@ public class MyInterfaceManager {
 	}
 
 	// MouseListener methods.
-	public void mousePressed() {mouseHeld = true;}
+	public void mousePressed(MouseEvent e) {
+		boolean[] newArr = {e.getButton() == MouseEvent.BUTTON1, e.getButton() == MouseEvent.BUTTON2, e.getButton() == MouseEvent.BUTTON3};
+		this.mouseHeld = newArr;
+	}
 
-	public void mouseReleased() {mouseHeld = false;}
+	public void mouseReleased(MouseEvent e) {
+		boolean[] newArr = {false, false, false};
+		this.mouseHeld = newArr;
+	}
+	
+	public boolean isPressed(int i) {
+		if (i >= 1 && i <= 3) {
+			return this.mouseHeld[i-1];
+		} else {
+			if (Board.DEBUG_ERROR) {System.out.println("ERROR: MyInterfaceManager, isPressed(" + i + ") has invalid parameter.");}
+			return false;
+		}
+	}
+
+	public String[] getInputString() {
+		return inputString;
+	}
 
 	// Debug methods
 	public void debug(String s) {
@@ -495,6 +555,14 @@ public class MyInterfaceManager {
 				break;
 			case "Mouse":
 				System.out.println(mousePos + "\n" + prevMousePos + "\n" + mouseMode + "\n" + mouseBuilding);
+				break;
+			case "Keys":
+				for (String l : ACCEPTEDLETTERS) {
+					if (letters.get(l)) {
+						System.out.print(l);
+					}
+				}
+				System.out.println("");
 				break;
 		}
 	}

@@ -7,6 +7,7 @@
 
 package myGame;
 
+import java.awt.Rectangle;
 import java.util.ArrayList;
 
 public class Game {
@@ -177,6 +178,7 @@ public class Game {
 	public ArrayList<City> getCities() {return this.map.getCities();}
 	public City getCityByName(String cityName) {return this.map.getCityByName(cityName);}
 	public City getCityByID(String cityID) {return this.map.getCityByID(cityID);}
+	public Rectangle getScrolledBoundsName(String inName) {return this.map.getScrolledBoundsName(inName);}
 	public ArrayList<Route> getRoutes() {return this.map.getRoutes();}
 	public ArrayList<Route> getRoutesFromName(String cityName) {return this.map.getRoutesFromName(cityName);}
 	public ArrayList<Route> getRoutesFromID(String cityID) {return this.map.getRoutesFromID(cityID);}
@@ -185,6 +187,7 @@ public class Game {
 	public int getWidth() {return this.map.getWidth();}
 	public ArrayList<String> getDebugLog() {return this.map.getDebugLog();}
 	public boolean isDRD() {return this.map.isDRD();}
+	public boolean isUniqueName(String in) {return this.map.isUniqueName(in);}
 	public ArrayList<City> getCitiesOwnedBy(String player_id) {return this.map.getCitiesOwnedBy(player_id);}
 	public int sumStatByPlayer(String player_id, String key) {return this.map.sumStatByPlayer(player_id, key);}
 
@@ -214,7 +217,8 @@ public class Game {
 	public void addRoute(Route inRoute) {this.map.addRoute(inRoute);}
 	public void setDRD(boolean in) {this.map.setDRD(in);}	// Sets Debug Route Display.
 	public void toggleDRD() {this.map.toggleDRD();}			// Toggles Debug Route Display.
-
+	public void updateName(String oldS, String newS) {this.map.updateName(oldS, newS);}
+	
 	// Overwrites
 	public String toString() {
 		return "Game with " + this.players.size() + " players on a " + this.map.getLength() + " by " + this.map.getWidth() + " sized map. The victory condition is set to \"" + this.victory + "\"";

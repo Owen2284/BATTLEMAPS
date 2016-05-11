@@ -146,6 +146,8 @@ public class InfoWindow implements MyWindow {
 	public void addImage(int inX, int inY, int inImg) {this.windowImages.add(new ImageToken(inX, inY, inImg));}
 	public void clearImages() {this.windowImages.clear();}
 	public void setMoving(boolean in) {this.isMoving = in;}
+	public void removeCloseButton() {this.closeButton = null;}
+	public void removeReturnButton() {this.returnButton = null;}
 
 	// Graphical methods
 	public void draw(Graphics g, Board b, ImageLibrary il) {
@@ -249,6 +251,16 @@ public class InfoWindow implements MyWindow {
 			this.returnButton.setY(this.y);
 		}
 
+	}
+	
+	public void clearText() {
+		content = "";
+	}
+	
+	public void clearAll() {
+		content = "";
+		windowButtons.clear();
+		windowImages.clear();
 	}
 
 	public void close() {

@@ -12,6 +12,8 @@ import myGame.Route;
 import myMain.Board;
 
 public class MapScreen extends MyScreen {
+	
+	private boolean trippyMode = false;
 
 	public MapScreen(Board b, int inWidth, int inHeight) {
 		super(b);
@@ -41,7 +43,7 @@ public class MapScreen extends MyScreen {
 			City currentCity = tempCities.get(i);
 
 			// Checks if city is being hovered over.
-			Rectangle cityBounds = currentCity.getBounds();
+			Rectangle cityBounds = game.getScrolledBoundsName(currentCity.getName());
 			if (cityBounds.contains(mim.getMousePos())) {
 				stillHovered = true;
 				hoveredCity = currentCity.getName();
@@ -50,7 +52,18 @@ public class MapScreen extends MyScreen {
 
 		}
 		
+		// Updates the hover window.
 		mim.updateHoverWindow(stillHovered);
+		
+		// Processes map movement.
+		if (mim.isPressed(3)) {
+			tempMap.incScrollX(mim.getMouseDiff()[0]);
+			if (tempMap.getScrollX() > 0) {tempMap.setScrollX(0);}
+			if (tempMap.getScrollX() - this.width < -1 * tempMap.getLength() - tempMap.getBorder()) {tempMap.setScrollX((-1 * tempMap.getLength() - tempMap.getBorder()) + this.width);}
+			tempMap.incScrollY(mim.getMouseDiff()[1]);
+			if (tempMap.getScrollY() > 0) {tempMap.setScrollY(0);}
+			if (tempMap.getScrollY() - this.height < -1 * tempMap.getWidth() - tempMap.getBorder()) {tempMap.setScrollY((-1 * tempMap.getWidth() - tempMap.getBorder()) + this.height);}
+		}
 		
 	}
 
@@ -75,9 +88,9 @@ public class MapScreen extends MyScreen {
 
 			// Draws island for the city.
 			g.setColor(islandColor);
-			g.fillOval(currentCity.getX() - City.CITY_SIZE / 2, currentCity.getY() - City.CITY_SIZE / 2, City.CITY_SIZE * 2, City.CITY_SIZE * 2);
+			g.fillOval(currentCity.getX() + tempMap.getScrollX() - City.CITY_SIZE / 2, currentCity.getY() + tempMap.getScrollY() - City.CITY_SIZE / 2, City.CITY_SIZE * 2, City.CITY_SIZE * 2);
 			g.setColor(borderColor);
-			g.drawOval(currentCity.getX() - City.CITY_SIZE / 2, currentCity.getY() - City.CITY_SIZE / 2, City.CITY_SIZE * 2, City.CITY_SIZE * 2);
+			g.drawOval(currentCity.getX() + tempMap.getScrollX() - City.CITY_SIZE / 2, currentCity.getY() + tempMap.getScrollY()- City.CITY_SIZE / 2, City.CITY_SIZE * 2, City.CITY_SIZE * 2);
 
 		}
 
@@ -95,7 +108,15 @@ public class MapScreen extends MyScreen {
 			for (int j = 0; j < tempRoutes.size(); ++j) {
 				Route currentRoute = tempRoutes.get(j);
 				City otherCity = tempMap.getCityByName(currentRoute.getDestination(currentCity.getName()));
-				g.drawLine(currentCity.getX() + City.CITY_SIZE / 2, currentCity.getY() + City.CITY_SIZE / 2, otherCity.getX() + City.CITY_SIZE / 2, otherCity.getY() + City.CITY_SIZE /2);
+				if (!trippyMode) {
+					// Normal operation.
+					g.drawLine(currentCity.getX() + tempMap.getScrollX() + City.CITY_SIZE / 2, currentCity.getY() + tempMap.getScrollY() + City.CITY_SIZE / 2,
+							otherCity.getX() + tempMap.getScrollX() + City.CITY_SIZE / 2, otherCity.getY() + tempMap.getScrollY() + City.CITY_SIZE /2);
+				} else {
+					// Weird map mode.
+					g.drawLine(currentCity.getX() + tempMap.getScrollX() + City.CITY_SIZE / 2, currentCity.getY() + tempMap.getScrollY() + City.CITY_SIZE / 2,
+							otherCity.getX() + City.CITY_SIZE / 2, otherCity.getY() + City.CITY_SIZE /2);
+				}
 			}
 
 		}
@@ -107,12 +128,12 @@ public class MapScreen extends MyScreen {
 			City currentCity = tempCities.get(i);
 
 			// Determines the image to be used for the city.
-			Rectangle cityBounds = currentCity.getBounds();
+			Rectangle cityBounds = game.getScrolledBoundsName(currentCity.getName());
 			if (cityBounds.contains(mim.getMousePos())) {
-				g.drawImage(il.getImage(21), currentCity.getX() - 2, currentCity.getY() - 2, b);
+				g.drawImage(il.getImage(21), currentCity.getX() + tempMap.getScrollX() - 2, currentCity.getY() + tempMap.getScrollY() - 2, b);
 				ArrayList<City> currentCityNeighbours = tempMap.getNeighboursOf(currentCity.getName());
 				for (City neighbour : currentCityNeighbours) {
-					g.drawImage(il.getImage(22), neighbour.getX() - 2, neighbour.getY() - 2, b);
+					g.drawImage(il.getImage(22), neighbour.getX() + tempMap.getScrollX() - 2, neighbour.getY() + tempMap.getScrollY() - 2, b);
 				}
 			}
 
@@ -136,7 +157,11 @@ public class MapScreen extends MyScreen {
 			}
 
 			// Draws the city and it's name.
-			g.drawImage(il.getImage(cityImage), currentCity.getX(), currentCity.getY(), b);
+			if (!trippyMode) {
+				g.drawImage(il.getImage(cityImage), currentCity.getX() + tempMap.getScrollX(), currentCity.getY() + tempMap.getScrollY(), b);
+			} else {
+				g.drawImage(il.getImage(cityImage), currentCity.getX() + tempMap.getScrollX() / 2, currentCity.getY() + tempMap.getScrollX() / 2, b);
+			}
 		}
 
 		// Draws GUI.

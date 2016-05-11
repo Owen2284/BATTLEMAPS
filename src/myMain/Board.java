@@ -20,6 +20,7 @@ import myInterface.DebugScreen;
 import myInterface.ErrorWindow;
 import myInterface.GridWindow;
 import myInterface.InfoWindow;
+import myInterface.InputWindow;
 import myInterface.ListWindow;
 import myInterface.MapScreen;
 import myInterface.MenuScreen;
@@ -37,6 +38,8 @@ import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseEvent;
 import java.util.List;
@@ -45,9 +48,12 @@ import java.util.Random;
 import java.util.Scanner;
 import javax.swing.JPanel;
 import javax.swing.Timer;
+
+import myData.MyValidator;
+
 import javax.swing.SwingUtilities;
 
-public class Board extends JPanel implements ActionListener, MouseListener {
+public class Board extends JPanel implements ActionListener, MouseListener, KeyListener {
 
 	private static final long serialVersionUID = 7198933434060052457L;
 	
@@ -61,6 +67,7 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 	public ImageLibrary il = new ImageLibrary(100);
 	public Game game;
 	public BuildingFactory buildDex = new BuildingFactory();
+	public MyValidator val = new MyValidator();
 	
 	public long randomMapSeed = System.currentTimeMillis();
 	public Random randomEvents = new Random();
@@ -68,7 +75,6 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 	public Random randomMap = new Random(randomMapSeed);
 	
 	public String state = "";
-	
 
 	// Constants
 	private final String GAMENAME = "BATTLEMAPS";
@@ -112,6 +118,9 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 		
 		// Retrieves all resources needed at startup.
 		initImages();
+		
+		// Sets up the MyValidator object.
+		initValidator();
 
 		// Initialise interface manager.
 		mim = new MyInterfaceManager(windowWidth, windowHeight, il);
@@ -151,6 +160,9 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 
 		// Adds a mouse listener to the panel.
 		this.addMouseListener(this);
+		
+		// Adds a key listener to the panel.
+		this.addKeyListener(this);
 
 		// Initialise timer.
 		timer = new Timer(DELAY, this);
@@ -179,6 +191,10 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 		il.loadImage(22, "images/CityNeighbour.png");
 		il.loadImage(31, "images/BlueprintBlock.png");
 
+	}
+	
+	public void initValidator() {
+		val.addRule("City Name", "[a-zA-Z0-9\\- ]", 1, 32);
 	}
 
 	@SuppressWarnings("unused")
@@ -310,6 +326,8 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 
 		// Performs screen-specific actions.
 		scr.act();
+		
+		mim.act();
 
 		mim.updateWindows();
 
@@ -317,22 +335,22 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 
 	@Override
 	public void mousePressed(MouseEvent e) {
-		mim.mousePressed();
+		mim.mousePressed(e);
 	}
 
 	@Override
 	public void mouseReleased(MouseEvent e) {
-		mim.mouseReleased();
+		mim.mouseReleased(e);
 	}
 
 	@Override
 	public void mouseEntered(MouseEvent e) {
-		mim.mouseReleased();
+		mim.mouseReleased(e);
 	}
 
 	@Override
 	public void mouseExited(MouseEvent e) {
-		mim.mouseReleased();
+		mim.mouseReleased(e);
 	}
 
 	@Override
@@ -368,8 +386,9 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 				City currentCity = tempCities.get(i);
 
 				// Determines the image to be used for the city.
-				Rectangle cityBounds = currentCity.getBounds();
+				Rectangle cityBounds = game.getScrolledBoundsName(currentCity.getName());
 
+				// Checks for clicks, and executes city code if necessary.
 				if (cityBounds.contains(mim.getMousePos()) && e.getButton() == MouseEvent.BUTTON1) {
 					switchScreen("City", currentCity.getName());
 				}
@@ -451,6 +470,23 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 			
 		}
 
+	}
+	
+	// Methods that respond monitor key presses.
+	@Override
+	public void keyTyped(KeyEvent e) {
+		if (DEBUG_EVENTS) {System.out.println("'" + e.getKeyChar() + "' TYPED.");}
+	}
+
+	@Override
+	public void keyPressed(KeyEvent e) {
+		if (DEBUG_EVENTS) {System.out.println("'" + e.getKeyChar() + "' PRESSED.");}
+	}
+
+	@Override
+	public void keyReleased(KeyEvent e) {
+		if (DEBUG_EVENTS) {System.out.println("'" + e.getKeyChar() + "' RELEASED.");}
+		mim.setLetter(Character.toString(e.getKeyChar()), true);
 	}
 	
 	// Screen transition function.
@@ -591,29 +627,25 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 				// Create window.
 				int DEBUG_GRID_ROWS = 5;
 				int DEBUG_GRID_COLS = 5;
-				gridow = new GridWindow("DEBUG_ACTION_WINDOW", (windowWidth - 400) / 2, 100, DEBUG_GRID_ROWS, DEBUG_GRID_COLS);
+				gridow = new GridWindow("DEBUG_ACTION_WINDOW", WINDOW_CENTER_X, 100, DEBUG_GRID_ROWS, DEBUG_GRID_COLS);
 				gridow.setGridX(10);
 				gridow.setGridY(10);
 				gridow.setButtonWidth(60);
 				gridow.setButtonHeight(30);
-				butt = gridow.getCloseButton();
 				// Creating grid buttons.
-				// TODO: Tidying.
 				if (true) {
 					// Button 1: New game.
-					Button d1 = new Button(0, 0);
-					d1.setID("DEBUG_B_New_Game");
-					d1.setColorInner(Color.GREEN);
-					d1.setExecutionNumber(15);
-					d1.setButtonText("New Game");
+					Button d1 = new Button(0, 0, "DEBUG_B_New_Game", "New Game", 15); d1.setColorInner(Color.GREEN);
 					gridow.addGridButton(0, 0, d1);
 					// Button 2: Show debug routes.
-					Button d2 = new Button(0, 0);
-					d2.setID("DEBUG_B_Switch_Routes");
-					d2.setColorInner(Color.GREEN);
-					d2.setExecutionNumber(13);
-					d2.setButtonText("Switch Routes");
+					Button d2 = new Button(0, 0, "DEBUG_B_Switch_Routes", "Switch Routes", 13); d2.setColorInner(Color.GREEN);
 					gridow.addGridButton(0, 1, d2);
+					// Button 6: Debug info window.
+					Button d6 = new Button(0, 0, "DEBUG_B_Info_Window", "Info Window", 9); d6.setColorInner(Color.GREEN);
+					gridow.addGridButton(1, 0, d6);
+					// Button 7: Debug input window.
+					Button d7 = new Button(0, 0, "DEBUG_B_Input_Window", "Input Window", 36); d7.setColorInner(Color.GREEN);
+					gridow.addGridButton(1, 1, d7);
 					// Button 20: BuildDex dump.
 					Button d20 = new Button(0, 0, "DEBUG_B_Dump_BuildDex", "Dump BuildDex", 33); d20.setColorInner(Color.GREEN);
 					gridow.addGridButton(3, 4, d20);
@@ -630,11 +662,7 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 					Button d24 = new Button(0, 0, "DEBUG_B_Print_Mouse", "Print Mouse", 32); d24.setColorInner(Color.GREEN);
 					gridow.addGridButton(4, 3, d24);
 					// Button 25: Close game.
-					Button d25 = new Button(0, 0);
-					d25.setID("DEBUG_B_Close");
-					d25.setColorInner(Color.GREEN);
-					d25.setExecutionNumber(11);
-					d25.setButtonText("Close Game");
+					Button d25 = new Button(0, 0, "DEBUG_B_Close", "Close Game", 11); d25.setColorInner(Color.GREEN);
 					gridow.addGridButton(4, 4, d25);
 				}
 				mim.addWindowFull(gridow);
@@ -729,8 +757,14 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 			}
 		}
 		else if (exec == 20) { 												// Open city rename city window.
+			// Reset mouse.
 			mim.setMouseMode("Pointer");
-			// TODO: Add city rename window.
+			// Generate basic input window.
+			InputWindow inpu = new InputWindow("City Name Change", WINDOW_CENTER_X, 125, mim.getInputString());
+			inpu.setContent("Please enter a new city name.");
+			inpu.getWindowButtons().get(0).setExecutionNumber(37);
+			inpu.getWindowButtons().get(0).setAdditionalString(add);
+			mim.addWindowFull(inpu);
 		}
 		else if (exec == 21) {												// Open city building category window.
 			List<String> the_buildings = buildDex.getCategory(add);
@@ -873,8 +907,41 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 		}
 		else if (exec == 34) {												// Screen state printer.
 			System.out.println(scr.getTitle());
+		} else if (exec == 35) {											// Opens actions window.
+			wind = new InfoWindow("Actions Window", WINDOW_CENTER_X, 100);
+			cont = "COMING SOON";
+			wind.setContent(cont);
+			mim.addWindowFull(wind);
+		} else if (exec == 36) {											// Test input window.
+			InputWindow inpu = new InputWindow("TEST_INPUT", WINDOW_CENTER_X, 125, mim.getInputString());
+			inpu.setContent("Please enter some test data.");
+			mim.addWindowFull(inpu);
+		} else if (exec == 37) {											// Renaming city code.
+			InputWindow inpu = (InputWindow) mim.getWindow("City Name Change");
+			String newName = inpu.getInputString();
+			if (game.isUniqueName(newName)) {
+				game.updateName(add, newName);
+				this.state = "City-" + newName;
+				createQuickWindow("Success!", "The name of this city is now " + newName + "!");
+				inpu.close();
+			} else {
+				createErrorWindow("Name is already in use.");
+			}
+		} else if (exec == 38) {											// Clear input window code.
+			InfoWindow inpu = mim.getWindow(add);
+			String initContent = inpu.getContent();
+			inpu.clearText();
+			inpu.setContent(initContent);
 		}
 
+	}
+	
+	public void createQuickWindow(String title, String content) {
+		mim.addWindow(new ErrorWindow(title, ERRORX, ERRORY, content));
+	}
+	
+	public void createErrorWindow(String in) {
+		this.createQuickWindow("ERROR", in);
 	}
 
 }
