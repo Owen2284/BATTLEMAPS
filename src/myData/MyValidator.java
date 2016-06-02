@@ -2,6 +2,8 @@ package myData;
 
 import java.util.ArrayList;
 
+import myMain.Board;
+
 public class MyValidator {
 
 	ArrayList<MyValidationRule> catalogue;
@@ -42,7 +44,8 @@ public class MyValidator {
 				return r;
 			}
 		}
-		return null;	// TODO: Throw exception.
+		if (Board.DEBUG_ERROR) {System.out.println("ERROR: MyValidator, findRule(" + name + ") did not find a validation rule.");}
+		return null;
 	}	
 	
 	public boolean validate(String name, String data) {

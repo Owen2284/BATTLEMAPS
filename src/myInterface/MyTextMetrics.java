@@ -9,7 +9,7 @@ public class MyTextMetrics {
 
 	public static Graphics g;
 	
-	public static int[] getTextSize(String text) {
+	public static int[] getTextSizeFlat(String text) {
 
 		AffineTransform affine_transform = new AffineTransform();     
 		FontRenderContext frc = new FontRenderContext(affine_transform,true,true);     
@@ -21,13 +21,33 @@ public class MyTextMetrics {
 		return returner;
 
 	}
+	
+	public static int[] getTextSizeComplex(String text) {
+		
+		if (MyTextMetrics.getCountOf("\n", text) == 0) {
+			return getTextSizeFlat(text);
+		}
 
-	public static int getCountOf(String target, String field) {
+		AffineTransform affine_transform = new AffineTransform();     
+		FontRenderContext frc = new FontRenderContext(affine_transform,true,true);     
+		Font font = g.getFont();
+		int[] sizes = {0, 0};
+		for (String s : text.split("\n")) {
+			int widthS = (int)(font.getStringBounds(s, frc).getWidth());
+			if (sizes[0] < widthS) {sizes[0] = widthS;}
+			sizes[1] += (int)(font.getStringBounds(s, frc).getHeight());
+		}
+		
+		return sizes;
+
+	}
+
+	public static int getCountOf(String target, String body) {
 
 		int count = 0;
 
-		for (int i = 0; i < field.length() - target.length() + 1; ++i) {
-			if (field.substring(i, i + target.length()).equals(target)) {++count;}
+		for (int i = 0; i < body.length() - target.length() + 1; ++i) {
+			if (body.substring(i, i + target.length()).equals(target)) {++count;}
 		}
 
 		return count;
