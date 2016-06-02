@@ -119,7 +119,7 @@ public class BuildingFactory {
 		for (Building bld : buildings) {
 			theString += bld.toString() + "\n";
 		}
-		return theString;
+		return theString.substring(0, theString.length() - 2);
 	}
 
 }

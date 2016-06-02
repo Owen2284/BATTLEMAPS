@@ -27,6 +27,9 @@ public class City {
 	private ArrayList<Building> buildings;
 	private int length; // x distance of city grid
 	private int width; // y distance of distance grid
+	
+	// City administrative info.
+	private OrdinanceBook ob;
 
 	// Constants
 	public static final int CITY_SIZE = 32;
@@ -44,6 +47,7 @@ public class City {
 		this.blocks = assembleBlocks();
 		this.buildings = new ArrayList<Building>();
 		this.oID = "NONE";
+		this.ob = new OrdinanceBook("data/ordinances.csv");
 	}
 
 	// Constructor for ID, x and y coordinates and city name.
@@ -57,6 +61,7 @@ public class City {
 		this.blocks = assembleBlocks();
 		this.buildings = new ArrayList<Building>();
 		this.oID = "NONE";
+		this.ob = new OrdinanceBook("data/ordinances.csv");
 	}
 
 	// Constructor for ID, x and y coordinates, city name, city length and city width.
@@ -70,6 +75,7 @@ public class City {
 		this.blocks = assembleBlocks();
 		this.buildings = new ArrayList<Building>();
 		this.oID = "NONE";
+		this.ob = new OrdinanceBook("data/ordinances.csv");
 	}
 
 	// Constructor for other city.
@@ -83,6 +89,7 @@ public class City {
 		this.blocks = that.getGrid();
 		this.buildings = that.getBuildings();
 		this.oID = new String(that.getOwner());
+		this.ob = that.getOrdinances();
 	}
 
 	// Common constructor code.
@@ -187,6 +194,9 @@ public class City {
 		for (Building item : buildings) {
 			total += item.getStat(key);
 		}
+		for (Ordinance ord : ob.getAllActive()) {
+			total += ord.getStat(key);
+		}
 		return total;
 	}
 
@@ -260,6 +270,8 @@ public class City {
 		return true;
 		
 	}
+	
+	public OrdinanceBook getOrdinances() {return this.ob;}
 
 	// Mutators
 	public void setID(String inID) {this.cID = inID;}

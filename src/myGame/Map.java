@@ -10,6 +10,7 @@ package myGame;
 import java.util.ArrayList;
 import java.util.Random;
 
+import myData.MyArrays;
 import myMain.Board;
 
 import java.awt.Point;
@@ -26,56 +27,62 @@ public class Map {
 	
 	private int scrollX = 0;
 	private int scrollY = 0;
+	
+	private ArrayList<Land> lands = new ArrayList<Land>();
 
 	private ArrayList<String> debug_log = new ArrayList<String>();
 	private ArrayList<Route> debug_routes;
 	private boolean show_debug_routes = false;
+	
+	private final static int POINTCOUNT = 12;
+	private final static int LANDMIN = (int) (1.2 * (double) City.CITY_SIZE);
+	private final static int LANDMAX = (int) (2.4 * (double) City.CITY_SIZE);
+	private final static int SMOOTHNESSCOUNT = 1;
+	private final static double SMOOTHNESSRATE = 0.0;
 
 	// Default constructor.
 	public Map() {
-		this.length = 2000;
-		this.width = 2000;
-		this.cities = randomCities(10, length, width, new Random());
-		this.routes = randomRoutes();
-		debug_log.add("Final map is: \n  " + this.toString());
+		this(10, 2000, 2000, 20, new Random(), POINTCOUNT, LANDMIN, LANDMAX, SMOOTHNESSCOUNT, SMOOTHNESSRATE);
 	}
 
 	// Constructor for number of cities.
 	public Map(int cityCount) {
-		this.length = 2000;
-		this.width = 2000;
-		this.cities = randomCities(cityCount, length, width, new Random());
-		this.routes = randomRoutes();
-		debug_log.add("Final map is: \n  " + this.toString());
+		this(cityCount, 2000, 2000, 20, new Random(), POINTCOUNT, LANDMIN, LANDMAX, SMOOTHNESSCOUNT, SMOOTHNESSRATE);
 	}
 
-	// Constructor for number of cities, and map dimansions.
+	// Constructor for number of cities, and map dimensions.
 	public Map(int cityCount, int inLength, int inWidth) {
-		this.length = inLength;
-		this.width = inWidth;
-		this.cities = randomCities(cityCount, length, width, new Random());
-		this.routes = randomRoutes();
-		debug_log.add("Final map is: \n  " + this.toString());
+		this(cityCount, inLength, inWidth, 20, new Random(), POINTCOUNT, LANDMIN, LANDMAX, SMOOTHNESSCOUNT, SMOOTHNESSRATE);
 	}
 
 	// Constructor for number of cities, map dimansions, and a map border.
 	public Map(int cityCount, int inLength, int inWidth, int inBorder) {
-		this.length = inLength;
-		this.width = inWidth;
-		this.border_size = inBorder;
-		this.cities = randomCities(cityCount, length, width, new Random());
-		this.routes = randomRoutes();
-		debug_log.add("Final map is: \n  " + this.toString());
+		this(cityCount, inLength, inWidth, inBorder, new Random(), POINTCOUNT, LANDMIN, LANDMAX, SMOOTHNESSCOUNT, SMOOTHNESSRATE);
 	}
 
 	// Constructor for number of cities, map dimensions, and a map border.
 	public Map(int cityCount, int inLength, int inWidth, int inBorder, Random in_random) {
+		this(cityCount, inLength, inWidth, inBorder, in_random, POINTCOUNT, LANDMIN, LANDMAX, SMOOTHNESSCOUNT, SMOOTHNESSRATE);
+	}
+	
+	// Constructor for all of the above, plus terraforming values.
+	public Map(int cityCount, int inLength, int inWidth, int inBorder, Random in_random,
+			int pointCount, int landMax, int landMin, int smoothnessCount, double smoothnessRate) {
+		long start = System.currentTimeMillis();
 		this.length = inLength;
 		this.width = inWidth;
 		this.border_size = inBorder;
 		this.cities = randomCities(cityCount, length, width, in_random);
 		this.routes = randomRoutes();
-		debug_log.add("Final map is: \n  " + this.toString());
+		terraformRandom(pointCount, landMax, landMin, smoothnessCount, smoothnessRate, in_random);
+		debug_log.add("Final map is:");
+		for (String line: this.toString().split("\n")) {
+			debug_log.add(line);
+		}
+		long end = System.currentTimeMillis();
+		debug_log.add("Time taken to construct: " + (end - start) + "ms.");
+		this.scrollX = this.border_size;
+		this.scrollY = this.border_size;
 	}
 
 	// Constructor for an input map.
@@ -85,13 +92,13 @@ public class Map {
 		this.width = that.getWidth();
 		this.cities = (ArrayList<City>)that.getCities().clone();
 		this.routes = (ArrayList<Route>)that.getRoutes().clone();
+		this.lands = that.getLand();
 		this.border_size = that.border_size;
 		this.debug_log = (ArrayList<String>)that.getDebugLog().clone();
 		boolean initial = that.isDRD();
 		that.setDRD(true);
 		this.debug_routes = (ArrayList<Route>)that.getRoutes().clone();
 		that.setDRD(initial);
-
 	}
 
 	// Constructor for map templates.
@@ -214,7 +221,8 @@ public class Map {
 
 		// Try and remove as many intersections as possible.
 		debug_log.add("Begin intersection testing on map:");
-		returnVector = this.intersectionTesting(returnVector);
+		returnVector = this.intersectionTestingCity(returnVector);
+		returnVector = this.intersectionTestingRoute(returnVector);
 		debug_log.add("End intersection testing.");
 		debug_log.add("");
 
@@ -225,7 +233,7 @@ public class Map {
 
 	private boolean isFullyConnected(ArrayList<Route> inRoutes) {
 
-		// Varialble declaration.
+		// Variable declaration.
 		ArrayList<String> cityQueue = new ArrayList<String>();
 		ArrayList<String> connectedCities = new ArrayList<String>();
 
@@ -253,7 +261,6 @@ public class Map {
 		if (connectedCities.size() == this.cities.size()) {		
 			return true;
 		} else {
-			
 			return false;
 		}
 
@@ -273,16 +280,77 @@ public class Map {
 		return true;
 
 	}
-
+	
 	// Checks the routes and removes any with overlapping paths.
 	@SuppressWarnings("unchecked")
-	private ArrayList<Route> intersectionTesting(ArrayList<Route> in) {
+	private ArrayList<Route> intersectionTestingCity(ArrayList<Route> in) {
+		
 		// Clone initial route list.
 		ArrayList<Route> full = (ArrayList<Route>)in.clone();
 
 		// Calculate initial overlap points.
-		int overs = intersectionCounter(full);
-		debug_log.add("  Initial route overlaps = " + overs);
+		int overs = intersectionCounterCity(full, this.cities);
+		debug_log.add("  Initial route-city overlaps = " + overs);
+
+		// Exits if there are no collisions to begin with.
+		if (overs == 0) {
+			return full;
+		}
+		// If greater than 0 collisions, begin evaluation of collisions.
+
+		// Begin by running through each route and city.
+		for (int i = 0; i < full.size(); ++i) {
+			Route r = full.get(i);											// Get route.
+			Line2D.Float l = this.createRouteLine(r);						// Converts the route into a usable line.
+			for (int j = 0; j < this.cities.size(); ++j) {
+				City c = this.cities.get(j);								// Get city.
+				Rectangle g = c.getBounds();								// Converts the city into a rectangle.
+				if (g.intersectsLine(l) && (!r.isConnected(c.getName()))) {	// Check for overlaps.
+					full.remove(r);											// Removes r.
+					debug_log.add("  Removed r" + r.toString().substring(1, r.toString().length()));
+					if (!isFullyConnected(full)) {							// Checks if the routes still connect all cities.
+						full.add(r);
+						debug_log.add("  Previous route removal broke an important connection; restoring the removed route.");
+					}
+				}
+			}
+		}
+
+		// Check how many collisions remain.
+		overs = intersectionCounterCity(full, this.cities);
+		debug_log.add("  Final route-city overlaps = " + overs);
+
+		// Return final list.
+		return full;
+
+	}
+
+	private int intersectionCounterCity(ArrayList<Route> inR, ArrayList<City> inC) {
+		int collisions = 0;
+		for (int i = 0; i < inR.size(); ++i) {
+			Route r = inR.get(i);											// Get route.
+			Line2D.Float l = this.createRouteLine(r);						// Converts the route into a usable line.
+			for (int j = 0; j < inC.size(); ++j) {
+				City c = inC.get(j);										// Get city.
+				Rectangle g = c.getBounds();								// Converts the city into a rectangle.
+				if (g.intersectsLine(l) && (!r.isConnected(c.getName()))) {	// Check for overlaps.
+					collisions += 1;
+				}
+			}
+		}
+		return collisions;
+	}
+
+	// Checks the routes and removes any with overlapping paths.
+	@SuppressWarnings("unchecked")
+	private ArrayList<Route> intersectionTestingRoute(ArrayList<Route> in) {
+		
+		// Clone initial route list.
+		ArrayList<Route> full = (ArrayList<Route>)in.clone();
+
+		// Calculate initial overlap points.
+		int overs = intersectionCounterRoute(full);
+		debug_log.add("  Initial route-route overlaps = " + overs);
 
 		// Exits if there are no overlaps to begin with.
 		if (overs == 0) {
@@ -293,10 +361,10 @@ public class Map {
 		// Begin by running through each route combination.
 		for (int i = 0; i < full.size(); ++i) {
 			Route r1 = full.get(i);											// Get first route.
-			Line2D.Float l1 = this.createRouteLine(r1);						// Converts the route into a useable line.
+			Line2D.Float l1 = this.createRouteLine(r1);						// Converts the route into a usable line.
 			for (int j = i + 1; j < full.size(); ++j) {
 				Route r2 = full.get(j);										// Get second route.
-				Line2D.Float l2 = this.createRouteLine(r2);					// Converts the route into another useable line.
+				Line2D.Float l2 = this.createRouteLine(r2);					// Converts the route into another usable line.
 				if (l1.intersectsLine(l2) && (!r1.sharesCityWith(r2))) {	// Check for overlaps.
 					full.remove(r2);										// Removes r2, the longer route. (ArrayList is pre-sorted by length)
 					debug_log.add("  Removed r" + r2.toString().substring(1, r2.toString().length()));
@@ -309,28 +377,77 @@ public class Map {
 		}
 
 		// Check how many overlaps remain.
-		overs = intersectionCounter(full);
-		debug_log.add("  Final route overlaps = " + overs);
+		overs = intersectionCounterRoute(full);
+		debug_log.add("  Final route-route overlaps = " + overs);
 
-		// Return final vector.
+		// Return final list.
 		return full;
 
 	}
 
-	private int intersectionCounter(ArrayList<Route> in) {
+	private int intersectionCounterRoute(ArrayList<Route> in) {
 		int overlaps = 0;
 		for (int i = 0; i < in.size(); ++i) {
 			Route r1 = in.get(i);											// Get first route.
-			Line2D.Float l1 = this.createRouteLine(r1);						// Converts the route into a useable line.
+			Line2D.Float l1 = this.createRouteLine(r1);						// Converts the route into a usable line.
 			for (int j = i + 1; j < in.size(); ++j) {
 				Route r2 = in.get(j);										// Get second route.
-				Line2D.Float l2 = this.createRouteLine(r2);					// Converts the route into another useable line.
+				Line2D.Float l2 = this.createRouteLine(r2);					// Converts the route into another usable line.
 				if (l1.intersectsLine(l2) && (!r1.sharesCityWith(r2))) {	// Check for overlaps.
 					overlaps += 1;
 				}
 			}
 		}
 		return overlaps;
+	}
+	
+	// Code that creates the graphical land below the cities.
+	@SuppressWarnings("unchecked")
+	private void terraformRandom(int pointCount, int landMin, int landMax, int smoothingCount, double smoothingRate, Random r) {
+		
+		debug_log.add("Begin 'random' terraforming.");
+		debug_log.add(" Generating land...");
+		
+		ArrayList<Land> tempLand = new ArrayList<Land>();
+		
+		// Generates land masses.
+		for (City c : this.cities) {
+			
+			// Get the centered city coordinates.
+			int centerX = c.getX() + (City.CITY_SIZE / 2); 
+			int centerY = c.getY() + (City.CITY_SIZE / 2);
+			Land newLand = new Land(centerX, centerY, pointCount, landMin, landMax, smoothingCount, smoothingRate, r);
+			tempLand.add(newLand);
+			debug_log.add("  New terrain: " + MyArrays.arrayToString(newLand.getTerrain().xpoints, ",", "[", "]") + ", " + MyArrays.arrayToString(newLand.getTerrain().ypoints, ",", "[", "]") + ", " + (pointCount * smoothingCount) + ".");
+		
+		}
+		
+		// Merges neighbouring land masses.
+		debug_log.add(" Merging land...");
+		ArrayList<Land> finalLand = (ArrayList<Land>) tempLand.clone();
+		boolean run = true;
+		while (run) {
+			run = false;
+			for (int i = 0; i < tempLand.size(); ++i) {
+				Land a = tempLand.get(i);
+				if ((finalLand.contains(a))) {
+					for (int j = i + 1; j < tempLand.size(); ++j) {
+						Land b = tempLand.get(j);
+						if ((a.overlaps(b)) && (!a.equals(b)) && (finalLand.contains(b))) {
+							a.merge(b);
+							finalLand.remove(b);
+							debug_log.add("  Merging land " + i + " and " + j + "...");
+							run = true;
+						}
+					}
+				}
+			}
+		}
+		
+		this.lands = finalLand;
+		
+		debug_log.add("End terraforming.");
+		
 	}
 
 	public int getScrollX() {
@@ -479,6 +596,21 @@ public class Map {
 
 		return total;
 	
+	}
+	
+	public boolean isOverLand(Point p) {
+		boolean ol = false;
+		for (Land l : this.lands) {
+			if (l.getTerrain().contains(p)) {
+				ol = true;
+			}
+		}
+		return ol;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public ArrayList<Land> getLand() {
+		return (ArrayList<Land>) this.lands.clone();
 	}
 
 	// Mutators

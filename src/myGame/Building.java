@@ -215,7 +215,32 @@ public class Building {
 	}
 	public int getX() {return this.x;}
 	public int getY() {return this.y;}
-	public Color getColor() {return this.color;}
+	public Color getColor() {return this.color;}	
+	public ArrayList<String> getPositives() {
+		ArrayList<String> ret = new ArrayList<String>();
+		for (String key : stats.keySet()) {
+			if (getStat(key) > 0) {
+				ret.add(key);
+			}
+		}
+		return ret;
+	}
+	public ArrayList<String> getNegatives() {
+		ArrayList<String> ret = new ArrayList<String>();
+		for (String key : stats.keySet()) {
+			if (getStat(key) < 0) {
+				ret.add(key);
+			}
+		}
+		return ret;
+	}
+	public ArrayList<String> getNonZeroes() {
+		ArrayList<String> ret = getPositives();
+		for (String key : getNegatives()) {
+			ret.add(key);
+		}
+		return ret;
+	}
 
 	// Mutators
 	public void setName(String in) {this.name = in;}
