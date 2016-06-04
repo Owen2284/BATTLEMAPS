@@ -56,7 +56,7 @@ public class InputWindow extends InfoWindow {
 			g.setColor(Color.BLACK);
 			g.drawRect(this.x + this.boxX, this.y + this.boxY + TOP_BAR_HEIGHT, this.width - 10 - this.boxX, 22);
 			g.drawString(this.getInputString(), this.x + this.boxX + 2, 
-					this.y + this.boxY + MyTextMetrics.getTextSize(this.getInputString())[1] + TOP_BAR_HEIGHT + 2);
+					this.y + this.boxY + MyTextMetrics.getTextSizeFlat(this.getInputString())[1] + TOP_BAR_HEIGHT + 2);
 		}
 		
 	}

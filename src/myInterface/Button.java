@@ -343,14 +343,14 @@ public class Button extends Sprite {
 				// Initialises variables for text resizing.			
 				int fontSize = Board.DEFAULT_FONT_SIZE;
 				Rectangle buttonHitbox = this.getBounds();
-				int[] textSizes = MyTextMetrics.getTextSize(buttonText);
+				int[] textSizes = MyTextMetrics.getTextSizeFlat(buttonText);
 				Rectangle textHitbox = new Rectangle(this.x + 5, this.y + 15, textSizes[0], textSizes[1]);
 
 				// Shrinks text until it fits into the button fully.
 				while ((!buttonHitbox.contains(textHitbox)) && (fontSize > 1)) {
 					--fontSize;
 					g.setFont(new Font(Board.DEFAULT_FONT_TYPE, Board.DEFAULT_FONT_ATT, fontSize));
-					textSizes = MyTextMetrics.getTextSize(buttonText);
+					textSizes = MyTextMetrics.getTextSizeFlat(buttonText);
 					textHitbox = new Rectangle(this.x + 5, this.y + 15, textSizes[0], textSizes[1]);
 				}
 
@@ -363,7 +363,7 @@ public class Button extends Sprite {
 				// Initialises variables for text resizing.			
 				int fontSize = Board.DEFAULT_FONT_SIZE;
 				Rectangle buttonHitbox = this.getBounds();
-				int[] textSizes = MyTextMetrics.getTextSize(buttonText);
+				int[] textSizes = MyTextMetrics.getTextSizeFlat(buttonText);
 				// Rectangle textHitbox = new Rectangle((int)( (float)this.x + (this.width / 2.0) - (textSizes[0] / 2.0) ), (int)( (float)this.y + (3 * (this.height / 4)) - (textSizes[1] / 2.0) ), textSizes[0], textSizes[1]);
 				Rectangle textHitbox = new Rectangle((int)( (float)this.x + ((this.width - textSizes[0]) / 2.0) ), (int)( (float)this.y + ((this.height - textSizes[1]) / 2.0) ), textSizes[0], textSizes[1]);
 
@@ -371,7 +371,7 @@ public class Button extends Sprite {
 				while ((!buttonHitbox.contains(textHitbox)) && (fontSize > 1)) {
 					--fontSize;
 					g.setFont(new Font(Board.DEFAULT_FONT_TYPE, Board.DEFAULT_FONT_ATT, fontSize));
-					textSizes = MyTextMetrics.getTextSize(buttonText);
+					textSizes = MyTextMetrics.getTextSizeFlat(buttonText);
 					textHitbox = new Rectangle((int)( (float)this.x + ((this.width - textSizes[0]) / 2.0) ), (int)( (float)this.y + ((this.height - textSizes[1]) / 2.0) ), textSizes[0], textSizes[1]);
 				}
 
@@ -387,7 +387,7 @@ public class Button extends Sprite {
 			if (!centerText) {
 				g.drawString(this.buttonText, this.x + 5, this.y + 15);
 			} else {
-				int[] textSizes = MyTextMetrics.getTextSize(buttonText);
+				int[] textSizes = MyTextMetrics.getTextSizeFlat(buttonText);
 				g.drawString(this.buttonText, (int)( (float)this.x + ((this.width - textSizes[0]) / 2.0) ), (int)( (float)this.y + ((this.height - textSizes[1]) / 2.0) + (textSizes[1]) ) - FUCK_UP_CORRECTION);
 			}
 

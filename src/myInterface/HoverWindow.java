@@ -100,6 +100,8 @@ public class HoverWindow implements MyWindow {
 
 	public void setContent(String in) {
 		this.content = in;
+		this.width = MyTextMetrics.getTextSizeFlat(in)[0] + 20;
+		this.height = MyTextMetrics.getTextSizeFlat(in)[1] + 5;
 	}
 
 	public void draw(Graphics g, Board b, ImageLibrary il) {
@@ -108,7 +110,7 @@ public class HoverWindow implements MyWindow {
 		g.setColor(Color.BLACK);
 		g.drawRect(this.x, this.y, this.animation_width, this.animation_height);
 		if (this.getAnimationStatus().equals("Open")) {
-			g.drawString(this.content, this.x + (this.width / 2) - (MyTextMetrics.getTextSize(this.content)[0] / 2) + 5, this.y + 15);
+			g.drawString(this.content, this.x + (this.width / 2) - (MyTextMetrics.getTextSizeFlat(this.content)[0] / 2), this.y + 15);
 		}
 	}
 

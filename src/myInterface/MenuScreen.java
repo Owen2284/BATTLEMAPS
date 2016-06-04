@@ -19,14 +19,11 @@ public class MenuScreen extends MyScreen {
 	}
 
 	@Override
-	public void act() {
-		// TODO Auto-generated method stub
-
-	}
+	public void act() {}
 
 	@Override
 	public void draw(Graphics g) {
-		// TODO Auto-generated method stub
+		// TODO: Create menu screen.
 	}
 	
 	@Override
@@ -36,7 +33,7 @@ public class MenuScreen extends MyScreen {
 
 	@Override
 	public void transition() {
-		// TODO Auto-generated method stub
+		// TODO: Transition system.
 	}
 
 }

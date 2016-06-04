@@ -15,7 +15,7 @@ public class ErrorWindow extends InfoWindow {
 		this.contentX = -10;
 		this.removeAllButtons();
 		
-		while (MyTextMetrics.getTextSize(this.content)[0] + 20 + this.contentX > this.width) {
+		while (MyTextMetrics.getTextSizeComplex(this.content)[0] + 20 + this.contentX > this.width) {
 			this.width += 10;
 		}
 		

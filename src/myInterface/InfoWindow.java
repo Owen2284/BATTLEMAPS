@@ -176,7 +176,7 @@ public class InfoWindow implements MyWindow {
 			    	g.drawString(segment, x1 += 100, y1);
 			    }
 			    x1 = this.x + contentX - 80;
-			    y1 += MyTextMetrics.getTextSize("TEST")[1] + lineSpacing;
+			    y1 += MyTextMetrics.getTextSizeFlat("TEST")[1] + lineSpacing;
 			}
 
 			// Draws images.

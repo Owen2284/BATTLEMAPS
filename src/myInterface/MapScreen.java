@@ -6,14 +6,19 @@ import java.awt.Rectangle;
 import java.util.ArrayList;
 
 import myGame.City;
+import myGame.Land;
 import myGame.Map;
 import myGame.Player;
 import myGame.Route;
+import myGame.Traveller;
 import myMain.Board;
 
 public class MapScreen extends MyScreen {
 	
-	private boolean trippyMode = false;
+	private final boolean trippyMode = false;
+	private final boolean invasionMode = false;
+	
+	private ArrayList<Traveller> travellers = new ArrayList<Traveller>();
 
 	public MapScreen(Board b, int inWidth, int inHeight) {
 		super(b);
@@ -21,6 +26,10 @@ public class MapScreen extends MyScreen {
 		this.width = inWidth;
 		this.height = inHeight;
 		this.init();
+		for (City c : this.game.getMap().getCities()) {
+			ArrayList<City> n = this.game.getMap().getNeighboursOf(c.getName());
+			travellers.add(new Traveller(c, n.get(b.randomTrivial.nextInt(n.size()))));
+		}
 	}
 	
 	public MapScreen(Board b) {
@@ -65,6 +74,20 @@ public class MapScreen extends MyScreen {
 			if (tempMap.getScrollY() - this.height < -1 * tempMap.getWidth() - tempMap.getBorder()) {tempMap.setScrollY((-1 * tempMap.getWidth() - tempMap.getBorder()) + this.height);}
 		}
 		
+		// Updates travellers.
+		for (int i = 0; i < travellers.size(); ++i) {
+			Traveller t = travellers.get(i);
+			if (!t.near()) {
+				t.move();
+			} else {
+				ArrayList<City> a = this.game.getMap().getCities();
+				City c = a.get(b.randomTrivial.nextInt(a.size()));
+				ArrayList<City> n = this.game.getMap().getNeighboursOf(c.getName());
+				travellers.add(new Traveller(c, n.get(b.randomTrivial.nextInt(n.size()))));
+				if (!invasionMode) {travellers.remove(t);}
+			}
+		}
+		
 	}
 
 	@Override
@@ -74,24 +97,16 @@ public class MapScreen extends MyScreen {
 		Map tempMap = game.getMap();
 		ArrayList<City> tempCities = tempMap.getCities();
 		Color routeColor = new Color(255,255,255);
-		Color borderColor = new Color(0,0,0);
-		Color islandColor = new Color(0,200,0);
 
-		// Sets background color.
+		// Sets background colour.
 		b.setBackground(Color.BLUE);
+		
+		// Get terrain temporarily.
+		ArrayList<Land> tempTerrain = tempMap.getLand();
 
-		// Island drawing loop.
-		for (int i = 0; i < tempCities.size(); ++i) {
-			
-			// Gets the city being operated on.
-			City currentCity = tempCities.get(i);
-
-			// Draws island for the city.
-			g.setColor(islandColor);
-			g.fillOval(currentCity.getX() + tempMap.getScrollX() - City.CITY_SIZE / 2, currentCity.getY() + tempMap.getScrollY() - City.CITY_SIZE / 2, City.CITY_SIZE * 2, City.CITY_SIZE * 2);
-			g.setColor(borderColor);
-			g.drawOval(currentCity.getX() + tempMap.getScrollX() - City.CITY_SIZE / 2, currentCity.getY() + tempMap.getScrollY()- City.CITY_SIZE / 2, City.CITY_SIZE * 2, City.CITY_SIZE * 2);
-
+		// Terrain drawing loop.
+		for (int i = 0; i < tempTerrain.size(); ++i) {
+			tempTerrain.get(i).draw(g, game.getMap().getScrollX(), game.getMap().getScrollY());
 		}
 
 		// Route drawing loop.
@@ -119,6 +134,11 @@ public class MapScreen extends MyScreen {
 				}
 			}
 
+		}
+		
+		// Traveller drawing loop.
+		for (Traveller t : travellers) {
+			t.draw(g, b);
 		}
 
 		// Hover over drawing loop.

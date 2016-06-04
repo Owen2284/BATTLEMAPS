@@ -27,14 +27,12 @@ public class CityScreen extends MyScreen {
 	}
 
 	@Override
-	public void act() {
-		// TODO Auto-generated method stub
-	}
+	public void act() {}
 
 	@Override
 	public void draw(Graphics g) {
 		
-		// Sets background color.
+		// Sets background colour.
 		Color backgroundColor = new Color(0,200,0);
 		b.setBackground(backgroundColor);
 
@@ -116,24 +114,31 @@ public class CityScreen extends MyScreen {
 		g.fillRect(0, 0, 80, 21);															// Turn counter.
 		g.fillRect(0, this.height - 40, this.width, 40);									// Bottom bar.
 		g.fillRect(750, 0, 250, this.height - 40);											// City buttons box.
-		g.fillRect(0, this.height / 2, City.GRID_OFFSET_X - 50, this.height - 40);		// Stats box.
+		g.fillRect(0, this.height / 2, City.GRID_OFFSET_X - 50, this.height - 40);			// Points box.
 
 		g.setColor(Color.BLACK);
 		g.drawRect(0, 0, 80, 21); 															// Turn counter.
-		g.drawRect(0, this.height - 40, this.width, this.height);						// Bottom bar.
+		g.drawRect(0, this.height - 40, this.width, this.height);							// Bottom bar.
 		g.drawRect(750, 0, 250, this.height - 40);											// City buttons box.
-		g.drawRect(0, this.height / 2, City.GRID_OFFSET_X - 50, (this.height / 2) - 40);	// Stats box.
+		g.drawRect(0, this.height / 2, City.GRID_OFFSET_X - 50, (this.height / 2) - 40);	// Points box.
 
 		// Draws text.
 		g.drawString("Turn " + Integer.toString(game.getTurn()), 4, 16);
-		g.drawString(theCity.getName(), 5, this.height / 2 + 5 + MyTextMetrics.getTextSize("Text")[1]);
+		g.drawString(theCity.getName(), 5, this.height / 2 + 5 + MyTextMetrics.getTextSizeFlat("Text")[1]);
+		g.drawString(theCity.getName(), 6, this.height / 2 + 5 + MyTextMetrics.getTextSizeFlat("Text")[1]);
 		int offset = 3;
 		String[] theKeys = {"Population", "Happiness", "Military", "Technology", "Nature", "Diplomacy", "Commerce", "Industry"};
+		int imgNum = 57;
 		for (int i = 0; i < theKeys.length; ++i) {
-			if (theKeys[i].equals("Military")) {++offset;}
-			g.drawString(theKeys[i] + ": \t " + theCity.getStat(theKeys[i]), 5, this.height / 2 + (5 + MyTextMetrics.getTextSize("Text")[1]) * (i + offset));
+			if (theKeys[i].equals("Military")) {++offset; imgNum = 51;}
+			g.drawImage(il.getImage(imgNum), 5, ((this.height / 2) - 13) + (5 + MyTextMetrics.getTextSizeFlat("Text")[1]) * (i + offset), b);
+			String positivity = "+";
+			if (theCity.getPoint(theKeys[i]) < 0 || theKeys[i].equals("Population")) {
+				positivity = "";
+			}
+			g.drawString(positivity + theCity.getPoint(theKeys[i]), 35, this.height / 2 + (5 + MyTextMetrics.getTextSizeFlat("Text")[1]) * (i + offset));
+			++imgNum;
 		}
-
 	}
 	
 	@Override
@@ -143,7 +148,7 @@ public class CityScreen extends MyScreen {
 
 	@Override
 	public void transition() {
-		// TODO Auto-generated method stub
+		// TODO: Transition system.
 	}
 
 }

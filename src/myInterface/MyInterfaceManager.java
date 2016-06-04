@@ -293,7 +293,7 @@ public class MyInterfaceManager {
 				buttons.add(new Button(770, 20, windowWidth - 790, 40, "City_Build", "Add Building", 16));
 				buttons.add(new Button(770, 90, windowWidth - 790, 40, "City_Move", "Move Building", 18));
 				buttons.add(new Button(770, 160, windowWidth - 790, 40, "City_Remove", "Remove Building", 19));
-				buttons.add(new Button(770, 290, windowWidth - 790, 40, "City_Ordinances", "City Ordinances", 23));
+				buttons.add(new Button(770, 290, windowWidth - 790, 40, "City_Ordinances", "City Ordinances", 23, theName));
 				buttons.add(new Button(770, 400, windowWidth - 790, 40, "City_Rename", "Rename City", 20, theName));
 			}
 			buttons.add(new Button(770, 470, windowWidth - 790, 40, "City_Info", "View City Info", 24));
@@ -322,7 +322,7 @@ public class MyInterfaceManager {
 			dwb = new Button(0, 0, "DEBUG_MENU_Packed", "Packed Map", 12, "Packed");
 			dwb.setColorInner(Color.RED);
 			dw.addGridButton(0, 1, dwb); buttons.add(dwb);
-			dwb = new Button(0, 0, "DEBUG_MENU_Seed", "Enter Seed", 14);
+			dwb = new Button(0, 0, "DEBUG_MENU_Seed", "Enter Seed", 39);
 			dwb.setColorInner(Color.GREEN);
 			dw.addGridButton(0, 3, dwb); buttons.add(dwb);
 
@@ -433,6 +433,7 @@ public class MyInterfaceManager {
 
 	// Updaters
 	public void act() {
+		
 		// Processes key strokes into inputString.
 		for (String l : ACCEPTEDLETTERS) {
 			if (letters.get(l)) {
@@ -441,6 +442,7 @@ public class MyInterfaceManager {
 				System.out.println(inputString[0]);
 			}
 		}
+		
 	}
 	
 	public void updateWindows() {
