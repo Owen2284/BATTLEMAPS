@@ -20,6 +20,7 @@ import myGame.OrdinanceBook;
 import myGame.Player;
 import myInterface.Button;
 import myInterface.GridWindow;
+import myInterface.ImageTestScreen;
 import myInterface.InfoWindow;
 import myInterface.InputWindow;
 import myInterface.ListWindow;
@@ -636,6 +637,23 @@ public class ButtonExecutor {
 			listow.setContentX(0);
 			listow.getWindowButtons().get(0).setVisible(false);
 			listow.clearImages();
+		}
+		else if (exec == 45) {												// Image tester screen code
+			b.switchScreen("ImageTester", "1");
+		}
+		else if (exec == 46) {												// Image tester previous image
+			ImageTestScreen its = (ImageTestScreen) b.scr;
+			its.setImageNumber(its.getImageNumber() - 1);
+			if (its.getImageNumber() < 1) {
+				its.setImageNumber(b.il.getMax());
+			}
+		}
+		else if (exec == 47) {												// Image tester next image
+			ImageTestScreen its = (ImageTestScreen) b.scr;
+			its.setImageNumber(its.getImageNumber() + 1);
+			if (its.getImageNumber() > b.il.getMax()) {
+				its.setImageNumber(1);
+			}
 		}
 
 	}

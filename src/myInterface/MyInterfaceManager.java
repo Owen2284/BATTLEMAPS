@@ -240,18 +240,6 @@ public class MyInterfaceManager {
 
 		if (Board.DEBUG_LAUNCH) {System.out.println("Initialising interface for " + in + ".");}
 
-		if (Board.DEBUG_WINDOW && !in.equals("DEBUG")) {
-
-			// Debug action window button.
-			Button db = new Button(3*(windowWidth / 4) - 128, windowHeight - 36);
-			db.setID("DEBUG_ACTION_WINDOW");
-			db.setColorInner(Color.GREEN);
-			db.setExecutionNumber(10);
-			db.setButtonText("DEBUG_ACTION");
-			buttons.add(db);
-
-		}
-
 		if (in.equals("Map")) {
 
 			// End turn button.
@@ -278,6 +266,8 @@ public class MyInterfaceManager {
 			vs.setExecutionNumber(6);
 			vs.setButtonText("View Stats");
 			buttons.add(vs);
+			
+			addDebug();
 
 		} else if (in.substring(0,4).equals("City")) {
 
@@ -297,8 +287,12 @@ public class MyInterfaceManager {
 				buttons.add(new Button(770, 400, windowWidth - 790, 40, "City_Rename", "Rename City", 20, theName));
 			}
 			buttons.add(new Button(770, 470, windowWidth - 790, 40, "City_Info", "View City Info", 24));
+			
+			addDebug();
 
 		} else if (in.substring(0,4).equals("Menu")) {
+			
+			addDebug();
 
 		} else if (in.equals("DEBUG")) {
 
@@ -309,29 +303,50 @@ public class MyInterfaceManager {
 
 			Button dwb = new Button(0, 0, "DEBUG_MENU_Normal", "Normal Map", 12, "Normal");
 			dwb.setColorInner(Color.RED);
-			dw.addGridButton(0, 0, dwb); buttons.add(dwb);
-			dwb = new Button(0, 0, "DEBUG_MENU_Small", "Small Map", -1, "Small");
-			dwb.setColorInner(Color.RED);
-			dw.addGridButton(1, 0, dwb); buttons.add(dwb);
+			dw.addGridButton(0, 0, dwb);
 			dwb = new Button(0, 0, "DEBUG_MENU_Large", "Large Map", 12, "Large");
 			dwb.setColorInner(Color.RED);
-			dw.addGridButton(2, 0, dwb); buttons.add(dwb);
+			dw.addGridButton(0, 1, dwb);
 			dwb = new Button(0, 0, "DEBUG_MENU_Full", "Full Map", 12, "Full");
 			dwb.setColorInner(Color.RED);
-			dw.addGridButton(3, 0, dwb); buttons.add(dwb);
+			dw.addGridButton(0, 2, dwb);
 			dwb = new Button(0, 0, "DEBUG_MENU_Packed", "Packed Map", 12, "Packed");
 			dwb.setColorInner(Color.RED);
-			dw.addGridButton(0, 1, dwb); buttons.add(dwb);
+			dw.addGridButton(0, 3, dwb);
 			dwb = new Button(0, 0, "DEBUG_MENU_Seed", "Enter Seed", 39);
 			dwb.setColorInner(Color.GREEN);
-			dw.addGridButton(0, 3, dwb); buttons.add(dwb);
+			dw.addGridButton(1, 3, dwb);
+			dwb = new Button(0, 0, "DEBUG_MENU_Images", "Image Tester", 45);
+			dwb.setColorInner(Color.ORANGE);
+			dw.addGridButton(3, 0, dwb);
+			dwb = new Button(0, 0, "DEBUG_MENU_Menu", "To Menu Screen", 3);
+			dwb.setColorInner(Color.BLUE);
+			dw.addGridButton(3, 3, dwb);
 
-			buttons.add(dw.getCloseButton());
-
-			windows.add(dw);
+			this.addWindowFullForce(dw);
+			
+		}
+		else if (in.equals("ImageTester")) {
+			
+			// Image changing buttons.
+			buttons.add(new Button(10, windowHeight / 2 - 20, 40, 40, "Image_Test_Left", "<", 46));
+			buttons.add(new Button(windowWidth - 50, windowHeight / 2 - 20, 40, 40, "Image_Test_Right", ">", 47));
+			
+			// Back button.
+			buttons.add(new Button(windowWidth / 2 - 40, windowHeight - 40, 80, 30, "Image_Test_Back", "Back", 15));
 			
 		}
 
+	}
+	
+	public void addDebug() {
+		// Debug action window button.
+		Button db = new Button(3*(windowWidth / 4) - 128, windowHeight - 36);
+		db.setID("DEBUG_ACTION_WINDOW");
+		db.setColorInner(Color.GREEN);
+		db.setExecutionNumber(10);
+		db.setButtonText("DEBUG_ACTION");
+		buttons.add(db);
 	}
 	
 	public void setLetter(String ch, boolean bo) {
@@ -528,7 +543,7 @@ public class MyInterfaceManager {
 		this.mouseHeld = newArr;
 	}
 
-	public void mouseReleased(MouseEvent e) {
+	public void mouseReleased(@SuppressWarnings("unused") MouseEvent e) {
 		boolean[] newArr = {false, false, false};
 		this.mouseHeld = newArr;
 	}

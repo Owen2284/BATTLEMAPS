@@ -56,10 +56,14 @@ public class ImageLibrary {
 
     }
 
-        // Get image width/height.
+    // TODO: Get image width/height.
 
     public int getMax() {
         return this.max;
+    }
+    
+    public boolean notNull(int i) {
+    	return getImage(i) != null;
     }
 
     // Mutators
