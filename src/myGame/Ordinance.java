@@ -1,67 +1,45 @@
 package myGame;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 public class Ordinance {
 	
+	// Fields
 	private String name;
 	private String desc;
-	private HashMap<String, Integer> points;
+	private PointSet points;
 	private int effectNum;
-
+	
+	// Constructor
 	public Ordinance(String inName, String inDesc, int[] inPoints, int inEffect) {
 		this.name = inName;
 		this.desc = inDesc;
-		points = new HashMap<String, Integer>();
-		points.put("Military", inPoints[0]);
-		points.put("Technology", inPoints[1]);
-		points.put("Nature", inPoints[2]);
-		points.put("Diplomacy", inPoints[3]);
-		points.put("Commerce", inPoints[4]);
-		points.put("Industry", inPoints[5]);
-		points.put("Population", inPoints[6]);
-		points.put("Happiness", inPoints[7]);
+		points = new PointSet();
+		points.set("Military", inPoints[0]);
+		points.set("Technology", inPoints[1]);
+		points.set("Nature", inPoints[2]);
+		points.set("Diplomacy", inPoints[3]);
+		points.set("Commerce", inPoints[4]);
+		points.set("Industry", inPoints[5]);
+		points.set("Population", inPoints[6]);
+		points.set("Happiness", inPoints[7]);
 		this.effectNum = inEffect;
 	}
 
+	// Basic accessors.
 	public String getName() {return name;}
 	public String getDesc() {return desc;}
 	public String getDesc(String cityName) {return desc.split("$city")[0] + cityName + desc.split("$city")[1];}
 	public int getEffectNum() {return effectNum;}
 	
-	public int getStat(String key) {return points.get(key);}
+	// Points accessors.
+	public int getPoint(String key) {return points.get(key);}
+	public PointSet getPointSet() {return points;}
+	public ArrayList<String> getPositives() {return points.getPositives();}
+	public ArrayList<String> getNegatives() {return points.getNegatives();}
+	public ArrayList<String> getNonZeroes() {return points.getNonZeroes();}	
 	
-	public void setEffectNum(int effectNum) {
-		this.effectNum = effectNum;
-	}
-
-	public ArrayList<String> getPositives() {
-		ArrayList<String> ret = new ArrayList<String>();
-		for (String key : points.keySet()) {
-			if (getStat(key) > 0) {
-				ret.add(key);
-			}
-		}
-		return ret;
-	}
-	
-	public ArrayList<String> getNegatives() {
-		ArrayList<String> ret = new ArrayList<String>();
-		for (String key : points.keySet()) {
-			if (getStat(key) < 0) {
-				ret.add(key);
-			}
-		}
-		return ret;
-	}
-	
-	public ArrayList<String> getNonZeroes() {
-		ArrayList<String> ret = getPositives();
-		for (String key : getNegatives()) {
-			ret.add(key);
-		}
-		return ret;
-	}
+	// Basic mutators.
+	public void setEffectNum(int effectNum) {this.effectNum = effectNum;}
 
 }

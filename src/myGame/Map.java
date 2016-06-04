@@ -194,7 +194,7 @@ public class Map {
 				// Finds shortest available route.
 				int shortest = 0;
 				while (Double.parseDouble(allRoutes[shortest][2]) <= 0) {
-					Route tempRoute = new Route(allRoutes[shortest][0], allRoutes[shortest][1]);
+					Route tempRoute = new Route(this.getCityByName(allRoutes[shortest][0]), this.getCityByName(allRoutes[shortest][1]));
 					debug_log.add("  INITIAL VALUE TOO SHORT: " + tempRoute.toString() + " : " + Double.toString(Double.parseDouble(allRoutes[shortest][2])));
 					shortest += 1; 
 				}
@@ -204,7 +204,7 @@ public class Map {
 					}
 				}
 				// Adds shortest route to return vector.
-				Route newRoute = new Route(allRoutes[shortest][0], allRoutes[shortest][1]);
+				Route newRoute = new Route(this.getCityByName(allRoutes[shortest][0]), this.getCityByName(allRoutes[shortest][1]));
 				returnVector.add(newRoute);
 				debug_log.add("  ADDING: " + newRoute.toString() + " It's distance is " + Double.toString(Double.parseDouble(allRoutes[shortest][2])));
 				// Sets entry as assigned.
@@ -301,7 +301,7 @@ public class Map {
 		// Begin by running through each route and city.
 		for (int i = 0; i < full.size(); ++i) {
 			Route r = full.get(i);											// Get route.
-			Line2D.Float l = this.createRouteLine(r);						// Converts the route into a usable line.
+			Line2D.Float l = r.createRouteLine();							// Converts the route into a usable line.
 			for (int j = 0; j < this.cities.size(); ++j) {
 				City c = this.cities.get(j);								// Get city.
 				Rectangle g = c.getBounds();								// Converts the city into a rectangle.
@@ -329,7 +329,7 @@ public class Map {
 		int collisions = 0;
 		for (int i = 0; i < inR.size(); ++i) {
 			Route r = inR.get(i);											// Get route.
-			Line2D.Float l = this.createRouteLine(r);						// Converts the route into a usable line.
+			Line2D.Float l = r.createRouteLine();							// Converts the route into a usable line.
 			for (int j = 0; j < inC.size(); ++j) {
 				City c = inC.get(j);										// Get city.
 				Rectangle g = c.getBounds();								// Converts the city into a rectangle.
@@ -361,10 +361,10 @@ public class Map {
 		// Begin by running through each route combination.
 		for (int i = 0; i < full.size(); ++i) {
 			Route r1 = full.get(i);											// Get first route.
-			Line2D.Float l1 = this.createRouteLine(r1);						// Converts the route into a usable line.
+			Line2D.Float l1 = r1.createRouteLine();						// Converts the route into a usable line.
 			for (int j = i + 1; j < full.size(); ++j) {
 				Route r2 = full.get(j);										// Get second route.
-				Line2D.Float l2 = this.createRouteLine(r2);					// Converts the route into another usable line.
+				Line2D.Float l2 = r2.createRouteLine();					// Converts the route into another usable line.
 				if (l1.intersectsLine(l2) && (!r1.sharesCityWith(r2))) {	// Check for overlaps.
 					full.remove(r2);										// Removes r2, the longer route. (ArrayList is pre-sorted by length)
 					debug_log.add("  Removed r" + r2.toString().substring(1, r2.toString().length()));
@@ -389,10 +389,10 @@ public class Map {
 		int overlaps = 0;
 		for (int i = 0; i < in.size(); ++i) {
 			Route r1 = in.get(i);											// Get first route.
-			Line2D.Float l1 = this.createRouteLine(r1);						// Converts the route into a usable line.
+			Line2D.Float l1 = r1.createRouteLine();						// Converts the route into a usable line.
 			for (int j = i + 1; j < in.size(); ++j) {
 				Route r2 = in.get(j);										// Get second route.
-				Line2D.Float l2 = this.createRouteLine(r2);					// Converts the route into another usable line.
+				Line2D.Float l2 = r2.createRouteLine();					// Converts the route into another usable line.
 				if (l1.intersectsLine(l2) && (!r1.sharesCityWith(r2))) {	// Check for overlaps.
 					overlaps += 1;
 				}
@@ -631,7 +631,7 @@ public class Map {
 		ArrayList<Route> theRoutes = this.getRoutesFromName(theCity.getName());
 		theCity.setName(newS);
 		for (Route r : theRoutes) {
-			String[] p = r.getPoints();
+			String[] p = r.getCities();
 			for (int i = 0; i < p.length; ++i) {
 				if (p[i].equals(oldS)) {
 					p[i] = newS;
@@ -666,6 +666,7 @@ public class Map {
 	}
 
 	// Transformations
+	@Deprecated
 	public Point[] convertRouteToPoints(Route r) {
 		
 		// Why the fuck didn't you store routes as points.
@@ -674,8 +675,8 @@ public class Map {
 		Point[] points = new Point[2];
 
 		// Gets the cities of the routes.
-		City c1 = getCityByName(r.getPoints()[0]);
-		City c2 = getCityByName(r.getPoints()[1]);
+		City c1 = getCityByName(r.getCities()[0]);
+		City c2 = getCityByName(r.getCities()[1]);
 
 		// Sets points of the route based on city size constant.
 		points[0] = new Point(c1.getX() + City.CITY_SIZE / 2, c1.getY() + City.CITY_SIZE / 2);
@@ -686,6 +687,7 @@ public class Map {
 
 	}
 
+	@Deprecated
 	public Line2D.Float createRouteLine(Point[] p) {
 
 		// Get points and coordinates.
@@ -704,33 +706,29 @@ public class Map {
 
 	}
 
+	@Deprecated
 	public Line2D.Float createRouteLine(Route r) {
 		return this.createRouteLine(this.convertRouteToPoints(r));
 	}
 
-	// Display methods.
+	// ToString override.
 	public String toString() {
 
 		String toFormat = "Map of size " + this.getLength() + " by " + this.getWidth() + ". It contains:- \n \n ";
-
 		toFormat += this.cities.size() + " Cities:\n ";
 		if (!this.cities.isEmpty()) {
 			for (int i = 0; i < (this.cities.size()); ++i) {
 				toFormat += "    " + this.cities.get(i).toString() + " \n ";
 			}
 		}
-
 		toFormat += " \n ";
-
 		toFormat += this.routes.size() + " Routes:\n ";
 		if (!this.routes.isEmpty()) {
 			for (int j = 0; j < (this.routes.size()); ++j) {
 				toFormat += "    " + this.routes.get(j).toString() + " \n ";
 			}
 		}
-
 		return toFormat;
-
 	}
 
 }

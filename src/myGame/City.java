@@ -11,6 +11,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 
+import myData.Stats;
 import myMain.Board;
 
 public class City {
@@ -30,39 +31,14 @@ public class City {
 	
 	// City administrative info.
 	private OrdinanceBook ob;
+	
+	// Stats module.
+	private Stats stats = new Stats();
 
 	// Constants
 	public static final int CITY_SIZE = 32;
 	public static final int GRID_OFFSET_X = 200;
 	public static final int GRID_OFFSET_Y = 90;
-
-	// Constructor for only ID and x and y coordinates.
-	public City(String inID, int inX, int inY) {
-		this.cID = inID;
-		this.x = inX;
-		this.y = inY;
-		this.name = "";
-		this.length = 10;
-		this.width = 10;
-		this.blocks = assembleBlocks();
-		this.buildings = new ArrayList<Building>();
-		this.oID = "NONE";
-		this.ob = new OrdinanceBook("data/ordinances.csv");
-	}
-
-	// Constructor for ID, x and y coordinates and city name.
-	public City(String inID, int inX, int inY, String inName) {
-		this.cID = inID;
-		this.x = inX;
-		this.y = inY;
-		this.name = inName;
-		this.length = 10;
-		this.width = 10;
-		this.blocks = assembleBlocks();
-		this.buildings = new ArrayList<Building>();
-		this.oID = "NONE";
-		this.ob = new OrdinanceBook("data/ordinances.csv");
-	}
 
 	// Constructor for ID, x and y coordinates, city name, city length and city width.
 	public City(String inID, int inX, int inY, String inName, int inLength, int inWidth) {
@@ -89,7 +65,7 @@ public class City {
 		this.blocks = that.getGrid();
 		this.buildings = that.getBuildings();
 		this.oID = new String(that.getOwner());
-		this.ob = that.getOrdinances();
+		this.ob = that.getAllOrdinances();
 	}
 
 	// Common constructor code.
@@ -123,56 +99,35 @@ public class City {
 		return tempBlocks;
 	}
 
-	// Accessors
+	// Basic accessors
 	public String getID() {return this.cID;}
-
 	public int getX() {return this.x;}
-
 	public int getY() {return this.y;}
-
 	public String getName() {return this.name;}
-
 	public String getOwner() {return this.oID;}
-
 	public int getLength() {return this.length;}
-
 	public int getWidth() {return this.width;}
 
 	public Block getBlock(String inID) {
-
 		int index = -1;
-
 		for (int i = 0; i < (this.getLength() * this.getWidth()); ++i) {
 			if (this.blocks.get(i).getID().equals(inID)) {
 				index = i;
 			}
 		}
-
-		if (index >= 0) {
-			return this.blocks.get(index);
-		} else {
-			return null;
-		}
+		if (index >= 0) {return this.blocks.get(index);} else {return null;}
 	}
 
 	public Block getBlock(int inX, int inY) {
-
 		int index = -1;
-
 		for (int i = 0; i < (this.getLength() * this.getWidth()); ++i) {
 			if (this.blocks.get(i).getX() == inX && this.blocks.get(i).getY() == inY) {
 				index = i;
 			}
 		}
-
-		if (index >= 0) {
-			return this.blocks.get(index);
-		} else {
-			return null;
-		}
-
+		if (index >= 0) {return this.blocks.get(index);} else {return null;}
 	}
-
+	
 	public ArrayList<Block> getGrid() {return this.blocks;}
 	
 	public Point getMousePosOnGrid(Point in) {
@@ -181,23 +136,21 @@ public class City {
 			if (blok.isOver(in)) {
 				return new Point(blok.getX(), blok.getY());
 			}
-		}
-		
+		}	
 		// Return out of bounds point if no collision.
 		return new Point(-1, -1);
 	}
 
 	public ArrayList<Building> getBuildings() {return this.buildings;}
-
-	public int getStat(String key) {
-		int total = 0;
-		for (Building item : buildings) {
-			total += item.getStat(key);
+	public int getPoint(String key) {return getPointSet().get(key);}
+	
+	public PointSet getPointSet() {
+		PointSet ret = new PointSet();
+		for (Building b : this.buildings) {
+			ret.add(b.getPointSet());
 		}
-		for (Ordinance ord : ob.getAllActive()) {
-			total += ord.getStat(key);
-		}
-		return total;
+		ret.add(this.ob.sumActive());
+		return ret;
 	}
 
 	public Rectangle getBounds() {return new Rectangle(x, y, CITY_SIZE, CITY_SIZE);}
@@ -248,6 +201,7 @@ public class City {
 	}
 	
 	public boolean hasSpaceFor(Building inBuilding, int inX, int inY) {
+		// Tests if building can fit at specified location.
 		boolean[][] colMap = this.getCollisionMap();
 		int currX = inX;
 		int currY = inY;
@@ -267,34 +221,41 @@ public class City {
 			currY += 1;
 		}
 		
+		// Returns true if building doesn't collide with other buildings.
 		return true;
 		
 	}
 	
-	public OrdinanceBook getOrdinances() {return this.ob;}
+	// Ordinances super-accessors.
+	public OrdinanceBook getAllOrdinances() {return this.ob;}
+	public Ordinance getOrdinance(String name) {return this.ob.get(name);}
+	public boolean getOrdinanceActivity(String name) {return this.ob.isActive(name);}
+	
+    // Stats super-accessors.
+    public int getStat(String in) {return this.stats.get(in);}    
+    public Stats getAllStats() {return this.stats;}
+ 	public String highest(String[] cats) {return stats.highest(cats);}
+ 	public String lowest(String[] cats) {return stats.lowest(cats);}
+ 	public double average(String[] cats) {return stats.average(cats);}
 
 	// Mutators
 	public void setID(String inID) {this.cID = inID;}
-
 	public void setX(int inX) {this.x = inX;}
-
 	public void setY(int inY) {this.y = inY;}
-
-	public void setName(String inName) {this.name = inName;}
-
-	public void setOwner(String in) {this.oID = in;}
-
+	public void setName(String inName) {this.name = inName; incStat("Times renamed", 1);}
+	public void setOwner(String in) {this.oID = in; incStat("Times owner changed", 1);}
 	public void setLength(int inLength) {this.length = inLength;}
-
 	public void setWidth(int inWidth) {this.width = inWidth;}
 
 	public void addBuilding(Building inBuilding, int inX, int inY) {
 		inBuilding.setX(inX); inBuilding.setY(inY);
 		this.buildings.add(inBuilding);
+		incStat("Building blueprints placed", 1);
 	}
 	
 	public void removeBuilding(Building inBuilding) {
 		this.buildings.remove(inBuilding);
+		incStat("Building removed", 1);
 	}
 	
 	public void removeBuildingAt(int inX, int inY) {
@@ -363,6 +324,22 @@ public class City {
 	public boolean hasAreaFor(Building building) {
 		return (getEmptyGridArea() >= building.getBlueprintArea());
 	}
+	
+	// Ordinance super-mutators
+	public void enactOrdinance(String name) {
+		ob.enact(name);
+		stats.inc("Ordinances enacted", 1);
+	}
+	
+	public void repealOrdinance(String name) {
+		ob.repeal(name);
+		stats.inc("Ordinances repealed", 1);
+	}
+	
+	// Stats super-mutators.
+	public void setStat(String in, int val) {stats.set(in, val);}
+	public void incStat(String in, int val) {stats.inc(in, val);}
+	public void decStat(String in, int val) {stats.dec(in, val);}
 	
 	// Graphical methods.
 	public void centerGrid() {

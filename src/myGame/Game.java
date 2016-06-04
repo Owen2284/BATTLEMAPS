@@ -10,6 +10,8 @@ package myGame;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 
+import myData.Stats;
+
 public class Game {
 
 	// Fields
@@ -18,6 +20,9 @@ public class Game {
 	private String victory = "Conquer";
 	private int turnNumber = 0;
 	private int playerWhoseGoItIs = 1;
+	
+	// Stats module.
+	private Stats stats = new Stats();
 
 	// Base constructor.
 	public Game() {
@@ -190,6 +195,13 @@ public class Game {
 	public boolean isUniqueName(String in) {return this.map.isUniqueName(in);}
 	public ArrayList<City> getCitiesOwnedBy(String player_id) {return this.map.getCitiesOwnedBy(player_id);}
 	public int sumStatByPlayer(String player_id, String key) {return this.map.sumStatByPlayer(player_id, key);}
+	
+    // Stats super-accessors.
+    public int getStat(String in) {return this.stats.get(in);}    
+    public Stats getAllStats() {return this.stats;}
+ 	public String highest(String[] cats) {return stats.highest(cats);}
+ 	public String lowest(String[] cats) {return stats.lowest(cats);}
+ 	public double average(String[] cats) {return stats.average(cats);}
 
 	// Mutators
 	public void addPlayer(Player inPlayer) {this.players.add(inPlayer);}
@@ -201,11 +213,12 @@ public class Game {
 	public void decTurn() {this.turnNumber -= 1;}
 	public void nextPlayer() {
 		// Move to the next player.
+		this.updateEndPlayer();
 		playerWhoseGoItIs += 1;
 		// TODO: Check if player is still in game.
 		// Increment turn counter if all players have acted.
 		if (playerWhoseGoItIs > this.players.size()) {
-			// TODO: Other end of turn code.
+			this.updateEndTurn();			
 			this.incTurn();
 			playerWhoseGoItIs = 1;
 		}
@@ -217,7 +230,28 @@ public class Game {
 	public void addRoute(Route inRoute) {this.map.addRoute(inRoute);}
 	public void setDRD(boolean in) {this.map.setDRD(in);}	// Sets Debug Route Display.
 	public void toggleDRD() {this.map.toggleDRD();}			// Toggles Debug Route Display.
-	public void updateName(String oldS, String newS) {this.map.updateName(oldS, newS);}
+	public void updateName(String oldS, String newS) {this.map.updateName(oldS, newS); incStat("Name changes", 1);}
+	
+	// Stats super-mutators.
+	public void setStat(String in, int val) {stats.set(in, val);}
+	public void incStat(String in, int val) {stats.inc(in, val);}
+	public void decStat(String in, int val) {stats.dec(in, val);}
+	
+	// Updater
+	public void updateConstant() {
+		// N/A
+	}
+	
+	public void updateEndPlayer() {
+		// Setting player stats.
+		for (Player p : this.players) {
+			p.setStat("Cities owned", this.getCitiesOwnedBy(p.getName()).size());
+		}
+	}
+	
+	public void updateEndTurn() {
+		// N/A
+	}
 	
 	// Overwrites
 	public String toString() {

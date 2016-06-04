@@ -7,7 +7,7 @@
 
 package myGame;
 
-import java.util.HashMap;
+import myData.Stats;
 
 public class Player {
 
@@ -17,7 +17,8 @@ public class Player {
     private String type = "CPU";
     private String commander = "NONE";
     private String colour = "Grey";
-    private HashMap<String, Integer> stats = new HashMap<String, Integer>();
+    private PointSet points = new PointSet();
+ 	private Stats stats = new Stats();
 
     // Constructor for only a player number and name.
     public Player(int inNumber, String inName) {
@@ -39,54 +40,32 @@ public class Player {
         this.commander = new String(that.getCommander());
     }
 
-    // Private construction code.
+    // Basic accessors
+    public String getID() {return this.id;}
+    public String getName() {return this.name;}
+    public String getType() {return this.type;}
+    public String getCommander() {return this.commander;}
+    public int getPoint(String in) {return this.points.get(in);}
+    public PointSet getPointSet() {return this.points;}
+    
+    // Stats super-accessors.
+    public int getStat(String in) {return this.stats.get(in);}    
+    public Stats getAllStats() {return this.stats;}
+ 	public String highest(String[] cats) {return stats.highest(cats);}
+ 	public String lowest(String[] cats) {return stats.lowest(cats);}
+ 	public double average(String[] cats) {return stats.average(cats);}
 
-
-    // Accessors
-    public String getID() {
-        return this.id;
-    }
-
-    public String getName() {
-        return this.name;
-    }
-
-    public String getType() {
-        return this.type;
-    }
-
-    public String getCommander() {
-        return this.commander;
-    }
-
-    public int getStat(String key) {
-        return this.stats.get(key);
-    }
-
-    public boolean hasStatOver(String key, int dc) {
-        return this.stats.get(key) > dc;
-    }
-
-    // Mutators
-    public void setID(String inID) {
-        this.id = inID;
-    }
-
-    public void setName(String inName) {
-        this.name = inName;
-    }
-
-    public void setType(String in) {
-        this.type = in;
-    }
-
-    public void setCommander(String inCommander) {
-        this.commander = inCommander;
-    }
-
-    public void incStat(String key, int amt) {
-        this.stats.put(key, this.stats.get(key) + amt);
-    }
+	// Basic mutators
+	public void setID(String inID) {this.id = inID;}
+	public void setName(String inName) {this.name = inName;}
+	public void setType(String in) {this.type = in;}
+	public void setCommander(String inCommander) {this.commander = inCommander;}
+	public void setPoint(String key, int value) {this.points.set(key, value);}
+    
+	// Stats super-mutators.
+	public void setStat(String in, int val) {stats.set(in, val);}
+	public void incStat(String in, int val) {stats.inc(in, val);}
+	public void decStat(String in, int val) {stats.dec(in, val);}
 
     // Overwrites.
     public String toString() {

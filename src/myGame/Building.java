@@ -6,8 +6,6 @@
 
 package myGame;
 
-import java.util.HashMap;
-
 import myMain.Board;
 
 import java.awt.Color;
@@ -25,7 +23,7 @@ public class Building {
 	private int build_time;
 	private final int max_health;
 	private int current_health;
-	private final HashMap<String, Integer> stats;
+	private final PointSet points;
 	private int x = -1;
 	private int y = -1;
 	private Color color;
@@ -49,11 +47,11 @@ public class Building {
 		// Constructing blueprint.		(String format = "2x3:011110")
 		this.blueprint = createBlueprint(in_blueprint_string);
 
-		// Constructing stats hashmap.
+		// Constructing point set.
 		String[] readKeys = {"Military", "Technology", "Nature", "Diplomacy", "Commerce", "Industry", "Population", "Happiness"};
-		this.stats = new HashMap<String, Integer>();
+		this.points = new PointSet();
 		for (int i = 0; i < readKeys.length; ++i) {
-			stats.put(readKeys[i], stat_arr[i]);
+			points.inc(readKeys[i], stat_arr[i]);
 		}
 
 	}
@@ -75,18 +73,18 @@ public class Building {
 		// Constructing blueprint.		(String format = "2x3:011110")
 		this.blueprint = createBlueprint(in_blueprint_string);
 
-		// Constructing stats hashmap.
+		// Constructing stats hash map.
 		String[] readKeys = {"Military", "Technology", "Nature", "Diplomacy", "Commerce", "Industry", "Population", "Happiness"};
-		this.stats = new HashMap<String, Integer>();
+		this.points = new PointSet();
 		for (int i = 0; i < readKeys.length; ++i) {
-			stats.put(readKeys[i], stat_arr[i]);
+			points.set(readKeys[i], stat_arr[i]);
 		}
 
 	}
 
 	public Building(Building that) {
 
-		// Copying normally accessable data.
+		// Copying normally accessible data.
 		this.name = that.getName();
 		this.id = that.getID();
 		this.type = that.getType();
@@ -100,9 +98,9 @@ public class Building {
 		this.color = that.getColor();
 
 		// Copying the stats hash map.
-		this.stats = new HashMap<String, Integer>();
+		this.points = new PointSet();
 		for (String key : KEYS) {
-			this.stats.put(key, (int)that.getStat(key));
+			this.points.set(key, that.getPoint(key));
 		}
 
 	}
@@ -186,61 +184,34 @@ public class Building {
 	public boolean isAtMaxHealth() {return this.current_health == this.max_health;}
 	public boolean isAtZeroHealth() {return this.current_health == 0;}
 	public double getHealthPercentage() {return (1.0 * this.current_health / this.max_health) * 100;}
-	public int getStat(String stat) {return (int)this.stats.get(stat);}
-	public ArrayList<String> hasStats() {
-		// Determines which stats are above zero, and returns their keys.
-		ArrayList<String> returnArr = new ArrayList<String>();
-		for (String key : KEYS) {
-			if ((int)stats.get(key) > 0) {
-				returnArr.add(key);
-			}
-		}
-		return returnArr;
+	public int getPoint(String key) {return this.points.get(key);}
+	public PointSet getPointSet() {return this.points;}
+	public ArrayList<String> hasPoints() {
+		return points.getPositives();
 	}
-	public ArrayList<String> getStatsList() {
+	public ArrayList<String> getPointsList() {
 		ArrayList<String> arr = new ArrayList<String>();
 		for (String key : KEYS) {
 			arr.add(key);
 		}
 		return arr;
 	}
-	public String getAllStatsAsString() {return statsToString(getStatsList());}
-	public String getHasStatsAsString() {return statsToString(hasStats());}
+	public String getAllStatsAsString() {return statsToString(getPointsList());}
+	public String getHasStatsAsString() {return statsToString(hasPoints());}
 	private String statsToString(ArrayList<String> keyArr) {
 		String finalString = "";
 		for (String key : keyArr) {
-			finalString += key + ": \t" + (int)this.stats.get(key) + "\n";
+			finalString += key + ": \t" + (int)this.points.get(key) + "\n";
 		}
 		return finalString;
 	}
 	public int getX() {return this.x;}
 	public int getY() {return this.y;}
 	public Color getColor() {return this.color;}	
-	public ArrayList<String> getPositives() {
-		ArrayList<String> ret = new ArrayList<String>();
-		for (String key : stats.keySet()) {
-			if (getStat(key) > 0) {
-				ret.add(key);
-			}
-		}
-		return ret;
-	}
-	public ArrayList<String> getNegatives() {
-		ArrayList<String> ret = new ArrayList<String>();
-		for (String key : stats.keySet()) {
-			if (getStat(key) < 0) {
-				ret.add(key);
-			}
-		}
-		return ret;
-	}
-	public ArrayList<String> getNonZeroes() {
-		ArrayList<String> ret = getPositives();
-		for (String key : getNegatives()) {
-			ret.add(key);
-		}
-		return ret;
-	}
+	
+	public ArrayList<String> getPositives() {return points.getPositives();}
+	public ArrayList<String> getNegatives() {return points.getNegatives();}
+	public ArrayList<String> getNonZeroes() {return points.getNonZeroes();}
 
 	// Mutators
 	public void setName(String in) {this.name = in;}
@@ -284,7 +255,7 @@ public class Building {
 	public String toString() {
 		String the_string = "Building " + this.id + ", '" + this.name + "' the " + this.type + ". Health is at " + this.getHealthPercentage() + "%, and the status is " + this.status + ".\n";
 		the_string += "Description: '" + this.description + "'\n";
-		the_string += "Stats: " + this.stats.toString() + "\n";
+		the_string += "Points: " + this.points.toString() + "\n";
 		for (int y = 0; y < this.blueprint[0].length; ++y) {
 			for (int x = 0; x <  this.blueprint.length; ++x) {
 				boolean the_bool = this.blueprint[x][y];

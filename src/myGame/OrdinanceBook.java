@@ -1,7 +1,6 @@
 package myGame;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 import myFiles.MyFileReader;
 
@@ -93,16 +92,14 @@ public class OrdinanceBook {
 		return ret;
 	}
 	
-	public HashMap<String, Integer> sumActive() {
-		HashMap<String,Integer> points = new HashMap<String,Integer>();
-		points.put("Military", 0); points.put("Technology", 0);
-		points.put("Nature", 0); points.put("Diplomacy", 0);
-		points.put("Commerce", 0); points.put("Industry", 0);
-		points.put("Population", 0); points.put("Happiness", 0);
+	public PointSet sumActive() {
+		PointSet points = new PointSet();
+		points.set("Military", 0); points.set("Technology", 0);
+		points.set("Nature", 0); points.set("Diplomacy", 0);
+		points.set("Commerce", 0); points.set("Industry", 0);
+		points.set("Population", 0); points.set("Happiness", 0);
 		for (Ordinance o : getAllActive()) {
-			for (String key : o.getNonZeroes()) {
-				points.put(key, o.getStat(key) + points.get(key));
-			}
+			points.add(o.getPointSet());
 		}
 		return points;
 	}
