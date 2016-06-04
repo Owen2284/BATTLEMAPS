@@ -12,10 +12,13 @@ import myGame.BuildingFactory;
 import myGame.City;
 import myGame.Game;
 import myGame.Map;
+import myGame.Ordinance;
+import myGame.OrdinanceBook;
 import myGame.Player;
 import myGraphics.ImageLibrary;
 import myInterface.Button;
 import myInterface.CityScreen;
+import myInterface.CommandLine;
 import myInterface.DebugScreen;
 import myInterface.ErrorWindow;
 import myInterface.GridWindow;
@@ -44,6 +47,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseEvent;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Random;
 import java.util.Scanner;
 import javax.swing.JPanel;
@@ -57,36 +61,42 @@ public class Board extends JPanel implements ActionListener, MouseListener, KeyL
 
 	private static final long serialVersionUID = 7198933434060052457L;
 	
-	// Variables
-	private Timer timer;
+	// Timing and size variables
+	public Timer timer;
+	public long lastTimeStamp = System.currentTimeMillis();
 	public int windowWidth;
 	public int windowHeight;
 	
-	private MyScreen scr;
+	// Game engine variables
+	public MyScreen scr;
 	public MyInterfaceManager mim;
 	public ImageLibrary il = new ImageLibrary(100);
 	public Game game;
 	public BuildingFactory buildDex = new BuildingFactory();
 	public MyValidator val = new MyValidator();
+	public CommandLine cmd = new CommandLine(Board.DEBUG_ERROR);
 	
+	// Random variables
 	public long randomMapSeed = System.currentTimeMillis();
+	public Random randomMap = new Random(randomMapSeed);	
 	public Random randomEvents = new Random();
 	public Random randomTrivial = new Random();
-	public Random randomMap = new Random(randomMapSeed);
 	
+	// Tracking variables
 	public String state = "";
 
-	// Constants
-	private final String GAMENAME = "BATTLEMAPS";
-	private final String VERSIONNUMBER = "InDev version 0.2";
-	private final String VERSIONGOAL = "The City Update";
-	private final String VERSIONINFO = "This version of the game is currently focussed on inplementing the functionality of the city screen.";
-	private final String VERSIONCOMPLETION = "50%";
-	private final int BORDER_SIZE = 40;
-	private final int DELAY = 15;
-	private final int ERRORX = 0;
-	private final int ERRORY = 40;
+	// Private constants
+	public final String GAMENAME = "BATTLEMAPS";
+	public final String VERSIONNUMBER = "InDev version 0.2";
+	public final String VERSIONNAME = "The City Update";
+	public final String VERSIONINFO = "This version of the game is currently focussed on implementing the functionality of the city screen.";
+	public final String VERSIONCOMPLETION = "90%";
+	public final int BORDER_SIZE = 40;
+	public final int DELAY = 15;
+	public final int ERRORX = 0;
+	public final int ERRORY = 40;
 	
+	// Public constants
 	public static int WINDOW_CENTER_X;
 	public static final String DEFAULT_FONT_TYPE = "Trebuchet MS";
 	public static final int DEFAULT_FONT_ATT = Font.PLAIN;
@@ -94,6 +104,7 @@ public class Board extends JPanel implements ActionListener, MouseListener, KeyL
 	public static final Font DEFAULT_FONT = new Font(DEFAULT_FONT_TYPE, DEFAULT_FONT_ATT, DEFAULT_FONT_SIZE);
 	
 	// Debug constants
+	public static final boolean DEBUG_CMD = true;				// Allows printing of messages when true.
 	public static final boolean DEBUG_EVENTS = true;			// Reports mouse clicks, screen changing, etc.
 	public static final boolean DEBUG_TRACE = true;				// Displays data about variables and data structures.
 	public static final boolean DEBUG_LAUNCH = true;			// Shows progress of game launch.
@@ -101,6 +112,7 @@ public class Board extends JPanel implements ActionListener, MouseListener, KeyL
 	public static final boolean DEBUG_WINDOW = true;			// Allows opening of debug windows.
 	public static final boolean DEBUG_MAPS = true;				// Begins game on map select.
 	public static final boolean DEBUG_ERROR = true;				// Details any errors that occur at runtime.
+	public static final boolean DEBUG_FPS = false;				// Displays FPS counter and time to act/draw.
 
 	// Construction and initialisation.
 	public Board(int width, int height) {
@@ -138,19 +150,21 @@ public class Board extends JPanel implements ActionListener, MouseListener, KeyL
 
 	}
 	
+	// Prints a information message.
 	private void initMessage() {
-		System.out.println("");
-		System.out.println("-----------------------------------------------");
-		System.out.println(GAMENAME);
-		System.out.println("-----------------------------------------------");
-		System.out.println(VERSIONNUMBER);
-		System.out.println(VERSIONGOAL);
-		System.out.println(VERSIONINFO);
-		System.out.println(VERSIONCOMPLETION);
-		System.out.println("-----------------------------------------------");
-		System.out.println("");
+		cmd.debug("");
+		cmd.debug("-----------------------------------------------");
+		cmd.debug(GAMENAME);
+		cmd.debug("-----------------------------------------------");
+		cmd.debug(VERSIONNUMBER);
+		cmd.debug(VERSIONNAME);
+		cmd.debug(VERSIONINFO);
+		cmd.debug(VERSIONCOMPLETION);
+		cmd.debug("-----------------------------------------------");
+		cmd.debug("");
 	}
 
+	// Performs all Swing-related setup.
 	private void initBoard() {
 
 		// Set up JPanel settings.
@@ -170,9 +184,10 @@ public class Board extends JPanel implements ActionListener, MouseListener, KeyL
 
 	}
 
+	// Loading images function
 	private void initImages() {
 
-		if (DEBUG_LOAD) {System.out.println("Beginning image load.");}
+		if (DEBUG_LOAD) {cmd.debug("Beginning image load.");}
 
 		il.loadImage(1, "images/MouseSelect.png");
 		il.loadImage(2, "images/MouseBuild.png");
@@ -190,36 +205,53 @@ public class Board extends JPanel implements ActionListener, MouseListener, KeyL
 		il.loadImage(21, "images/CityHighlight.png");
 		il.loadImage(22, "images/CityNeighbour.png");
 		il.loadImage(31, "images/BlueprintBlock.png");
-
+		il.loadImage(41, "images/TravellerLand.png");
+		il.loadImage(42, "images/TravellerSea.png");
+		il.loadImage(43, "images/TravellerAir.png");
+		il.loadImage(51, "images/IconMilitary.png");
+		il.loadImage(52, "images/IconTechnology.png");
+		il.loadImage(53, "images/IconNature.png");
+		il.loadImage(54, "images/IconDiplomacy.png");
+		il.loadImage(55, "images/IconCommerce.png");
+		il.loadImage(56, "images/IconIndustry.png");
+		il.loadImage(57, "images/IconPopulation.png");
+		il.loadImage(58, "images/IconHappiness.png");
+		
 	}
 	
 	public void initValidator() {
-		val.addRule("City Name", "[a-zA-Z0-9\\- ]", 1, 32);
+		val.addRule("Random Seed", "[0-9]+", 1, 12);
+		val.addRule("City Name", "[a-zA-Z0-9\\- ]+", 1, 32);
 	}
 
 	@SuppressWarnings("unused")
 	public Game initGame(String mapType) {
 
 		// Initialisation.
-		int cityCount = 10;									// Number of cities on the map.
-		int mapHeight = windowHeight - City.CITY_SIZE;		// Height of map (y length)
-		int mapWidth = windowWidth - City.CITY_SIZE;		// Width of map (x length)
-		int citiesPerPlayer = 1;							// Number of cities each player stars with.
-		int playerCount = 4;								// Number of players in a game.
-		boolean giveConnectedCities = false;				// Unused at the moment.
+		int cityCount = 10;										// Number of cities on the map.
+		int mapHeight = windowHeight;							// Height of map (y length)
+		int mapWidth = windowWidth;								// Width of map (x length)
+		int citiesPerPlayer = 1;								// Number of cities each player stars with.
+		int playerCount = 4;									// Number of players in a game.
+		boolean giveConnectedCities = false;					// Unused at the moment.
+		int landPoints = 12;									// Aliasing on land.
+		int landMax = (int) (1.6 * (double) City.CITY_SIZE);	// Max distance from city land points can be.
+		int landMin = (int) (2.4 * (double) City.CITY_SIZE);	// Min distance from city land points should be.
+		int landSmoothnessCount = 3;							// Amount of points surrounding previous point + 1.
+		double landSmoothnessRate = 0.36;						// Closeness to previous land point.
 
 		switch (mapType) {
 			case "Normal":
 				break;
 			case "Small":
 				cityCount = 5;
-				mapHeight = (windowHeight / 2) - City.CITY_SIZE;
-				mapWidth = (windowWidth / 2) - City.CITY_SIZE;
+				mapHeight = (windowHeight / 2);
+				mapWidth = (windowWidth / 2);
 				break;
 			case "Large":
 				cityCount = 25;
-				mapHeight = (windowHeight * 2) - City.CITY_SIZE;
-				mapWidth = (windowWidth * 2) - City.CITY_SIZE;
+				mapHeight = (windowHeight * 2);
+				mapWidth = (windowWidth * 2);
 				playerCount = 8;
 				break;
 			case "Full":
@@ -233,22 +265,23 @@ public class Board extends JPanel implements ActionListener, MouseListener, KeyL
 		}
 
 		// Creates the game objects and sets it up.
-		Map newMap = new Map(cityCount, mapWidth, mapHeight, BORDER_SIZE, randomMap);
+		Map newMap = new Map(cityCount, mapWidth, mapHeight, BORDER_SIZE, randomMap, 
+				landPoints, landMax, landMin, landSmoothnessCount, landSmoothnessRate);
 		Game game = new Game(newMap);
 		if (DEBUG_LAUNCH) {
-			System.out.println("");
-			System.out.println("MAP DEBUG LOG START:");
+			cmd.debug("");
+			cmd.debug("MAP DEBUG LOG START:");
 			ArrayList<String> log = game.getMap().getDebugLog();
 			for (int i = 0; i < log.size(); ++i) {
-				System.out.println("  " + log.get(i));
+				cmd.debug("  " + log.get(i));
 			}
-			System.out.println("MAP DEBUG LOG END.");
-			System.out.println("");
+			cmd.debug("MAP DEBUG LOG END.");
+			cmd.debug("");
 		}
 
 		// Adds players to the game.
 		for (int i = 0; i < playerCount; ++i) {
-			game.addPlayer(new Player(i, "Player " + i));
+			game.addPlayer(new Player(i, "Player " + Integer.toString(i + 1)));
 		}
 
 		// Gives a random city to each player.
@@ -259,10 +292,10 @@ public class Board extends JPanel implements ActionListener, MouseListener, KeyL
 				int cityNumber = randomMap.nextInt(allCities.size());
 				while (!allCities.get(cityNumber).getOwner().equals("NONE")) {
 					cityNumber = randomMap.nextInt(allCities.size());
-					if (DEBUG_LAUNCH) {System.out.println("Retrying giving city to " + allPlayers.get(i).getName());}
+					if (DEBUG_LAUNCH) {cmd.debug("Retrying giving city to " + allPlayers.get(i).getName());}
 				}
 				allCities.get(cityNumber).setOwner(allPlayers.get(i).getID());
-				if (DEBUG_LAUNCH) {System.out.println("Giving " + allCities.get(cityNumber).getName() + " to " + allPlayers.get(i).getName());}
+				if (DEBUG_LAUNCH) {cmd.debug("Giving " + allCities.get(cityNumber).getName() + " to " + allPlayers.get(i).getName());}
 			}
 		}
 
@@ -283,6 +316,9 @@ public class Board extends JPanel implements ActionListener, MouseListener, KeyL
 
 	@Override
 	public void paintComponent(Graphics g) {
+		
+		// Drawing start time.
+		lastTimeStamp = System.currentTimeMillis();
 
 		// Provide graphics to MyTextMetrics.
 		MyTextMetrics.setGraphics(g);
@@ -302,6 +338,14 @@ public class Board extends JPanel implements ActionListener, MouseListener, KeyL
 
 		// Draws the MIM objects.
 		mim.drawAll(g, this);
+		
+		// Draws FPS details.
+		if (DEBUG_FPS) {
+			double timeToDraw = System.currentTimeMillis() - lastTimeStamp;
+			g.setColor(Color.BLACK);
+			g.drawString("FPS: " + (1000.0 / timeToDraw), 400, 20);
+			g.drawString("Time to Draw: " + timeToDraw + "ms", 400, 40);
+		}
 
 		// Ensures all stuff syncs up on all platforms.
 		Toolkit.getDefaultToolkit().sync();
@@ -317,7 +361,7 @@ public class Board extends JPanel implements ActionListener, MouseListener, KeyL
 		
 	}
 
-	private void act(ActionEvent e) {
+	private void act(@SuppressWarnings("unused") ActionEvent e) {
 
 		// Gets mouse position.
 		Point mp = MouseInfo.getPointerInfo().getLocation();
@@ -475,17 +519,17 @@ public class Board extends JPanel implements ActionListener, MouseListener, KeyL
 	// Methods that respond monitor key presses.
 	@Override
 	public void keyTyped(KeyEvent e) {
-		if (DEBUG_EVENTS) {System.out.println("'" + e.getKeyChar() + "' TYPED.");}
+		if (DEBUG_EVENTS) {cmd.debug("'" + e.getKeyChar() + "' TYPED.");}
 	}
 
 	@Override
 	public void keyPressed(KeyEvent e) {
-		if (DEBUG_EVENTS) {System.out.println("'" + e.getKeyChar() + "' PRESSED.");}
+		if (DEBUG_EVENTS) {cmd.debug("'" + e.getKeyChar() + "' PRESSED.");}
 	}
 
 	@Override
 	public void keyReleased(KeyEvent e) {
-		if (DEBUG_EVENTS) {System.out.println("'" + e.getKeyChar() + "' RELEASED.");}
+		if (DEBUG_EVENTS) {cmd.debug("'" + e.getKeyChar() + "' RELEASED.");}
 		mim.setLetter(Character.toString(e.getKeyChar()), true);
 	}
 	
@@ -493,22 +537,22 @@ public class Board extends JPanel implements ActionListener, MouseListener, KeyL
 	public void switchScreen(String screenName, String extra) {
 		switch (screenName) {
 			case "Map":
-				if (DEBUG_EVENTS) {System.out.println("Switching to Map Screen.");}
+				if (DEBUG_EVENTS) {cmd.debug("Switching to Map Screen.");}
 				state = "Map";
 				scr = new MapScreen(this);
 				break;
 			case "City":
-				if (DEBUG_EVENTS) {System.out.println("Switching to City Screen.");}
+				if (DEBUG_EVENTS) {cmd.debug("Switching to City Screen.");}
 				state = "City-" + extra;
 				scr = new CityScreen(this);
 				break;
 			case "Menu":
-				if (DEBUG_EVENTS) {System.out.println("Switching to Menu Screen.");}
+				if (DEBUG_EVENTS) {cmd.debug("Switching to Menu Screen.");}
 				state = "Menu-" + extra;
 				scr = new MenuScreen(this);
 				break;
 			case "DEBUG":
-				if (DEBUG_EVENTS) {System.out.println("Switching to Debug Screen.");}
+				if (DEBUG_EVENTS) {cmd.debug("Switching to Debug Screen.");}
 				state = "DEBUG";
 				scr = new DebugScreen(this);
 				break;
@@ -521,9 +565,9 @@ public class Board extends JPanel implements ActionListener, MouseListener, KeyL
 		if (DEBUG_TRACE) {
 			String debugAdd = add;
 			if (debugAdd.equals("")) {
-				System.out.println("EXECUTING BUTTON CODE NUMBER " + exec + " WITH NO ADDITIONAL STRING");     
+				cmd.debug("EXECUTING BUTTON CODE NUMBER " + exec + " WITH NO ADDITIONAL STRING");     
 			} else {
-				System.out.println("EXECUTING BUTTON CODE NUMBER " + exec + " WITH '" + debugAdd + "'.");        		
+				cmd.debug("EXECUTING BUTTON CODE NUMBER " + exec + " WITH '" + debugAdd + "'.");        		
 			}
 		}
 
@@ -540,6 +584,17 @@ public class Board extends JPanel implements ActionListener, MouseListener, KeyL
 		String[] theKeys = {"Residential", "Happiness", "Military", "Diplomacy", "Technology", "Commerce", "Nature", "Industry"};
 		Color[] theColors = {new Color(200,200,200), new Color(234,242,10), new Color(194,2,50), new Color(235,237,175), new Color(10,242,231), new Color(83,74,240), new Color(17,153,42), new Color(245,155,66)};
 
+		// Creating a hash map for important values.
+		HashMap<String, Integer> iconMap = new HashMap<String, Integer>();
+		iconMap.put("Military", 51);
+		iconMap.put("Technology", 52);
+		iconMap.put("Nature", 53);
+		iconMap.put("Diplomacy", 54);
+		iconMap.put("Commerce", 55);
+		iconMap.put("Industry", 56);
+		iconMap.put("Population", 57);
+		iconMap.put("Happiness", 58);
+		
 		// Executing the code.
 		if (exec <= 0) {													// Null action.
 		} 
@@ -568,9 +623,9 @@ public class Board extends JPanel implements ActionListener, MouseListener, KeyL
 					cont += "| " + currentPlayer.getCommander() + "\t";
 					cont += "\n";
 					// Generate player buttons.
-					Button pb = new Button(218, 26 + i * (MyTextMetrics.getTextSize("TEST")[1] + wind.getLineSpacing() + 5) + 2 * (MyTextMetrics.getTextSize("TEST")[1] + wind.getLineSpacing()));
-					pb.setHeight(MyTextMetrics.getTextSize("View Player")[1] + 4);
-					pb.setWidth(MyTextMetrics.getTextSize("View Player")[0] + 2);
+					Button pb = new Button(218, 26 + i * (MyTextMetrics.getTextSizeFlat("View Player")[1] + wind.getLineSpacing() + 5) + 2 * (MyTextMetrics.getTextSizeFlat("View Player")[1] + wind.getLineSpacing()));
+					pb.setHeight(MyTextMetrics.getTextSizeFlat("View Player")[1] + 4);
+					pb.setWidth(MyTextMetrics.getTextSizeFlat("View Player")[0] + 2);
 					pb.setID(wind.getTitle() + "_" + currentPlayer.getName());
 					pb.setButtonText("View Player");
 					pb.setExecutionNumber(8);
@@ -679,12 +734,12 @@ public class Board extends JPanel implements ActionListener, MouseListener, KeyL
 		else if (exec == 13) {												// Toggles map between optimised and initial routes.
 			game.toggleDRD();
 		}
-		else if (exec == 14) { 												// Random map seed entry.
+		else if (exec == 14) { 												// Random map seed entry via command line.
 			Scanner r = new Scanner(System.in);
-			System.out.print("New seed:- ");
+			System.out.print("[!] New seed:- ");
 			randomMapSeed = r.nextLong();
 			randomMap = new Random(randomMapSeed);
-			if (DEBUG_TRACE) {System.out.println("New seed accepted.");}
+			cmd.alert("New seed accepted.");
 			r.close();
 		}
 		else if (exec == 15) {												// Jump to debug start screen.
@@ -811,22 +866,46 @@ public class Board extends JPanel implements ActionListener, MouseListener, KeyL
 			String formattedDescription = "";
 
 			// Splits the description over multiple lines if it is too long.
-			while (MyTextMetrics.getTextSize(startingDescription)[0] > listow.getWidth() + 20 - (listow.getWidth() - listow.getContentX())) {
-				startingDescription = "Description too long.";
+			while (MyTextMetrics.getTextSizeComplex(startingDescription)[0] > listow.getWidth() + 20 - (listow.getWidth() - listow.getContentX())) {
+				// TODO: Split description with regard to spaces.
+				int splitLength = 26;
+				if (startingDescription.length() < splitLength) {splitLength = startingDescription.length();}
+				formattedDescription += startingDescription.substring(0, splitLength) + "\n";
+				startingDescription = startingDescription.substring(splitLength);
 			}
 			formattedDescription += startingDescription;
 			cont += formattedDescription + "\n \n";
 
 			// Continues adding text to the content variable.
 			cont += "Max Health: " + bldg.getMaxHealth() + "\nTurns to Build: " + (bldg.getBuildTime() * -1) + "\n \n";
-			cont += "Stats: \n" + bldg.getAllStatsAsString() + "\n";
-			cont += "Blueprint: \n \n";
+			
+			// Displays all stats of the building.
+			listow.clearImages();
+			cont += "Effect: \n";
+			for (String key : bldg.getPositives()) {
+				String ender = " per turn.";
+				if (key.equals("Population") || key.equals("Happiness")) {ender = " to total.";}
+				cont += "        +" + bldg.getPoint(key) + ender + "\n";
+				int imgX = listow.getContentX() + InfoWindow.TOP_BAR_HEIGHT;
+				int imgY = listow.getContentY() + (MyTextMetrics.getTextSizeComplex(cont)[1]) + 1;
+				listow.addImage(imgX, imgY, iconMap.get(key));
+			}
+			cont += "\n";
+			for (String key : bldg.getNegatives()) {
+				String ender = " per turn.";
+				if (key.equals("Population") || key.equals("Happiness")) {ender = " to total.";}
+				cont += "        +" + bldg.getPoint(key) + ender + "\n";
+				int imgX = listow.getContentX() + InfoWindow.TOP_BAR_HEIGHT;
+				int imgY = listow.getContentY() + (MyTextMetrics.getTextSizeComplex(cont)[1]) + 1;
+				listow.addImage(imgX, imgY, iconMap.get(key));
+			}
+			cont += "\n";
 
 			// Creates the images to display the building blueprint.
+			cont += "Blueprint: \n \n";			
 			String bldgBlpt = bldg.getBlueprintAsString();
 			int blptX = listow.getContentX() + InfoWindow.TOP_BAR_HEIGHT;
-			int blptY = listow.getContentY() + (MyTextMetrics.getTextSize(cont)[1] * MyTextMetrics.getCountOf("\n", cont)) + 5;
-			listow.clearImages();
+			int blptY = listow.getContentY() + (MyTextMetrics.getTextSizeComplex(cont)[1]) + 5;
 			for (String line : bldgBlpt.split("\n")) {
 				for (String character : line.split("|")) {
 					if (character.equals("T")) {listow.addImage(blptX, blptY, 31);}
@@ -845,12 +924,46 @@ public class Board extends JPanel implements ActionListener, MouseListener, KeyL
 			
 		}
 		else if (exec == 23) {												// Open city ordinances window.
+			
+			// Reseting mouse.
 			mim.setMouseMode("Pointer");
-			// TODO: City ordinances window.
+			
+			// Getting data and setting up window.
+			OrdinanceBook ords = this.game.getMap().getCityByName(add).getAllOrdinances();
+			listow = new ListWindow("City Ordinances", WINDOW_CENTER_X, 50, 7);
+			listow.setHeight(500);
+			listow.setGridY(60);
+			listow.setButtonHeight(30);
+			listow.setContentX(0);
+			listow.setContentY(-10);
+			butt = new Button((listow.getWidth() / 8) + 175, listow.getHeight() - 60, "Toggle_Ordinace", "FUCK", 42, "NULL");
+			butt.setVisible(false);
+			listow.addWindowButton(butt);
+			
+			// Placing ordinances in window.
+			Color activeColor = new Color(0,255,0);
+			Color inactiveColor = new Color(255,0,0);
+			listow.setContent("Ordinances available in " + add + ":\n\n");
+			for (Ordinance ord : ords.getAllActive()) {
+				Button ordb = new Button(0, 50, "Ordinance_" + ord.getName().replace(" ", "_"), ord.getName(), 41, ord.getName());
+				ordb.setColorInner(activeColor);
+				listow.addListButton(ordb);
+			}
+			for (Ordinance ord : ords.getAllInactive()) {
+				Button ordb = new Button(0, 50, "Ordinance_" + ord.getName().replace(" ", "_"), ord.getName(), 41, ord.getName());
+				ordb.setColorInner(inactiveColor);
+				listow.addListButton(ordb);
+			}
+			listow.fillGridList();
+			listow.setUpExec(43);
+			listow.setDownExec(44);
+			mim.addWindowFull(listow);
 		}
 		else if (exec == 24) {												// Open city info window.
 			mim.setMouseMode("Pointer");
-			// TODO: City info window.
+			InfoWindow info = new InfoWindow("City Info", WINDOW_CENTER_X, 100);
+			info.setContent("No info to show.");
+			mim.addWindowFull(info);
 		}
 		else if (exec == 25) {												// Print buttons.
 			mim.debug("Buttons");
@@ -876,7 +989,7 @@ public class Board extends JPanel implements ActionListener, MouseListener, KeyL
 			// Split execution string into window to open's exec code, window to open's add string, and the window to close's name.
 			String[] breakdown = add.split("\\|");
 			
-			if (DEBUG_TRACE) {System.out.println("RETURN BUTTON EXECUTION: " + breakdown[0] + ", " + breakdown[1] + ", " + breakdown[2] + ".");}
+			if (DEBUG_TRACE) {cmd.debug("RETURN BUTTON EXECUTION: " + breakdown[0] + ", " + breakdown[1] + ", " + breakdown[2] + ".");}
 
 			// Opens the window to open.
 			buttonExecution(Integer.parseInt(breakdown[0]), breakdown[1]);
@@ -902,11 +1015,11 @@ public class Board extends JPanel implements ActionListener, MouseListener, KeyL
 			mim.debug("Mouse");
 		}
 		else if (exec == 33) {												// BuildDex dumper.
-			// TODO: Dump BuildDex.
-			System.out.println("Not done yet!");
+			System.out.println();
+			System.out.println(buildDex);
 		}
 		else if (exec == 34) {												// Screen state printer.
-			System.out.println(scr.getTitle());
+			cmd.debug(scr.getTitle());
 		} else if (exec == 35) {											// Opens actions window.
 			wind = new InfoWindow("Actions Window", WINDOW_CENTER_X, 100);
 			cont = "COMING SOON";
@@ -919,19 +1032,134 @@ public class Board extends JPanel implements ActionListener, MouseListener, KeyL
 		} else if (exec == 37) {											// Renaming city code.
 			InputWindow inpu = (InputWindow) mim.getWindow("City Name Change");
 			String newName = inpu.getInputString();
-			if (game.isUniqueName(newName)) {
-				game.updateName(add, newName);
-				this.state = "City-" + newName;
-				createQuickWindow("Success!", "The name of this city is now " + newName + "!");
-				inpu.close();
+			if (val.validate("City Name", newName)) {
+				if (game.isUniqueName(newName)) {
+					game.updateName(add, newName);
+					this.state = "City-" + newName;
+					createQuickWindow("Success!", "The name of this city is now " + newName + "!");
+					inpu.close();
+				} else {
+					createErrorWindow("Name is already in use.");
+				}
 			} else {
-				createErrorWindow("Name is already in use.");
+				createErrorWindow("Invalid name.\nPlease use only letters, numbers, hyphens and space.\nThe name must also be between 1 and 32 characters long.");
 			}
-		} else if (exec == 38) {											// Clear input window code.
+		} 
+		else if (exec == 38) {												// Clear input window code.
 			InfoWindow inpu = mim.getWindow(add);
 			String initContent = inpu.getContent();
 			inpu.clearText();
 			inpu.setContent(initContent);
+		}
+		else if (exec == 39) { 												// Random map seed entry via input window.
+			// Generate basic input window.
+			InputWindow inpu = new InputWindow("Seed Entry", WINDOW_CENTER_X, 125, mim.getInputString());
+			inpu.setContent("Please enter a seed for the RNG.\nSeeds must be a long between 0 and 999999999999.");
+			inpu.getWindowButtons().get(0).setExecutionNumber(40);
+			mim.addWindowFull(inpu);
+		}
+		else if (exec == 40) {												// Random seed entry code.
+			InputWindow inpu = (InputWindow) mim.getWindow("Seed Entry");
+			String newSeed = inpu.getInputString();
+			if (val.validate("Random Seed", newSeed)) {
+				randomMap = new Random(Long.parseLong(newSeed));
+				createQuickWindow("Random Seed Accepted", "New seed = '" + newSeed + "'.");
+				inpu.close();
+			} else {
+				createErrorWindow("Invalid seed.");
+			}
+		}
+		else if (exec == 41) {												// Add ordinance info to ordinance window.
+
+			// Retrieves the window and building specified in the additional string.
+			listow = (ListWindow) mim.getWindow("City Ordinances");
+			Ordinance ord = this.game.getCityByName(state.substring(5)).getOrdinance(add);
+
+			// Begins preparing the text content.
+			listow.setContentX(175);
+			cont = ord.getName() + "\n \n";
+			String startingDescription = ord.getDesc().replace("$city", state.substring(5));
+			String formattedDescription = "";
+
+			// Splits the description over multiple lines if it is too long.
+			while (MyTextMetrics.getTextSizeComplex(startingDescription)[0] > listow.getWidth() + 20 - (listow.getWidth() - listow.getContentX())) {
+				// TODO: Split description with regard to spaces.
+				int splitLength = 26;
+				if (startingDescription.length() < splitLength) {splitLength = startingDescription.length();}
+				formattedDescription += startingDescription.substring(0, splitLength) + "\n";
+				startingDescription = startingDescription.substring(splitLength);
+			}
+			formattedDescription += startingDescription;
+			cont += formattedDescription + "\n \n";
+
+			// Continues adding text to the content variable.
+			listow.clearImages();
+			cont += "Effect: \n \n";
+			for (String key : ord.getPositives()) {
+				String ender = " per turn.";
+				if (key.equals("Population") || key.equals("Happiness")) {ender = " to total.";}
+				cont += "        +" + ord.getPoint(key) + ender + "\n";
+				int imgX = listow.getContentX() + InfoWindow.TOP_BAR_HEIGHT;
+				int imgY = listow.getContentY() + (MyTextMetrics.getTextSizeComplex(cont)[1]) + 1;
+				listow.addImage(imgX, imgY, iconMap.get(key));
+			}
+			cont += "\n";
+			for (String key : ord.getNegatives()) {
+				String ender = " per turn.";
+				if (key.equals("Population") || key.equals("Happiness")) {ender = " to total.";}
+				cont += "        +" + ord.getPoint(key) + ender + "\n";
+				int imgX = listow.getContentX() + InfoWindow.TOP_BAR_HEIGHT;
+				int imgY = listow.getContentY() + (MyTextMetrics.getTextSizeComplex(cont)[1]) + 1;
+				listow.addImage(imgX, imgY, iconMap.get(key));
+			}
+
+			// Sets the content in the window.
+			listow.setContent(cont);
+
+			// Edits the visibility of the Enact/Repeal Ordinance button.
+			listow.getWindowButtons().get(0).setVisible(true);
+			listow.getWindowButtons().get(0).setAdditionalString(add);
+			String buttStr = "Enact";
+			if (this.game.getCityByName(state.substring(5)).getOrdinanceActivity(add)) {
+				buttStr = "Repeal";
+			}
+			listow.getWindowButtons().get(0).setButtonText(buttStr);;
+			
+		}
+		else if (exec == 42) {												// Enact/repeal ordinance.
+			// Getting city's ordinance book.
+			City cit = this.game.getCityByName(state.substring(5));
+			
+			// Determining action based on status of ordinance.
+			String enactStr = "enacted";
+			if (cit.getOrdinanceActivity(add)) {
+				cit.repealOrdinance(add);
+				enactStr = "repealed";
+			} else {
+				cit.enactOrdinance(add);
+			}
+			
+			// Closing window and displaying message.
+			// TODO: Refresh window instead of closing.
+			mim.getWindow("City Ordinances").close();
+			createQuickWindow("Success!", add + " has been " + enactStr + " in " + state.substring(5) + ".");
+			
+		}
+		else if (exec == 43) {												// Up button in Ordinance window.
+			listow = (ListWindow) mim.getWindow(add);
+			buttonExecution(27, add);
+			listow.setContent("Ordinances available in " + state.substring(5) + ":\n\n");
+			listow.setContentX(0);
+			listow.getWindowButtons().get(0).setVisible(false);
+			listow.clearImages();
+		}
+		else if (exec == 44) {												// Down button in Ordinance window.
+			listow = (ListWindow) mim.getWindow(add);
+			buttonExecution(28, add);
+			listow.setContent("Ordinances available in " + state.substring(5) + ":\n\n");
+			listow.setContentX(0);
+			listow.getWindowButtons().get(0).setVisible(false);
+			listow.clearImages();
 		}
 
 	}
