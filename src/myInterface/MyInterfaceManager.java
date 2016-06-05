@@ -29,6 +29,7 @@ public class MyInterfaceManager {
 	private ArrayList<Button> buttons = new ArrayList<Button>();
 	private ArrayList<InfoWindow> windows = new ArrayList<InfoWindow>();
 
+	private CommandLine cmd;
 	private ImageLibrary il;
 
 	private Point mousePos = new Point(0,0);
@@ -47,10 +48,11 @@ public class MyInterfaceManager {
 	private String[] inputString = {""};
 	
 	// Constructor
-	public MyInterfaceManager(int wid, int hei, ImageLibrary imgs) {
-		windowWidth = wid; 
-		windowHeight = hei;
-		il = imgs;
+	public MyInterfaceManager(Board b) {
+		windowWidth = b.windowWidth; 
+		windowHeight = b.windowHeight;
+		il = b.il;
+		cmd = b.cmd;
 		buildLetters();
 	}
 	
@@ -191,7 +193,7 @@ public class MyInterfaceManager {
 		}
 		windows.remove(window_to_remove);
 		if (Board.DEBUG_ERROR && window_to_remove.getTitle().equals("1995")) {
-			System.out.println("ERROR: MyInterfaceManager, removeWindowFull(" + in_title + ") exited without finding the specified window.");
+			cmd.error("ERROR: MyInterfaceManager, removeWindowFull(" + in_title + ") exited without finding the specified window.");
 		}
 	}
 	
@@ -210,7 +212,7 @@ public class MyInterfaceManager {
 		}
 		windows.remove(window_to_remove);
 		if (Board.DEBUG_ERROR && window_to_remove.getTitle().equals("1995")) {
-			System.out.println("ERROR: MyInterfaceManager, removeWindowFull(" + in_title + ") exited without finding the specified window.");
+			cmd.error("ERROR: MyInterfaceManager, removeWindowFull(" + in_title + ") exited without finding the specified window.");
 		}
 	}
 	
@@ -292,7 +294,69 @@ public class MyInterfaceManager {
 
 		} else if (in.substring(0,4).equals("Menu")) {
 			
-			addDebug();
+			//if (in.substring(5).equals("Main")) {
+			
+				ListWindow mm = new ListWindow("Main Menu", (windowWidth - 400) / 2, 0, 10);
+				mm.setHeight(windowHeight);
+				mm.setGridX(10);
+				mm.setGridY(10);
+				mm.setButtonGap(15);
+				mm.setButtonWidth(mm.getWidth() - 20);
+				mm.removeCloseButton();
+	
+				// Button 1: Single Player
+				Button mmb = new Button(0, 0, "Menu_Main_Single", "Single Player", -1, "");
+				mmb.setColorInner(Color.GREEN);
+				mm.addListButton(mmb);
+				
+				// Button 2: Local Multiplayer
+				mmb = new Button(0, 0, "Menu_Main_Multi", "Local Multiplayer", -1, "");
+				mmb.setColorInner(Color.RED);
+				mm.addListButton(mmb);
+				
+				// Button 3: Online
+				mmb = new Button(0, 0, "Menu_Main_Online", "Online Play", -1, "");
+				mmb.setColorInner(Color.BLUE);
+				mm.addListButton(mmb);
+				
+				// Button 5: Blank
+				mmb = new Button(0, 0, "Menu_Main_4", "-", -1, "");
+				mmb.setVisible(false);
+				mm.addListButton(mmb);
+				
+				// Button 5: Editor
+				mmb = new Button(0, 0, "Menu_Main_Editor", "Editor", -1, "");
+				mmb.setColorInner(Color.YELLOW);
+				mm.addListButton(mmb);	
+				
+				// Button 6: Blank
+				mmb = new Button(0, 0, "Menu_Main_6", "-", -1, "");
+				mmb.setVisible(false);
+				mm.addListButton(mmb);
+				
+				// Button 7: Blank
+				mmb = new Button(0, 0, "Menu_Main_7", "-", -1, "");
+				mmb.setVisible(false);
+				mm.addListButton(mmb);
+				
+				// Button 8: Options
+				mmb = new Button(0, 0, "Menu_Main_Options", "Options", -1, "");
+				mmb.setColorInner(Color.PINK);
+				mm.addListButton(mmb);
+				
+				// Button 9: Blank
+				mmb = new Button(0, 0, "Menu_Main_9", "-", -1, "");
+				mmb.setVisible(false);
+				mm.addListButton(mmb);
+
+				// Button 10: Quit
+				mmb = new Button(0, 0, "Menu_Main_Quit", "Quit", -1, "");
+				mmb.setColorInner(Color.GRAY);
+				mm.addListButton(mmb);
+	
+				this.addWindowFullForce(mm);
+				
+			//}
 
 		} else if (in.equals("DEBUG")) {
 
@@ -319,7 +383,7 @@ public class MyInterfaceManager {
 			dwb = new Button(0, 0, "DEBUG_MENU_Images", "Image Tester", 45);
 			dwb.setColorInner(Color.ORANGE);
 			dw.addGridButton(3, 0, dwb);
-			dwb = new Button(0, 0, "DEBUG_MENU_Menu", "To Menu Screen", 3);
+			dwb = new Button(0, 0, "DEBUG_MENU_Menu", "Main Menu", 3);
 			dwb.setColorInner(Color.BLUE);
 			dw.addGridButton(3, 3, dwb);
 
@@ -379,12 +443,14 @@ public class MyInterfaceManager {
 
 		// Places the buttons.
 		for (Button item : the_buttons) {
-			if (draw_shadows) {item.drawShadow(g);}
-			if (item.isHovering(mousePos)) {
-				item.drawHover(g);
-			} else {
-				item.drawButton(g);
-			}          
+			if (item.isVisible()) {
+				if (draw_shadows) {item.drawShadow(g);}
+				if (item.isHovering(mousePos)) {
+					item.drawHover(g);
+				} else {
+					item.drawButton(g);
+				}
+			}
 		}
 
 	}
@@ -393,7 +459,7 @@ public class MyInterfaceManager {
 
 		// Places the buttons.
 		for (Button item : in_buttons) {
-			if (item != null) {
+			if (item != null && item.isVisible()) {
 				if (draw_shadows) {item.drawShadow(g);}
 				if (item.isHovering(mousePos)) {
 					item.drawHover(g);
@@ -565,21 +631,20 @@ public class MyInterfaceManager {
 	public void debug(String s) {
 		switch (s) {
 			case "Buttons":
-				System.out.println(buttons.toString());
+				cmd.debug(buttons.toString());
 				break;
 			case "Windows":
-				System.out.println(windows.toString());
+				cmd.debug(windows.toString());
 				break;
 			case "Mouse":
-				System.out.println(mousePos + "\n" + prevMousePos + "\n" + mouseMode + "\n" + mouseBuilding);
+				cmd.debug(mousePos + "\n" + prevMousePos + "\n" + mouseMode + "\n" + mouseBuilding);
 				break;
 			case "Keys":
+				String all = "";
 				for (String l : ACCEPTEDLETTERS) {
-					if (letters.get(l)) {
-						System.out.print(l);
-					}
+					all += l;
 				}
-				System.out.println("");
+				cmd.debug(all);
 				break;
 		}
 	}

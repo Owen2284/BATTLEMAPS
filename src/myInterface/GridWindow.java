@@ -97,6 +97,8 @@ public class GridWindow extends InfoWindow {
 	public void setButtonGap(int in) {buttonGap = in;}
 	public void setGridX(int in) {this.gridX = in;}
 	public void setGridY(int in) {this.gridY = in;}
+	
+	// TODO: Repack window function.
 
 	// Updaters
 	public void update(Point p) {

@@ -135,6 +135,7 @@ public class Button extends Sprite {
 
 	public Button(Button that) {
 		super(that.getX(), that.getY());
+		this.vis = that.isVisible();		
 		this.width = that.getWidth();
 		this.height = that.getHeight();
 		this.id = that.getID();	
@@ -215,6 +216,7 @@ public class Button extends Sprite {
 	public void cloneFrom(Button that) {
 		this.x = that.getX();
 		this.y = that.getY();
+		this.vis = that.isVisible();
 		this.width = that.getWidth();
 		this.height = that.getHeight();
 		this.id = that.getID();	
@@ -230,6 +232,7 @@ public class Button extends Sprite {
 	}
 
 	public void cloneFromNoCoords(Button that) {
+		this.vis = that.isVisible();
 		this.width = that.getWidth();
 		this.height = that.getHeight();
 		this.id = that.getID();	
@@ -271,6 +274,7 @@ public class Button extends Sprite {
 			g.drawRect(this.x, this.y, this.width, this.height);
 			if (!buttonText.equals("")) {this.drawText(g);}
 		}
+		
 	}
 
 	public void drawButton(Graphics g, int inX, int inY) {

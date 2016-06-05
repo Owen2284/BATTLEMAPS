@@ -6,7 +6,7 @@ import myGame.Game;
 import myGraphics.ImageLibrary;
 import myMain.Board;
 
-public class MyScreen {
+public abstract class MyScreen {
 	
 	protected String title = "Screen";
 	
@@ -32,7 +32,7 @@ public class MyScreen {
 		// N/A
 	}
 	
-	public void draw(Graphics g) {
+	public void draw(@SuppressWarnings("unused") Graphics g) {
 		// N/A
 	}
 	

@@ -78,10 +78,10 @@ public class Board extends JPanel implements ActionListener, MouseListener, KeyL
 
 	// Private constants
 	public final String GAMENAME = "BATTLEMAPS";
-	public final String VERSIONNUMBER = "InDev version 0.2";
-	public final String VERSIONNAME = "The City Update";
-	public final String VERSIONINFO = "This version of the game is currently focussed on implementing the functionality of the city screen.";
-	public final String VERSIONCOMPLETION = "90%";
+	public final String VERSIONNUMBER = "Version 0.3";
+	public final String VERSIONNAME = "The Menu Update";
+	public final String VERSIONINFO = "This version of the game is focussed on adding functional menus to the game.";
+	public final String VERSIONCOMPLETION = "0%";
 	public final int BORDER_SIZE = 40;
 	public final int DELAY = 15;
 	public final int ERRORX = 0;
@@ -126,7 +126,7 @@ public class Board extends JPanel implements ActionListener, MouseListener, KeyL
 		initValidator();
 
 		// Initialise interface manager.
-		mim = new MyInterfaceManager(windowWidth, windowHeight, il);
+		mim = new MyInterfaceManager(this);
 
 		// Checks for debug screen choice.
 		if (DEBUG_MAPS) {

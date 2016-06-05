@@ -178,21 +178,24 @@ public class ButtonExecutor {
 					// Button 7: Debug input window.
 					Button d7 = new Button(0, 0, "DEBUG_B_Input_Window", "Input Window", 36); d7.setColorInner(Color.GREEN);
 					gridow.addGridButton(1, 1, d7);
-					// Button 20: BuildDex dump.
-					Button d20 = new Button(0, 0, "DEBUG_B_Dump_BuildDex", "Dump BuildDex", 33); d20.setColorInner(Color.GREEN);
+					// Button 16: Print buttons.
+					Button d16 = new Button(0, 0, "DEBUG_B_Print_Buttons", "Print Buttons", 25); d16.setColorInner(Color.GREEN);
+					gridow.addGridButton(3, 0, d16);
+					// Button 17: Print windows.
+					Button d17 = new Button(0, 0, "DEBUG_B_Print_Windows", "Print Windows", 26); d17.setColorInner(Color.GREEN);
+					gridow.addGridButton(3, 1, d17);
+					// Button 18: Print screen.
+					Button d18 = new Button(0, 0, "DEBUG_B_Print_Screen", "Print Screen", 34); d18.setColorInner(Color.GREEN);
+					gridow.addGridButton(3, 2, d18);
+					// Button 19: Print mouse.
+					Button d19 = new Button(0, 0, "DEBUG_B_Print_Mouse", "Print Mouse", 32); d19.setColorInner(Color.GREEN);
+					gridow.addGridButton(3, 3, d19);
+					// Button 20: Print accepted keys.
+					Button d20 = new Button(0, 0, "DEBUG_B_Print_Keys", "Print Keys", 48); d20.setColorInner(Color.GREEN);
 					gridow.addGridButton(3, 4, d20);
-					// Button 21: Print buttons.
-					Button d21 = new Button(0, 0, "DEBUG_B_Print_Buttons", "Print Buttons", 25); d21.setColorInner(Color.GREEN);
+					// Button 21: BuildDex dump.
+					Button d21 = new Button(0, 0, "DEBUG_B_Dump_BuildDex", "Dump BuildDex", 33); d21.setColorInner(Color.GREEN);
 					gridow.addGridButton(4, 0, d21);
-					// Button 22: Print windows.
-					Button d22 = new Button(0, 0, "DEBUG_B_Print_Windows", "Print Windows", 26); d22.setColorInner(Color.GREEN);
-					gridow.addGridButton(4, 1, d22);
-					// Button 23: Print screen.
-					Button d23 = new Button(0, 0, "DEBUG_B_Print_Screen", "Print Screen", 34); d23.setColorInner(Color.GREEN);
-					gridow.addGridButton(4, 2, d23);
-					// Button 24: Print mouse.
-					Button d24 = new Button(0, 0, "DEBUG_B_Print_Mouse", "Print Mouse", 32); d24.setColorInner(Color.GREEN);
-					gridow.addGridButton(4, 3, d24);
 					// Button 25: Close game.
 					Button d25 = new Button(0, 0, "DEBUG_B_Close", "Close Game", 11); d25.setColorInner(Color.GREEN);
 					gridow.addGridButton(4, 4, d25);
@@ -654,6 +657,9 @@ public class ButtonExecutor {
 			if (its.getImageNumber() > b.il.getMax()) {
 				its.setImageNumber(1);
 			}
+		}
+		else if (exec == 48) {												// Print accepted keys.
+			b.mim.debug("Keys");
 		}
 
 	}

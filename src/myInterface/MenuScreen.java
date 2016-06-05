@@ -19,7 +19,9 @@ public class MenuScreen extends MyScreen {
 	}
 
 	@Override
-	public void act() {}
+	public void act() {
+		
+	}
 
 	@Override
 	public void draw(Graphics g) {

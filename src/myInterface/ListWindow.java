@@ -83,7 +83,6 @@ public class ListWindow extends GridWindow {
 			Button listButton = theButtons.get(i);
 			Button gridButton = getGridButton(i, 0);
 			gridButton.cloneFromNoCoords(listButton);
-			gridButton.setVisible(true);
 		}
 
 		// Make empty buttons invisible.
