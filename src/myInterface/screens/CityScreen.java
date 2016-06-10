@@ -1,4 +1,4 @@
-package myInterface;
+package myInterface.screens;
 
 import java.awt.Color;
 import java.awt.Graphics;
@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import myGame.Block;
 import myGame.Building;
 import myGame.City;
+import myInterface.MyTextMetrics;
 import myMain.Board;
 
 public class CityScreen extends MyScreen {

@@ -5,12 +5,14 @@
  *
  */
 
-package myInterface;
+package myInterface.windows;
 
 import myMain.Board;
 
 import java.awt.Point;
 import java.util.ArrayList;
+
+import myInterface.Button;
 
 public class GridWindow extends InfoWindow {
 

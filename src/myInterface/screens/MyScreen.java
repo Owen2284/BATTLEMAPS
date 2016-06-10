@@ -1,9 +1,10 @@
-package myInterface;
+package myInterface.screens;
 
 import java.awt.Graphics;
 
 import myGame.Game;
 import myGraphics.ImageLibrary;
+import myInterface.MyInterfaceManager;
 import myMain.Board;
 
 public abstract class MyScreen {

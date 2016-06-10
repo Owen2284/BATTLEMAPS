@@ -1,8 +1,9 @@
-package myInterface;
+package myInterface.screens;
 
 import java.awt.Color;
 import java.awt.Graphics;
 
+import myInterface.MyTextMetrics;
 import myMain.Board;
 
 public class ImageTestScreen extends MyScreen {

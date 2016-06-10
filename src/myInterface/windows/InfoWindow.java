@@ -5,9 +5,11 @@
  *
  */
 
-package myInterface;
+package myInterface.windows;
 
 import myGraphics.ImageToken;
+import myInterface.Button;
+import myInterface.MyTextMetrics;
 import myGraphics.ImageLibrary;
 import myMain.Board;
 

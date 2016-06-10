@@ -5,9 +5,10 @@
  *
  */
 
-package myInterface;
+package myInterface.windows;
 
 import myGraphics.ImageLibrary;
+import myInterface.MyTextMetrics;
 import myMain.Board;
 
 import java.awt.Color;

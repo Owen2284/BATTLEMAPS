@@ -19,12 +19,14 @@ import myGame.Ordinance;
 import myGame.OrdinanceBook;
 import myGame.Player;
 import myInterface.Button;
-import myInterface.GridWindow;
-import myInterface.ImageTestScreen;
-import myInterface.InfoWindow;
-import myInterface.InputWindow;
-import myInterface.ListWindow;
 import myInterface.MyTextMetrics;
+import myInterface.screens.ImageTestScreen;
+import myInterface.windows.GridWindow;
+import myInterface.windows.InfoWindow;
+import myInterface.windows.InputWindow;
+import myInterface.windows.ListWindow;
+import myInterface.windows.YesNoCancelWindow;
+import myInterface.windows.YesNoWindow;
 
 public class ButtonExecutor {
 	
@@ -500,6 +502,7 @@ public class ButtonExecutor {
 		}
 		else if (exec == 34) {												// Screen state printer.
 			b.cmd.debug(b.scr.getTitle());
+			b.cmd.debug(b.state);
 		} else if (exec == 35) {											// Opens actions window.
 			wind = new InfoWindow("Actions Window", Board.WINDOW_CENTER_X, 100);
 			cont = "COMING SOON";
@@ -660,6 +663,18 @@ public class ButtonExecutor {
 		}
 		else if (exec == 48) {												// Print accepted keys.
 			b.mim.debug("Keys");
+		}
+		else if (exec == 49) {												// Quit confirmation.
+			YesNoWindow yn = new YesNoWindow("Quit?", Board.WINDOW_CENTER_X, 300);
+			yn.setContent("Are you sure you want to quit?");
+			yn.setNoExec(11);
+			yn.setNoExec(50);
+			yn.setNoAdd("Quit?");
+			b.mim.addWindowFull(yn);
+		}
+		else if (exec == 50) {
+			YesNoCancelWindow ync = new YesNoCancelWindow("TEST", Board.WINDOW_CENTER_X, 300);
+			b.mim.addWindowFull(ync);
 		}
 
 	}

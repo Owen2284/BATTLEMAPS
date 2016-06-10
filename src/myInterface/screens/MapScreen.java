@@ -1,4 +1,4 @@
-package myInterface;
+package myInterface.screens;
 
 import java.awt.Color;
 import java.awt.Graphics;

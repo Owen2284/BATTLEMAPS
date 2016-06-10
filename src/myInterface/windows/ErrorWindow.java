@@ -1,6 +1,8 @@
-package myInterface;
+package myInterface.windows;
 
 import java.awt.Point;
+
+import myInterface.MyTextMetrics;
 
 public class ErrorWindow extends InfoWindow {
 	

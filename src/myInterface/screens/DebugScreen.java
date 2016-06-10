@@ -1,31 +1,31 @@
-package myInterface;
+package myInterface.screens;
 
+import java.awt.Color;
 import java.awt.Graphics;
 
 import myMain.Board;
 
-public class MenuScreen extends MyScreen {
-	
-	public MenuScreen(Board b, int inWidth, int inHeight) {
+public class DebugScreen extends MyScreen {
+
+	public DebugScreen(Board b, int inWidth, int inHeight) {
 		super(b);
-		this.title = "Menu Screen";
+		this.title = "Debug Screen";
 		this.width = inWidth;
 		this.height = inHeight;
 		this.init();
 	}
 	
-	public MenuScreen(Board b) {
+	public DebugScreen(Board b) {
 		this(b, b.windowWidth, b.windowHeight);
 	}
 
 	@Override
-	public void act() {
-		
-	}
+	public void act() {}
 
 	@Override
 	public void draw(Graphics g) {
-		// TODO: Create menu screen.
+		// Sets background color.
+		b.setBackground(Color.BLACK);
 	}
 	
 	@Override

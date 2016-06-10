@@ -5,7 +5,7 @@
  *
  */
 
-package myInterface;
+package myInterface.windows;
 
 import myMain.Board;
 import myGraphics.ImageLibrary;

@@ -11,6 +11,10 @@ import myGame.Building;
 import myGame.City;
 import myGame.Game;
 import myGraphics.ImageLibrary;
+import myInterface.windows.GridWindow;
+import myInterface.windows.HoverWindow;
+import myInterface.windows.InfoWindow;
+import myInterface.windows.MenuWindow;
 import myMain.Board;
 
 import java.awt.Color;
@@ -294,69 +298,141 @@ public class MyInterfaceManager {
 
 		} else if (in.substring(0,4).equals("Menu")) {
 			
-			//if (in.substring(5).equals("Main")) {
+			String submenu = in.substring(5);
 			
-				ListWindow mm = new ListWindow("Main Menu", (windowWidth - 400) / 2, 0, 10);
-				mm.setHeight(windowHeight);
-				mm.setGridX(10);
-				mm.setGridY(10);
-				mm.setButtonGap(15);
-				mm.setButtonWidth(mm.getWidth() - 20);
-				mm.removeCloseButton();
+			MenuWindow winMenu = new MenuWindow("Main Menu", (windowWidth - 400) / 2, 0, 10);
+			winMenu.setHeight(windowHeight);
+			winMenu.setGridX(10);
+			winMenu.setGridY(10);
+			winMenu.setButtonGap(15);
+			winMenu.setButtonWidth(winMenu.getWidth() - 20);
+			winMenu.removeCloseButton();
+			
+			if (submenu.equals("Main")) {
+				
+				String[] titles = {"Single Player", "Local Multiplayer", "Online Play", "-", "Editor", "-", "-", "Options", "-", "Quit"};
+				int[] exes = {3, 3, 3, -1, 3, -1, -1, 3, -1, 49};
+				String[] adds = {"Single Main", "Multi Main", "Online Main", "", "Editor Main", "", "", "Options Main", "", "Quit"};
+				boolean[] vises = {true, true, true, false, true, false, false, true, false, true};
+				Color[] colors = {Color.GREEN, Color.RED, Color.BLUE, Color.WHITE, Color.ORANGE, Color.WHITE, Color.WHITE, Color.PINK, Color.WHITE, Color.GRAY};
+				winMenu.addMenuButtons(
+						titles,
+						exes,
+						adds,
+						vises,
+						colors
+				);
+				
+			} else if (submenu.equals("Single Main")) {
+				
+				winMenu.setTitle("Single Player");
+				
+				String[] titles = {"Campaign","Missions","","Skirmish","Domination","","Tutorial","","","Back"};
+				int[] exes = {3,3,-1,3,3,-1,3,-1,-1,3};
+				String[] adds = {"Single Campaign","Single Mission","","Single Skirmish","Single Domination","","Single Tutorial","","","Main"};
+				boolean[] vises = {true,true,false,true,true,false,true,false,false,true};
+				Color[] colors = {Color.GREEN,Color.GREEN,Color.WHITE,Color.GREEN,Color.GREEN,Color.WHITE,Color.GREEN,Color.WHITE,Color.WHITE,Color.WHITE};
+				winMenu.addMenuButtons(
+						titles,
+						exes,
+						adds,
+						vises,
+						colors
+				);
 	
-				// Button 1: Single Player
-				Button mmb = new Button(0, 0, "Menu_Main_Single", "Single Player", -1, "");
-				mmb.setColorInner(Color.GREEN);
-				mm.addListButton(mmb);
 				
-				// Button 2: Local Multiplayer
-				mmb = new Button(0, 0, "Menu_Main_Multi", "Local Multiplayer", -1, "");
-				mmb.setColorInner(Color.RED);
-				mm.addListButton(mmb);
+			} else if (submenu.equals("Multi Main")) {
 				
-				// Button 3: Online
-				mmb = new Button(0, 0, "Menu_Main_Online", "Online Play", -1, "");
-				mmb.setColorInner(Color.BLUE);
-				mm.addListButton(mmb);
+				winMenu.setTitle("Local Multi Player");
 				
-				// Button 5: Blank
-				mmb = new Button(0, 0, "Menu_Main_4", "-", -1, "");
-				mmb.setVisible(false);
-				mm.addListButton(mmb);
+				String[] titles = {"Campaign","Missions","","Skirmish","Domination","-","-","-","-","Back"};
+				int[] exes = {3,3,-1,3,3,-1,-1,-1,-1,3};
+				String[] adds = {"Multi Campaign","Multi Mission","","Multi Skirmish","Multi Domination","","","","","Main"};
+				boolean[] vises = {true,true,false,true,true,false,false,false,false,true};
+				Color[] colors = {Color.RED,Color.RED,Color.WHITE,Color.RED,Color.RED,Color.WHITE,Color.WHITE,Color.WHITE,Color.WHITE,Color.WHITE};
+				winMenu.addMenuButtons(
+						titles,
+						exes,
+						adds,
+						vises,
+						colors
+				);
 				
-				// Button 5: Editor
-				mmb = new Button(0, 0, "Menu_Main_Editor", "Editor", -1, "");
-				mmb.setColorInner(Color.YELLOW);
-				mm.addListButton(mmb);	
+			} else if (submenu.equals("Online Main")) {
 				
-				// Button 6: Blank
-				mmb = new Button(0, 0, "Menu_Main_6", "-", -1, "");
-				mmb.setVisible(false);
-				mm.addListButton(mmb);
+				winMenu.setTitle("Online");
 				
-				// Button 7: Blank
-				mmb = new Button(0, 0, "Menu_Main_7", "-", -1, "");
-				mmb.setVisible(false);
-				mm.addListButton(mmb);
+				String[] titles = {"Host Game","Join Game","-","-","-","-","-","-","-","Back"};
+				int[] exes = {3,3,-1,-1,-1,-1,-1,-1,-1,3};
+				String[] adds = {"Online Host","Online Join","","","","","","","","Main"};
+				boolean[] vises = {true,true,false,false,false,false,false,false,false,true};
+				Color[] colors = {Color.BLUE,Color.BLUE,Color.WHITE,Color.WHITE,Color.WHITE,Color.WHITE,Color.WHITE,Color.WHITE,Color.WHITE,Color.WHITE};
+				winMenu.addMenuButtons(
+						titles,
+						exes,
+						adds,
+						vises,
+						colors
+				);
 				
-				// Button 8: Options
-				mmb = new Button(0, 0, "Menu_Main_Options", "Options", -1, "");
-				mmb.setColorInner(Color.PINK);
-				mm.addListButton(mmb);
+			} else if (submenu.equals("Editor Main")) {
 				
-				// Button 9: Blank
-				mmb = new Button(0, 0, "Menu_Main_9", "-", -1, "");
-				mmb.setVisible(false);
-				mm.addListButton(mmb);
-
-				// Button 10: Quit
-				mmb = new Button(0, 0, "Menu_Main_Quit", "Quit", -1, "");
-				mmb.setColorInner(Color.GRAY);
-				mm.addListButton(mmb);
-	
-				this.addWindowFullForce(mm);
+				winMenu.setTitle("Editor");
 				
-			//}
+				String[] titles = {"-","-","-","-","-","-","-","-","-","Back"};
+				int[] exes = {3,-1,3,-1,3,-1,3,-1,-1,3};
+				String[] adds = {"Map","","World","","Mission","","General","","","Main"};
+				boolean[] vises = {true,false,true,false,true,false,true,false,false,true};
+				Color[] colors = {Color.YELLOW,Color.WHITE,Color.YELLOW,Color.WHITE,Color.YELLOW,Color.WHITE,Color.YELLOW,Color.WHITE,Color.WHITE,Color.WHITE};
+				winMenu.addMenuButtons(
+						titles,
+						exes,
+						adds,
+						vises,
+						colors
+				);
+				
+			} else if (submenu.equals("Options Main")) {
+				
+				winMenu.setTitle("Options");
+				
+				String[] titles = {"Video","Audio","Gameplay","Online","Debug","-","-","Apply","Confirm","Cancel"};
+				int[] exes = {-1,-1,-1,-1,-1,-1,-1,-1,-1,3};
+				String[] adds = {"","","","","","","","","","Main"};
+				boolean[] vises = {true,true,true,true,Board.DEBUG_MASTER,false,false,false,false,true};
+				Color[] colors = {Color.WHITE,Color.WHITE,Color.WHITE,Color.WHITE,Color.WHITE,Color.WHITE,Color.WHITE,Color.WHITE,Color.WHITE,Color.WHITE};
+				winMenu.addMenuButtons(
+						titles,
+						exes,
+						adds,
+						vises,
+						colors
+				);
+				
+			} else {
+				
+				// Error menu.
+				
+				winMenu.setTitle("Un-implemented Menu");
+				
+				String[] titles = {"-","-","-","-","-","-","-","-","-","Back"};
+				int[] exes = {-1,-1,-1,-1,-1,-1,-1,-1,-1,3};
+				String[] adds = {"","","","","","","","","","Main"};
+				boolean[] vises = {false,false,false,false,false,false,false,false,false,true};
+				Color[] colors = {Color.WHITE,Color.WHITE,Color.WHITE,Color.WHITE,Color.WHITE,Color.WHITE,Color.WHITE,Color.WHITE,Color.WHITE,Color.WHITE};
+				winMenu.addMenuButtons(
+						titles,
+						exes,
+						adds,
+						vises,
+						colors
+				);
+				
+			}
+			
+			this.addWindowFullForce(winMenu);
+			
+			addDebug();
 
 		} else if (in.equals("DEBUG")) {
 
@@ -383,7 +459,7 @@ public class MyInterfaceManager {
 			dwb = new Button(0, 0, "DEBUG_MENU_Images", "Image Tester", 45);
 			dwb.setColorInner(Color.ORANGE);
 			dw.addGridButton(3, 0, dwb);
-			dwb = new Button(0, 0, "DEBUG_MENU_Menu", "Main Menu", 3);
+			dwb = new Button(0, 0, "DEBUG_MENU_Menu", "Main Menu", 3, "Main");
 			dwb.setColorInner(Color.BLUE);
 			dw.addGridButton(3, 3, dwb);
 

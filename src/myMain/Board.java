@@ -16,16 +16,16 @@ import myGame.Map;
 import myGame.Player;
 import myGraphics.ImageLibrary;
 import myInterface.Button;
-import myInterface.CityScreen;
 import myInterface.CommandLine;
-import myInterface.DebugScreen;
-import myInterface.ErrorWindow;
-import myInterface.ImageTestScreen;
-import myInterface.MapScreen;
-import myInterface.MenuScreen;
 import myInterface.MyInterfaceManager;
-import myInterface.MyScreen;
 import myInterface.MyTextMetrics;
+import myInterface.screens.CityScreen;
+import myInterface.screens.DebugScreen;
+import myInterface.screens.ImageTestScreen;
+import myInterface.screens.MapScreen;
+import myInterface.screens.MenuScreen;
+import myInterface.screens.MyScreen;
+import myInterface.windows.ErrorWindow;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -95,15 +95,16 @@ public class Board extends JPanel implements ActionListener, MouseListener, KeyL
 	public static final Font DEFAULT_FONT = new Font(DEFAULT_FONT_TYPE, DEFAULT_FONT_ATT, DEFAULT_FONT_SIZE);
 	
 	// Debug constants
-	public static final boolean DEBUG_CMD = true;				// Allows printing of messages when true.
-	public static final boolean DEBUG_EVENTS = true;			// Reports mouse clicks, screen changing, etc.
-	public static final boolean DEBUG_TRACE = true;				// Displays data about variables and data structures.
-	public static final boolean DEBUG_LAUNCH = true;			// Shows progress of game launch.
-	public static final boolean DEBUG_LOAD = true;				// Outputs status of files loaded into the game.
-	public static final boolean DEBUG_WINDOW = true;			// Allows opening of debug windows.
-	public static final boolean DEBUG_MAPS = true;				// Begins game on map select.
-	public static final boolean DEBUG_ERROR = true;				// Details any errors that occur at runtime.
-	public static final boolean DEBUG_FPS = false;				// Displays FPS counter and time to act/draw.
+	public static final boolean DEBUG_MASTER = true;					// Master debug controller
+	public static final boolean DEBUG_CMD = true && DEBUG_MASTER;		// Allows printing of messages when true.
+	public static final boolean DEBUG_EVENTS = true && DEBUG_MASTER;	// Reports mouse clicks, screen changing, etc.
+	public static final boolean DEBUG_TRACE = true && DEBUG_MASTER;		// Displays data about variables and data structures.
+	public static final boolean DEBUG_LAUNCH = true && DEBUG_MASTER;	// Shows progress of game launch.
+	public static final boolean DEBUG_LOAD = true && DEBUG_MASTER;		// Outputs status of files loaded into the game.
+	public static final boolean DEBUG_WINDOW = true && DEBUG_MASTER;	// Allows opening of debug windows.
+	public static final boolean DEBUG_MAPS = true && DEBUG_MASTER;		// Begins game on map select.
+	public static final boolean DEBUG_ERROR = true && DEBUG_MASTER;		// Details any errors that occur at runtime.
+	public static final boolean DEBUG_FPS = false && DEBUG_MASTER;		// Displays FPS counter and time to act/draw.
 
 	// Construction and initialisation.
 	public Board(int width, int height) {

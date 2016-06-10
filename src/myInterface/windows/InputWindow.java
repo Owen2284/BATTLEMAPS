@@ -1,10 +1,12 @@
-package myInterface;
+package myInterface.windows;
 
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Point;
 
 import myGraphics.ImageLibrary;
+import myInterface.Button;
+import myInterface.MyTextMetrics;
 import myMain.Board;
 
 public class InputWindow extends InfoWindow {

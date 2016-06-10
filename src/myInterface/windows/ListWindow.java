@@ -5,18 +5,20 @@
  *
  */
 
-package myInterface;
+package myInterface.windows;
 
 import java.awt.Point;
 import java.util.ArrayList;
+
+import myInterface.Button;
 
 public class ListWindow extends GridWindow {
 	
 	private ArrayList<Button> buttonList = new ArrayList<Button>();
 
-	private int pageNumber = 0;
-	private Button upButton;
-	private Button downButton;
+	protected int pageNumber = 0;
+	protected Button upButton;
+	protected Button downButton;
 
 	// Constructor
 	public ListWindow(String title, int inX, int inY, int rows) {
@@ -111,11 +113,15 @@ public class ListWindow extends GridWindow {
 		super.update(p);
 
 		// Update up and down arrow coordinates.
-		upButton.setX(this.x + this.gridX + (this.buttonWidth / 2) - (upButton.getWidth() / 2));
-		upButton.setY(this.y + TOP_BAR_HEIGHT * 2);
-		downButton.setX(this.x + this.gridX + (this.buttonWidth / 2) - (downButton.getWidth() / 2));
-		downButton.setY(this.y + this.animationHeight - (TOP_BAR_HEIGHT * 2));
-
+		if (upButton != null) {
+			upButton.setX(this.x + this.gridX + (this.buttonWidth / 2) - (upButton.getWidth() / 2));
+			upButton.setY(this.y + TOP_BAR_HEIGHT * 2);
+		}
+		if (downButton != null) {
+			downButton.setX(this.x + this.gridX + (this.buttonWidth / 2) - (downButton.getWidth() / 2));
+			downButton.setY(this.y + this.animationHeight - (TOP_BAR_HEIGHT * 2));
+		}
+			
 		this.setUpVis(!this.isAtMin());
 		this.setDownVis(!this.isAtMax());
 
