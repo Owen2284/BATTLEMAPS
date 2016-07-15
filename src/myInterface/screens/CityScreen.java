@@ -144,7 +144,7 @@ public class CityScreen extends MyScreen {
 	
 	@Override
 	public void init() {
-		this.mim.setInterface(this.b.state, this.game);
+		this.mim.initInterface(this.b.state, this.game);
 	}
 
 	@Override

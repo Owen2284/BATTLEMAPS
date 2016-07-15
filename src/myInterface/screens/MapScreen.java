@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import myGame.City;
 import myGame.Land;
 import myGame.Map;
-import myGame.Player;
 import myGame.Route;
 import myGame.Traveller;
 import myMain.Board;
@@ -41,28 +40,6 @@ public class MapScreen extends MyScreen {
 		
 		// Initialisation
 		Map tempMap = this.game.getMap();
-		ArrayList<City> tempCities = tempMap.getCities();        
-		boolean stillHovered = false;
-		String hoveredCity = "";
-
-		// Check for mouse hover windows.
-		for (int i = 0; i < tempCities.size(); ++i) {
-			
-			// Gets the city being operated on.
-			City currentCity = tempCities.get(i);
-
-			// Checks if city is being hovered over.
-			Rectangle cityBounds = game.getScrolledBoundsName(currentCity.getName());
-			if (cityBounds.contains(mim.getMousePos())) {
-				stillHovered = true;
-				hoveredCity = currentCity.getName();
-				mim.getMouseWindow().setContent(hoveredCity);
-			}
-
-		}
-		
-		// Updates the hover window.
-		mim.updateHoverWindow(stillHovered);
 		
 		// Processes map movement.
 		if (mim.isPressed(3)) {
@@ -72,6 +49,7 @@ public class MapScreen extends MyScreen {
 			tempMap.incScrollY(mim.getMouseDiff()[1]);
 			if (tempMap.getScrollY() > 0) {tempMap.setScrollY(0);}
 			if (tempMap.getScrollY() - this.height < -1 * tempMap.getWidth() - tempMap.getBorder()) {tempMap.setScrollY((-1 * tempMap.getWidth() - tempMap.getBorder()) + this.height);}
+			mim.shiftButtonsBounded("Screen", game.getMap().getScrollX(), game.getMap().getScrollY());
 		}
 		
 		// Updates travellers.
@@ -160,6 +138,9 @@ public class MapScreen extends MyScreen {
 		}
 
 		// City drawing loop.
+		mim.drawButtons(g, "Screen", false);
+		
+		/*
 		for (int i = 0; i < tempCities.size(); ++i) {
 			
 			// Gets the city being operated on.
@@ -167,10 +148,10 @@ public class MapScreen extends MyScreen {
 
 			// Determines the image to be used for the city.
 			int cityImage = 11;
-			if (!currentCity.getOwner().equals("NONE")){
+			if (currentCity.getOwner() != null){
 				ArrayList<Player> allPlayers = game.getPlayers();
 				for (int j = 0; j < allPlayers.size(); ++j) {
-					if (allPlayers.get(j).getID().equals(currentCity.getOwner())) {
+					if (allPlayers.get(j).equals(currentCity.getOwner())) {
 						cityImage += j + 1;
 					}
 				}
@@ -183,6 +164,7 @@ public class MapScreen extends MyScreen {
 				g.drawImage(il.getImage(cityImage), currentCity.getX() + tempMap.getScrollX() / 2, currentCity.getY() + tempMap.getScrollX() / 2, b);
 			}
 		}
+		*/
 
 		// Draws GUI.
 		g.setColor(Color.WHITE);
@@ -197,7 +179,7 @@ public class MapScreen extends MyScreen {
 	
 	@Override
 	public void init() {
-		this.mim.setInterface(this.b.state, this.game);
+		this.mim.initInterface(this.b.state, this.game);
 	}
 
 	@Override
