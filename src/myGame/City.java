@@ -21,7 +21,7 @@ public class City {
 	private int x;
 	private int y;
 	private String name;
-	private String oID;
+	private Player owner;
 
 	// City structure info.
 	private ArrayList<Block> blocks;
@@ -50,7 +50,7 @@ public class City {
 		this.width = inWidth;
 		this.blocks = assembleBlocks();
 		this.buildings = new ArrayList<Building>();
-		this.oID = "NONE";
+		this.owner = null;
 		this.ob = new OrdinanceBook("data/ordinances.csv");
 	}
 
@@ -64,7 +64,7 @@ public class City {
 		this.width = that.getWidth();
 		this.blocks = that.getGrid();
 		this.buildings = that.getBuildings();
-		this.oID = new String(that.getOwner());
+		this.owner = that.getOwner();
 		this.ob = that.getAllOrdinances();
 	}
 
@@ -104,7 +104,7 @@ public class City {
 	public int getX() {return this.x;}
 	public int getY() {return this.y;}
 	public String getName() {return this.name;}
-	public String getOwner() {return this.oID;}
+	public Player getOwner() {return this.owner;}
 	public int getLength() {return this.length;}
 	public int getWidth() {return this.width;}
 
@@ -243,7 +243,7 @@ public class City {
 	public void setX(int inX) {this.x = inX;}
 	public void setY(int inY) {this.y = inY;}
 	public void setName(String inName) {this.name = inName; incStat("Times renamed", 1);}
-	public void setOwner(String in) {this.oID = in; incStat("Times owner changed", 1);}
+	public void setOwner(Player in) {this.owner = in; incStat("Times owner changed", 1);}
 	public void setLength(int inLength) {this.length = inLength;}
 	public void setWidth(int inWidth) {this.width = inWidth;}
 

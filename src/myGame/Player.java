@@ -7,6 +7,9 @@
 
 package myGame;
 
+import java.awt.Color;
+import java.util.ArrayList;
+
 import myData.Stats;
 
 public class Player {
@@ -16,9 +19,10 @@ public class Player {
     private String name;
     private String type = "CPU";
     private String commander = "NONE";
-    private String colour = "Grey";
+    private Color colour = Color.WHITE;
     private PointSet points = new PointSet();
  	private Stats stats = new Stats();
+ 	private ArrayList<City> cities = new ArrayList<City>();
 
     // Constructor for only a player number and name.
     public Player(int inNumber, String inName) {
@@ -47,6 +51,7 @@ public class Player {
     public String getCommander() {return this.commander;}
     public int getPoint(String in) {return this.points.get(in);}
     public PointSet getPointSet() {return this.points;}
+    public Color getColour() {return this.colour;}
     
     // Stats super-accessors.
     public int getStat(String in) {return this.stats.get(in);}    
@@ -61,6 +66,9 @@ public class Player {
 	public void setType(String in) {this.type = in;}
 	public void setCommander(String inCommander) {this.commander = inCommander;}
 	public void setPoint(String key, int value) {this.points.set(key, value);}
+	public void addOwnedCity(City in) {this.cities.add(in);}
+	public void removeOwnedCity(City in) {this.cities.remove(in);}
+	public void setColour(Color in) {this.colour = in;}
     
 	// Stats super-mutators.
 	public void setStat(String in, int val) {stats.set(in, val);}
