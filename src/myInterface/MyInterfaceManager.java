@@ -10,12 +10,17 @@ package myInterface;
 import myGame.Building;
 import myGame.City;
 import myGame.Game;
+import myGame.Options;
+import myGame.Player;
 import myGraphics.ImageLibrary;
+import myInterface.buttons.Button;
+import myInterface.buttons.ImageButton;
 import myInterface.windows.GridWindow;
 import myInterface.windows.HoverWindow;
 import myInterface.windows.InfoWindow;
 import myInterface.windows.MenuWindow;
 import myMain.Board;
+import myMain.ButtonExecutor;
 
 import java.awt.Color;
 import java.awt.Point;
@@ -33,8 +38,12 @@ public class MyInterfaceManager {
 	private ArrayList<Button> buttons = new ArrayList<Button>();
 	private ArrayList<InfoWindow> windows = new ArrayList<InfoWindow>();
 
+	private Board b;
 	private CommandLine cmd;
 	private ImageLibrary il;
+	public ButtonExecutor exe;
+	private boolean dbg;
+	private Options opt;
 
 	private Point mousePos = new Point(0,0);
 	private Point prevMousePos;
@@ -53,14 +62,19 @@ public class MyInterfaceManager {
 	
 	// Constructor
 	public MyInterfaceManager(Board b) {
+		this.b = b;
 		windowWidth = b.windowWidth; 
 		windowHeight = b.windowHeight;
 		il = b.il;
 		cmd = b.cmd;
+		exe = b.exe;
+		dbg = b.DEBUG_MASTER;
+		opt = b.opt;
 		buildLetters();
 	}
 	
-	public void buildLetters() {
+	// Private construction code.
+	private void buildLetters() {
 		for (String l : ACCEPTEDLETTERS) {
 			letters.put(l, false);
 		}
@@ -140,7 +154,54 @@ public class MyInterfaceManager {
 		if (Board.DEBUG_TRACE) {System.out.println("WINDOW PRESENCE CHECK: " + in + " = " + f);}
 		
 		return f;
-	}	
+	}
+	
+	public ArrayList<Button> getButtonsToProcess(boolean hovered) {
+		// Creating ArrayList to return buttons.
+		ArrayList<Button> processButtons = new ArrayList<Button>();
+		
+		// Adding window buttons first.
+		for (int wn = windows.size() - 1; wn >= 0; --wn) {
+			
+			// Get window in priority order.
+			InfoWindow currWindow = windows.get(wn);
+			
+			// Obtain and check all of it's buttons.
+			for (Button b : currWindow.getAllButtons()) {
+				if (b != null && b.isHovering(mousePos) == hovered) {
+					processButtons.add(b);
+				}
+			}
+
+		}
+		
+		// Adding basic buttons next.
+		for (Button b : this.getButtonsOfOwner("Basic")) {
+			if (b != null && b.isHovering(mousePos) == hovered) {
+				processButtons.add(b);
+			}
+		}
+		
+		// Adding screen buttons next.
+		for (Button b : this.getButtonsOfOwner("Screen")) {
+			if (b != null && b.isHovering(mousePos) == hovered) {
+				processButtons.add(b);
+			}
+		}
+		
+		// Adding remaining buttons not already in the ArrayList.
+		for (Button b : buttons) {
+			if ((b != null) && (!processButtons.contains(b)) && (b.isHovering(mousePos) == hovered)) {
+				processButtons.add(b);
+			}
+		}
+		
+		// Return the buttons.
+		cmd.debug("Prioritised button queue:");
+		cmd.debug(processButtons.toString());
+		return processButtons;
+		
+	}
 
 	// Mutators
 	public void setMousePos(Point in) {this.prevMousePos = this.mousePos; this.mousePos = in;}
@@ -232,7 +293,7 @@ public class MyInterfaceManager {
 		}
 	}
 
-	public void setInterface(String in, Game game) {
+	public void initInterface(String in, Game game) {
 
 		// Clears lists.
 		this.buttons.clear();
@@ -247,12 +308,32 @@ public class MyInterfaceManager {
 		if (Board.DEBUG_LAUNCH) {System.out.println("Initialising interface for " + in + ".");}
 
 		if (in.equals("Map")) {
+			
+			// City buttons.
+			for (City c : game.getCities()) {
+				int cityImage = 11;
+				if (c.getOwner() != null) {
+					ArrayList<Player> allPlayers = game.getPlayers();
+					for (int j = 0; j < allPlayers.size(); ++j) {
+						if (allPlayers.get(j).equals(c.getOwner())) {
+							cityImage += j + 1;
+						}
+					}
+				}
+				ImageButton imgb = new ImageButton(c.getX() + game.getMap().getScrollX(), c.getY() + game.getMap().getScrollY(), "City_Button_" + c.getName().replace(" ", "_"), "", 2, c.getName(), il.getImage(cityImage));
+				imgb.setOwner("Screen");
+				imgb.setWidth(31);
+				imgb.setHeight(31);
+				imgb.setHoverText(c.getName());
+				buttons.add(imgb);
+			}
 
 			// End turn button.
 			Button et = new Button(64, windowHeight - 36);
 			et.setID("End Turn");
 			et.setExecutionNumber(4);
 			et.setButtonText("End Turn");
+			et.setHoverText("TEST");
 			buttons.add(et);
 			
 			// Actions window button.
@@ -285,7 +366,7 @@ public class MyInterfaceManager {
 			buttons.add(new Button(windowWidth - 192, windowHeight - 36, "CityBackToMap", "Back to Map", 1));
 
 			// City editing buttons.
-			if (game.getActivePlayer().getID().equals(theCity.getOwner())) {
+			if (game.getActivePlayer().equals(theCity.getOwner())) {
 				buttons.add(new Button(770, 20, windowWidth - 790, 40, "City_Build", "Add Building", 16));
 				buttons.add(new Button(770, 90, windowWidth - 790, 40, "City_Move", "Move Building", 18));
 				buttons.add(new Button(770, 160, windowWidth - 790, 40, "City_Remove", "Remove Building", 19));
@@ -299,6 +380,7 @@ public class MyInterfaceManager {
 		} else if (in.substring(0,4).equals("Menu")) {
 			
 			String submenu = in.substring(5);
+			int textHeight = MyTextMetrics.getTextSizeFlat("Test")[1];
 			
 			MenuWindow winMenu = new MenuWindow("Main Menu", (windowWidth - 400) / 2, 0, 10);
 			winMenu.setHeight(windowHeight);
@@ -340,6 +422,48 @@ public class MyInterfaceManager {
 						colors
 				);
 	
+			} else if (submenu.equals("Single Skirmish")) {
+				
+				winMenu.setTitle("Single Player - Skirmish");
+				
+				String[] titles = {"Create New Skirmish","Play Random Skirmish","Play Skirmish Template","","Load Game","","","","","Back"};
+				int[] exes = {3,59,3,-1,3,-1,-1,-1,-1,3};
+				String[] adds = {"Single Skirmish Create","","Single Skirmish Templates","","Single Skirmish Load","","","","","Single Main"};
+				boolean[] vises = {true,true,true,false,true,false,false,false,false,true};
+				Color[] colors = {Color.GREEN,Color.GREEN,Color.GREEN,Color.GREEN,Color.GREEN,Color.WHITE,Color.GREEN,Color.WHITE,Color.WHITE,Color.WHITE};
+				winMenu.addMenuButtons(
+						titles,
+						exes,
+						adds,
+						vises,
+						colors
+				);
+				
+			} else if (submenu.equals("Single Skirmish Create")) {
+			
+				winMenu = null;
+				InfoWindow newWindow = new InfoWindow("Create Skirmish", 50, 100);
+				newWindow.setHeight(windowHeight);
+				newWindow.setWidth(windowWidth - 100);
+				newWindow.setLineSpacing(3);
+				String content = "";
+				content += "Game Name:\n\n";
+				content += "Number of Players:\n\n";
+				newWindow.addWindowButton(new Button(240, MyTextMetrics.getTextSizeComplex(content, 3)[1], 160, 
+						textHeight + 1, "Single_Player_Count", "UNIMPLEMENTED", 54, "fullscreen"));
+				content += "Map Width:\n";
+				content += "Map Height:\n";
+				content += "Land Type:\n\n";
+				content += "Number of Cities:\n";
+				content += "Spacing between Cities:\n\n";
+				content += "Victory Condition:\n";
+				content += "Max Turns:\n";
+				content += "\n";
+				newWindow.setContent(content);
+				newWindow.addWindowButton(new Button((newWindow.getWidth() - 138), newWindow.getHeight() - 74, "Single_Skirmish_Back", "Back", 3, "Single Main"));
+				newWindow.setButtonsColorInner(Color.GREEN);
+				newWindow.removeCloseButton();
+				addWindowFullForce(newWindow);
 				
 			} else if (submenu.equals("Multi Main")) {
 				
@@ -379,11 +503,11 @@ public class MyInterfaceManager {
 				
 				winMenu.setTitle("Editor");
 				
-				String[] titles = {"-","-","-","-","-","-","-","-","-","Back"};
+				String[] titles = {"Map","","World","","Mission","","General","","","Back"};
 				int[] exes = {3,-1,3,-1,3,-1,3,-1,-1,3};
-				String[] adds = {"Map","","World","","Mission","","General","","","Main"};
+				String[] adds = {"Editor Map","","Editor World","","Editor Mission","","Editor General","","","Main"};
 				boolean[] vises = {true,false,true,false,true,false,true,false,false,true};
-				Color[] colors = {Color.YELLOW,Color.WHITE,Color.YELLOW,Color.WHITE,Color.YELLOW,Color.WHITE,Color.YELLOW,Color.WHITE,Color.WHITE,Color.WHITE};
+				Color[] colors = {Color.ORANGE,Color.WHITE,Color.ORANGE,Color.WHITE,Color.ORANGE,Color.WHITE,Color.ORANGE,Color.WHITE,Color.WHITE,Color.WHITE};
 				winMenu.addMenuButtons(
 						titles,
 						exes,
@@ -397,10 +521,10 @@ public class MyInterfaceManager {
 				winMenu.setTitle("Options");
 				
 				String[] titles = {"Video","Audio","Gameplay","Online","Debug","-","-","Apply","Confirm","Cancel"};
-				int[] exes = {-1,-1,-1,-1,-1,-1,-1,-1,-1,3};
-				String[] adds = {"","","","","","","","","","Main"};
-				boolean[] vises = {true,true,true,true,Board.DEBUG_MASTER,false,false,false,false,true};
-				Color[] colors = {Color.WHITE,Color.WHITE,Color.WHITE,Color.WHITE,Color.WHITE,Color.WHITE,Color.WHITE,Color.WHITE,Color.WHITE,Color.WHITE};
+				int[] exes = {3,3,3,3,10,-1,-1,51,52,53};
+				String[] adds = {"Options Video","Options Audio","Options Gameplay","Options Online","","","","Options Main","Main","Main"};
+				boolean[] vises = {true,true,true,true,dbg,false,false,true,true,true};
+				Color[] colors = {Color.PINK,Color.PINK,Color.PINK,Color.PINK,Color.DARK_GRAY,Color.WHITE,Color.WHITE,Color.PINK,Color.PINK,Color.PINK};
 				winMenu.addMenuButtons(
 						titles,
 						exes,
@@ -408,6 +532,122 @@ public class MyInterfaceManager {
 						vises,
 						colors
 				);
+				
+			} else if (submenu.equals("Options Video")) {
+				
+				winMenu = null;
+				InfoWindow newWindow = new InfoWindow("Video Options", 50, 100);
+				newWindow.setHeight(windowHeight);
+				newWindow.setWidth(windowWidth - 100);
+				newWindow.setLineSpacing(3);
+				String content = "";
+				content += "Fullscreen:\n";
+				newWindow.addWindowButton(new Button(240, MyTextMetrics.getTextSizeComplex(content,3)[1], 160, 
+						textHeight + 1, "Option_Fullscreen", Boolean.toString(opt.getStatusFullscreen()), 
+						54, "fullscreen"));
+				content += "Resolution:\n\n";
+				newWindow.addWindowButton(new Button(240, MyTextMetrics.getTextSizeComplex(content,3)[1], 160, 
+						textHeight + 1, "Option_Resolution", 
+						"-", 0, ""));
+				content += "Show FPS:\n";
+				newWindow.addWindowButton(new Button(240, MyTextMetrics.getTextSizeComplex(content,3)[1], 160, 
+						textHeight + 1, "Option_FPS", 
+						Boolean.toString(opt.getStatusFPS()), 54, "fpscounter"));
+				content += "Show Time to Act/Draw:\n\n";
+				newWindow.addWindowButton(new Button(240, MyTextMetrics.getTextSizeComplex(content,3)[1], 160, 
+						textHeight + 1, "Option_TTAD", 
+						Boolean.toString(opt.getStatusTTAD()), 54, "timetoactdraw"));
+				content += "Gui Scale:\n\n";
+				newWindow.addWindowButton(new Button(240, MyTextMetrics.getTextSizeComplex(content,3)[1], 160, 
+						textHeight + 1, "Option_Scale", 
+						Integer.toString(opt.getValue("guiscale")), 55, "guiscale|1|1|4|true"));
+				content += "Primary Monitor:\n\n";
+				newWindow.addWindowButton(new Button(240, MyTextMetrics.getTextSizeComplex(content,3)[1], 160, 
+						textHeight + 1, "Option_Monitor", 
+						Integer.toString(opt.getValue("monitor")), 55, 
+						"monitor|1|0|" + Integer.toString(Board.SCREENCOUNT - 1) + "|true"));
+				content += "\n";
+				newWindow.setContent(content);
+				newWindow.addWindowButton(new Button(160, newWindow.getHeight() - 74, "Options_Goto_Audio", "Audio", 3, "Options Audio"));
+				newWindow.addWindowButton(new Button(310, newWindow.getHeight() - 74, "Options_Goto_Gameplay", "Gameplay", 3, "Options Gameplay"));
+				newWindow.addWindowButton(new Button(460, newWindow.getHeight() - 74, "Options_Goto_Online", "Online", 3, "Options Online"));
+				newWindow.addWindowButton(new Button((newWindow.getWidth() - 138), newWindow.getHeight() - 74, "Options_Goto_Back", "Back", 3, "Options Main"));
+				newWindow.setButtonsColorInner(Color.PINK);
+				newWindow.removeCloseButton();
+				addWindowFullForce(newWindow);
+							
+			} else if (submenu.equals("Options Audio")) {
+				
+				winMenu = null;
+				InfoWindow newWindow = new InfoWindow("Audio Options", 50, 100);
+				newWindow.setHeight(windowHeight);
+				newWindow.setWidth(windowWidth - 100);
+				newWindow.setLineSpacing(3);
+				String content = "";
+				content += "Master Volume:\t" + opt.getValueVolumeMaster() + "\n";
+				newWindow.addWindowButton(new Button(300, MyTextMetrics.getTextSizeComplex(content, 3)[1], 40, 
+						textHeight + 1, "Option_Master_Down", "-", 57, "volumemaster|-10|0|100|false"));
+				newWindow.addWindowButton(new Button(350, MyTextMetrics.getTextSizeComplex(content, 3)[1], 40, 
+						textHeight + 1, "Option_Master_Up", "+", 57, "volumemaster|10|0|100|false"));
+				content += "Music Volume:\t" + opt.getValueVolumeMusic() + "\n";
+				newWindow.addWindowButton(new Button(300, MyTextMetrics.getTextSizeComplex(content, 3)[1], 40, 
+						textHeight + 1, "Option_Music_Down", "-", 57, "volumemusic|-10|0|100|false"));
+				newWindow.addWindowButton(new Button(350, MyTextMetrics.getTextSizeComplex(content, 3)[1], 40, 
+						textHeight + 1, "Option_Music_Up", "+", 57, "volumemusic|10|0|100|false"));
+				content += "SFX Volume:\t" + opt.getValueVolumeSound() + "\n";
+				newWindow.addWindowButton(new Button(300, MyTextMetrics.getTextSizeComplex(content, 3)[1], 40, 
+						textHeight + 1, "Option_Sound_Down", "-", 57, "volumesound|-10|0|100|false"));
+				newWindow.addWindowButton(new Button(350, MyTextMetrics.getTextSizeComplex(content, 3)[1], 40, 
+						textHeight + 1, "Option_Sound_Up", "+", 57, "volumesound|10|0|100|false"));
+				content += "\n";
+				newWindow.setContent(content);
+				newWindow.addWindowButton(new Button(10, newWindow.getHeight() - 74, "Options_Goto_Video", "Video", 3, "Options Video"));
+				newWindow.addWindowButton(new Button(310, newWindow.getHeight() - 74, "Options_Goto_Gameplay", "Gameplay", 3, "Options Gameplay"));
+				newWindow.addWindowButton(new Button(460, newWindow.getHeight() - 74, "Options_Goto_Online", "Online", 3, "Options Online"));
+				newWindow.addWindowButton(new Button((newWindow.getWidth() - 138), newWindow.getHeight() - 74, "Options_Goto_Back", "Back", 3, "Options Main"));
+				newWindow.setButtonsColorInner(Color.PINK);
+				newWindow.removeCloseButton();
+				addWindowFullForce(newWindow);
+				
+			} else if (submenu.equals("Options Gameplay")) {
+				
+				winMenu = null;
+				InfoWindow newWindow = new InfoWindow("Gameplay Options", 50, 100);
+				newWindow.setHeight(windowHeight);
+				newWindow.setWidth(windowWidth - 100);
+				newWindow.setLineSpacing(3);
+				String content = "";
+				content += "Notifications:\n";
+				newWindow.addWindowButton(new Button(240, MyTextMetrics.getTextSizeComplex(content, 3)[1], 160, 
+						textHeight + 1, "Option_Notifications", Boolean.toString(opt.getStatus("notifications")), 
+						54, "notifications"));
+				content += "\n";
+				newWindow.setContent(content);
+				newWindow.addWindowButton(new Button(10, newWindow.getHeight() - 74, "Options_Goto_Video", "Video", 3, "Options Video"));
+				newWindow.addWindowButton(new Button(160, newWindow.getHeight() - 74, "Options_Goto_Audio", "Audio", 3, "Options Audio"));
+				newWindow.addWindowButton(new Button(460, newWindow.getHeight() - 74, "Options_Goto_Online", "Online", 3, "Options Online"));
+				newWindow.addWindowButton(new Button((newWindow.getWidth() - 138), newWindow.getHeight() - 74, "Options_Goto_Back", "Back", 3, "Options Main"));
+				newWindow.setButtonsColorInner(Color.PINK);
+				newWindow.removeCloseButton();
+				addWindowFullForce(newWindow);
+				
+			} else if (submenu.equals("Options Online")) {
+				
+				winMenu = null;
+				InfoWindow newWindow = new InfoWindow("Online Options", 50, 100);
+				newWindow.setHeight(windowHeight);
+				newWindow.setWidth(windowWidth - 100);
+				newWindow.setLineSpacing(3);
+				String content = "";
+				content += "\n";
+				newWindow.setContent(content);
+				newWindow.addWindowButton(new Button(10, newWindow.getHeight() - 74, "Options_Goto_Video", "Video", 3, "Options Video"));
+				newWindow.addWindowButton(new Button(160, newWindow.getHeight() - 74, "Options_Goto_Audio", "Audio", 3, "Options Audio"));
+				newWindow.addWindowButton(new Button(310, newWindow.getHeight() - 74, "Options_Goto_Gameplay", "Gameplay", 3, "Options Gameplay"));
+				newWindow.addWindowButton(new Button((newWindow.getWidth() - 138), newWindow.getHeight() - 74, "Options_Goto_Back", "Back", 3, "Options Main"));
+				newWindow.setButtonsColorInner(Color.PINK);
+				newWindow.removeCloseButton();
+				addWindowFullForce(newWindow);
 				
 			} else {
 				
@@ -430,9 +670,8 @@ public class MyInterfaceManager {
 				
 			}
 			
-			this.addWindowFullForce(winMenu);
+			if (winMenu != null) {this.addWindowFullForce(winMenu);}
 			
-			addDebug();
 
 		} else if (in.equals("DEBUG")) {
 
@@ -520,11 +759,10 @@ public class MyInterfaceManager {
 		// Places the buttons.
 		for (Button item : the_buttons) {
 			if (item.isVisible()) {
-				if (draw_shadows) {item.drawShadow(g);}
-				if (item.isHovering(mousePos)) {
-					item.drawHover(g);
+				if (draw_shadows) {
+					item.drawAll(g, mousePos);
 				} else {
-					item.drawButton(g);
+					item.drawBasic(g, mousePos);
 				}
 			}
 		}
@@ -536,11 +774,10 @@ public class MyInterfaceManager {
 		// Places the buttons.
 		for (Button item : in_buttons) {
 			if (item != null && item.isVisible()) {
-				if (draw_shadows) {item.drawShadow(g);}
-				if (item.isHovering(mousePos)) {
-					item.drawHover(g);
+				if (draw_shadows) {
+					item.drawAll(g, mousePos);
 				} else {
-					item.drawButton(g);
+					item.drawBasic(g, mousePos);
 				}
 			}
 		}
@@ -606,18 +843,37 @@ public class MyInterfaceManager {
 		
 		// Storage for windows to remove.
 		ArrayList<InfoWindow> windowsToGo = new ArrayList<InfoWindow>();
+		InfoWindow windowToTop = null;
+		boolean aWindowIsMoving = false;
 		
-		for (InfoWindow window : windows) {
+		// Check to see if any window is currently moving.
+		for (InfoWindow w : windows) {
+			if (w.isMoving()) {aWindowIsMoving = true;} 
+		}
+		
+		for (int wn = windows.size() - 1; wn >= 0; --wn) {
+			
+			InfoWindow window = windows.get(wn);
 			
 			// Check if the window is open or not.
-			if (window.isOpen()) {
+			if (window != null && window.isOpen()) {
 			
+				// Window prioritisation code.
+				if (mouseHeld[0] && window.isOverWindow(mousePos) && (windowToTop == null)) {
+					windowToTop = window;
+				}
 				// Window movement and boundary updating.
-				if ((window.isOverTopBar(mousePos) && mouseHeld[0]) || (window.isMoving())) {
+				if (window.isOverTopBar(mousePos) && mouseHeld[0] && !aWindowIsMoving) {
 					window.setMoving(true);
+					aWindowIsMoving = true;
 					window.setX(window.getX() + getMouseDiff()[0]);
 					window.setY(window.getY() + getMouseDiff()[1]);
 				}
+				if (window.isMoving()) {
+					window.setX(window.getX() + getMouseDiff()[0]);
+					window.setY(window.getY() + getMouseDiff()[1]);
+				}
+				// WIndow movement stopping.
 				if (!mouseHeld[0]) {
 					window.setMoving(false);
 				}
@@ -630,7 +886,8 @@ public class MyInterfaceManager {
 			else {
 				
 				// Check window to see if it needs to be removed.
-				if (window.getAnimationStatus().equals("Closed")) {windowsToGo.add(window);}
+				if (window == null) {windowsToGo.add(window);}
+				else if (window.getAnimationStatus().equals("Closed")) {windowsToGo.add(window);}
 				
 			}
 			
@@ -645,6 +902,27 @@ public class MyInterfaceManager {
 				this.removeWindowFull(window);
 			}
 		}
+		
+		// Window prioritisation.
+		if (windowToTop != null && windows.size() > 1) {
+			windows.remove(windowToTop);
+			windows.add(windowToTop);
+		}
+
+		// Check for mouse hover windows.
+		boolean stillHovered = false;		
+		for (Button cb : this.buttons) {
+
+			// Checks if city is being hovered over.
+			if (cb != null && cb.hasHoverText() && cb.isHovering(mousePos)) {
+				stillHovered = true;
+				this.getMouseWindow().setContent(cb.getHoverText());
+			}
+
+		}
+		
+		// Updates the hover window.
+		this.updateHoverWindow(stillHovered);
 				
 	}
 	
@@ -678,8 +956,50 @@ public class MyInterfaceManager {
 		this.mouseWindow.update(this.mousePos);
 		
 	}
+	
+	public void shiftButtons(String type, int xDif, int yDif) {
+		
+		ArrayList<Button> buttonz = this.getButtonsOfOwner(type);
+		
+		for (Button but : buttonz) {
+			but.incX(xDif);
+			but.incY(yDif);
+		}
+		
+	}
+	
+	public void shiftButtonsBounded(String type, int xVar, int yVar) {
+		
+		ArrayList<Button> buttonz = this.getButtonsOfOwner(type);
+		
+		for (Button but : buttonz) {
+			but.setX(but.getOwnerX() + xVar);
+			but.setY(but.getOwnerY() + yVar);
+		}
+		
+	}
 
 	// MouseListener methods.
+	public boolean mouseClicked(MouseEvent e) {
+		
+		// Allows for only 1 button press.
+		boolean clickThisFrame = false;
+
+		// Get prioritised list of hovered buttons.
+		ArrayList<Button> priorityButtons = getButtonsToProcess(true);
+		
+		// Running checks on buttons in order.
+		for (Button button : priorityButtons) {
+			if (!clickThisFrame && (e.getButton() == MouseEvent.BUTTON1) ) {
+				clickThisFrame = true;
+				exe.execute(button);
+			}
+		}
+		
+		return clickThisFrame;
+		
+	}
+	
 	public void mousePressed(MouseEvent e) {
 		boolean[] newArr = {e.getButton() == MouseEvent.BUTTON1, e.getButton() == MouseEvent.BUTTON2, e.getButton() == MouseEvent.BUTTON3};
 		this.mouseHeld = newArr;
