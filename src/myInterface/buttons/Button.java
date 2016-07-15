@@ -5,7 +5,7 @@
  *
  */
 
-package myInterface;
+package myInterface.buttons;
 
 import myMain.Board;
 
@@ -16,6 +16,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 
 import myGame.Sprite;
+import myInterface.MyTextMetrics;
 
 public class Button extends Sprite {
 
@@ -34,6 +35,7 @@ public class Button extends Sprite {
 	private String belongsTo;
 	private int ownerX;
 	private int ownerY;
+	private String hoverText = "";
 
 	// Constructors
 	public Button(int x, int y) {
@@ -52,7 +54,6 @@ public class Button extends Sprite {
 
 	}
 
-	// Constructors
 	public Button(int x, int y, String in_id) {
 
 		super(x, y);
@@ -154,46 +155,29 @@ public class Button extends Sprite {
 
 	// Accessors
 	public String getID() {return this.id;}
-
 	public Color getColorInner() {return this.colorInner;}
-
 	public Color getColorBorder() {return this.colorBorder;}
-
 	public Color getColorText() {return this.colorText;}
-
 	public Color getColorHover() {return this.colorHover;}
-
 	public String getButtonText() {return this.buttonText;}
-
 	public int getExecutionNumber() {return this.exec;}
-
 	public String getAdditionalString() {return this.add;}
-
 	public boolean hasAdditionalString() {return this.useAdd;}
-
 	public String getOwner() {return this.belongsTo;}
-	
 	public int getOwnerX() {return this.ownerX;}
-	
 	public int getOwnerY() {return this.ownerY;}
+	public String getHoverText() {return hoverText;}
+	public boolean hasHoverText() {return !hoverText.equals("");}
 
 	// Mutators
 	public void setID(String in) {this.id = in;}
-
 	public void setWidth(int in) {this.width = in;}
-
 	public void setHeight(int in) {this.height = in;}
-
 	public void setColorInner(Color in) {this.colorInner = in;}
-
 	public void setColorBorder(Color in) {this.colorBorder = in;}
-
 	public void setColorText(Color in) {this.colorText = in;}
-
 	public void setColorHover(Color in) {this.colorHover = in;}
-
-	public void setButtonText(String in) {this.buttonText = new String(in);}
-
+	public void setButtonText(String in) {this.buttonText = in;}
 	public void setExecutionNumber(int in) {this.exec = in;}
 
 	public void setAdditionalString(String in) {
@@ -202,16 +186,12 @@ public class Button extends Sprite {
 	}
 
 	public void setAdditionalStringUsage(boolean in) {this.useAdd = in;}
-
 	public void setOwner(String in) {this.belongsTo = in;}
-	
 	public void setOwnerX(int in) {this.ownerX = in;}
-
 	public void setOwnerY(int in) {this.ownerY = in;}
-	
 	public void setCenterText(boolean in) {this.centerText = in;}
-
-	public void setResizeText(boolean in) {this.resizeText = in;};
+	public void setResizeText(boolean in) {this.resizeText = in;}
+	public void setHoverText(String hoverText) {this.hoverText = hoverText;}
 
 	public void cloneFrom(Button that) {
 		this.x = that.getX();
@@ -250,11 +230,7 @@ public class Button extends Sprite {
 	// Graphics
 	public void drawAll(Graphics g, Point p) {
 		this.drawShadow(g);                        
-		if (this.isHovering(p)) {
-			this.drawHover(g);
-		} else {
-			this.drawButton(g); 
-		}
+		this.drawBasic(g, p);
 	}
 
 	public void drawBasic(Graphics g, Point p) {                   
@@ -272,7 +248,7 @@ public class Button extends Sprite {
 			g.fillRect(this.x, this.y, this.width, this.height);
 			g.setColor(this.colorBorder);
 			g.drawRect(this.x, this.y, this.width, this.height);
-			if (!buttonText.equals("")) {this.drawText(g);}
+			if (buttonText != null && !buttonText.equals("")) {this.drawText(g);}
 		}
 		
 	}
@@ -284,7 +260,7 @@ public class Button extends Sprite {
 			g.fillRect(inX, inY, this.width, this.height);
 			g.setColor(this.colorBorder);
 			g.drawRect(inX, inY, this.width, this.height);
-			if (!buttonText.equals("")) {this.drawText(g);}
+			if (buttonText != null && !buttonText.equals("")) {this.drawText(g);}
 		}
 
 	}
@@ -296,7 +272,7 @@ public class Button extends Sprite {
 			g.fillRect(this.x, this.y, this.width, this.height);
 			g.setColor(this.colorBorder);
 			g.drawRect(this.x, this.y, this.width, this.height);
-			if (!buttonText.equals("")) {this.drawText(g);}
+			if (buttonText != null && !buttonText.equals("")) {this.drawText(g);}
 		}
 
 	}
@@ -308,7 +284,7 @@ public class Button extends Sprite {
 			g.fillRect(inX, inY, this.width, this.height);
 			g.setColor(this.colorBorder);
 			g.drawRect(inX, inY, this.width, this.height);
-			if (!buttonText.equals("")) {this.drawText(g);}			
+			if (buttonText != null && !buttonText.equals("")) {this.drawText(g);}			
 		}
 
 	}
@@ -337,64 +313,69 @@ public class Button extends Sprite {
 		g.setColor(this.colorText);	
 
 		int FUCK_UP_CORRECTION = 4;
+		
+		// Check for null string.
+		if (this.buttonText != null) {
 
-		// Determines whether to resize the text or not.
-		if (resizeText) {
-
-			// Determines whether to center the text or not.
-			if (!centerText) {
-
-				// Initialises variables for text resizing.			
-				int fontSize = Board.DEFAULT_FONT_SIZE;
-				Rectangle buttonHitbox = this.getBounds();
-				int[] textSizes = MyTextMetrics.getTextSizeFlat(buttonText);
-				Rectangle textHitbox = new Rectangle(this.x + 5, this.y + 15, textSizes[0], textSizes[1]);
-
-				// Shrinks text until it fits into the button fully.
-				while ((!buttonHitbox.contains(textHitbox)) && (fontSize > 1)) {
-					--fontSize;
-					g.setFont(new Font(Board.DEFAULT_FONT_TYPE, Board.DEFAULT_FONT_ATT, fontSize));
-					textSizes = MyTextMetrics.getTextSizeFlat(buttonText);
-					textHitbox = new Rectangle(this.x + 5, this.y + 15, textSizes[0], textSizes[1]);
+			// Determines whether to resize the text or not.
+			if (resizeText) {
+	
+				// Determines whether to center the text or not.
+				if (!centerText) {
+	
+					// Initialises variables for text resizing.			
+					int fontSize = Board.DEFAULT_FONT_SIZE;
+					Rectangle buttonHitbox = this.getBounds();
+					int[] textSizes = MyTextMetrics.getTextSizeFlat(buttonText);
+					Rectangle textHitbox = new Rectangle(this.x + 5, this.y + 15, textSizes[0], textSizes[1]);
+	
+					// Shrinks text until it fits into the button fully.
+					while ((!buttonHitbox.contains(textHitbox)) && (fontSize > 1)) {
+						--fontSize;
+						g.setFont(new Font(Board.DEFAULTFONTTYPE, Board.DEFAULT_FONT_ATT, fontSize));
+						textSizes = MyTextMetrics.getTextSizeFlat(buttonText);
+						textHitbox = new Rectangle(this.x + 5, this.y + 15, textSizes[0], textSizes[1]);
+					}
+	
+					// Draws string and resets font.
+					g.drawString(this.buttonText, this.x + 5, this.y + 15);
+					g.setFont(Board.DEFAULT_FONT);
+	
+				} else {
+	
+					// Initialises variables for text resizing.			
+					int fontSize = Board.DEFAULT_FONT_SIZE;
+					Rectangle buttonHitbox = this.getBounds();
+					int[] textSizes = MyTextMetrics.getTextSizeFlat(buttonText);
+					// Rectangle textHitbox = new Rectangle((int)( (float)this.x + (this.width / 2.0) - (textSizes[0] / 2.0) ), (int)( (float)this.y + (3 * (this.height / 4)) - (textSizes[1] / 2.0) ), textSizes[0], textSizes[1]);
+					Rectangle textHitbox = new Rectangle((int)( (float)this.x + ((this.width - textSizes[0]) / 2.0) ), (int)( (float)this.y + ((this.height - textSizes[1]) / 2.0) ), textSizes[0], textSizes[1]);
+	
+					// Shrinks text until it fits into the button fully.
+					while ((!buttonHitbox.contains(textHitbox)) && (fontSize > 1)) {
+						--fontSize;
+						g.setFont(new Font(Board.DEFAULTFONTTYPE, Board.DEFAULT_FONT_ATT, fontSize));
+						textSizes = MyTextMetrics.getTextSizeFlat(buttonText);
+						textHitbox = new Rectangle((int)( (float)this.x + ((this.width - textSizes[0]) / 2.0) ), (int)( (float)this.y + ((this.height - textSizes[1]) / 2.0) ), textSizes[0], textSizes[1]);
+					}
+	
+					// Draws string and resets font.
+					g.drawString(this.buttonText, (int)( (float)this.x + ((this.width - textSizes[0]) / 2.0) ), (int)( (float)this.y + ((this.height - textSizes[1]) / 2.0) + (textSizes[1]) ) - FUCK_UP_CORRECTION);
+					g.setFont(Board.DEFAULT_FONT);
+	
 				}
-
-				// Draws string and resets font.
-				g.drawString(this.buttonText, this.x + 5, this.y + 15);
-				g.setFont(Board.DEFAULT_FONT);
-
+	
 			} else {
-
-				// Initialises variables for text resizing.			
-				int fontSize = Board.DEFAULT_FONT_SIZE;
-				Rectangle buttonHitbox = this.getBounds();
-				int[] textSizes = MyTextMetrics.getTextSizeFlat(buttonText);
-				// Rectangle textHitbox = new Rectangle((int)( (float)this.x + (this.width / 2.0) - (textSizes[0] / 2.0) ), (int)( (float)this.y + (3 * (this.height / 4)) - (textSizes[1] / 2.0) ), textSizes[0], textSizes[1]);
-				Rectangle textHitbox = new Rectangle((int)( (float)this.x + ((this.width - textSizes[0]) / 2.0) ), (int)( (float)this.y + ((this.height - textSizes[1]) / 2.0) ), textSizes[0], textSizes[1]);
-
-				// Shrinks text until it fits into the button fully.
-				while ((!buttonHitbox.contains(textHitbox)) && (fontSize > 1)) {
-					--fontSize;
-					g.setFont(new Font(Board.DEFAULT_FONT_TYPE, Board.DEFAULT_FONT_ATT, fontSize));
-					textSizes = MyTextMetrics.getTextSizeFlat(buttonText);
-					textHitbox = new Rectangle((int)( (float)this.x + ((this.width - textSizes[0]) / 2.0) ), (int)( (float)this.y + ((this.height - textSizes[1]) / 2.0) ), textSizes[0], textSizes[1]);
+	
+				// Determines whether to center the text or not.
+				if (!centerText) {
+					g.drawString(this.buttonText, this.x + 5, this.y + 15);
+				} else {
+					int[] textSizes = MyTextMetrics.getTextSizeFlat(buttonText);
+					g.drawString(this.buttonText, (int)( (float)this.x + ((this.width - textSizes[0]) / 2.0) ), (int)( (float)this.y + ((this.height - textSizes[1]) / 2.0) + (textSizes[1]) ) - FUCK_UP_CORRECTION);
 				}
-
-				// Draws string and resets font.
-				g.drawString(this.buttonText, (int)( (float)this.x + ((this.width - textSizes[0]) / 2.0) ), (int)( (float)this.y + ((this.height - textSizes[1]) / 2.0) + (textSizes[1]) ) - FUCK_UP_CORRECTION);
-				g.setFont(Board.DEFAULT_FONT);
-
+	
 			}
-
-		} else {
-
-			// Determines whether to center the text or not.
-			if (!centerText) {
-				g.drawString(this.buttonText, this.x + 5, this.y + 15);
-			} else {
-				int[] textSizes = MyTextMetrics.getTextSizeFlat(buttonText);
-				g.drawString(this.buttonText, (int)( (float)this.x + ((this.width - textSizes[0]) / 2.0) ), (int)( (float)this.y + ((this.height - textSizes[1]) / 2.0) + (textSizes[1]) ) - FUCK_UP_CORRECTION);
-			}
-
+			
 		}
 
 	}
