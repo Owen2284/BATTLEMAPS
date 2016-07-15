@@ -5,8 +5,8 @@ import java.awt.Graphics;
 import java.awt.Point;
 
 import myGraphics.ImageLibrary;
-import myInterface.Button;
 import myInterface.MyTextMetrics;
+import myInterface.buttons.Button;
 import myMain.Board;
 
 public class InputWindow extends InfoWindow {

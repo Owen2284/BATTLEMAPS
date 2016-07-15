@@ -12,7 +12,7 @@ import myMain.Board;
 import java.awt.Point;
 import java.util.ArrayList;
 
-import myInterface.Button;
+import myInterface.buttons.Button;
 
 public class GridWindow extends InfoWindow {
 

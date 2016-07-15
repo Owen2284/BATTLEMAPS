@@ -2,7 +2,7 @@ package myInterface.windows;
 
 import java.awt.Color;
 
-import myInterface.Button;
+import myInterface.buttons.Button;
 
 public class YesNoWindow extends InfoWindow {
 

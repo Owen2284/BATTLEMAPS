@@ -1,6 +1,6 @@
 package myInterface.windows;
 
-import myInterface.Button;
+import myInterface.buttons.Button;
 
 public class YesNoCancelWindow extends YesNoWindow {
 

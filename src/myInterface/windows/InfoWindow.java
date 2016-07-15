@@ -8,8 +8,8 @@
 package myInterface.windows;
 
 import myGraphics.ImageToken;
-import myInterface.Button;
 import myInterface.MyTextMetrics;
+import myInterface.buttons.Button;
 import myGraphics.ImageLibrary;
 import myMain.Board;
 
@@ -107,6 +107,10 @@ public class InfoWindow implements MyWindow {
 			return "In progress";
 		}
 	}
+	
+	public Rectangle getWindowBounds() {
+		return new Rectangle(this.x, this.y, this.width, this.height);
+	}
 
 	public Rectangle getTopBarBounds() {
 		int tbX = this.x;
@@ -116,6 +120,7 @@ public class InfoWindow implements MyWindow {
 		return new Rectangle(tbX, this.y, tbWidth, TOP_BAR_HEIGHT);
 	}
 
+	public boolean isOverWindow(Point p) {return this.getWindowBounds().contains(p);}
 	public boolean isOverTopBar(Point p) {return this.getTopBarBounds().contains(p);}
 	public boolean isMoving() {return this.isMoving;}
 
@@ -145,11 +150,18 @@ public class InfoWindow implements MyWindow {
 	}
 
 	public void removeAllButtons() {this.closeButton = null; this.returnButton = null; this.windowButtons.clear();}
+	public void setButtonsColorInner(Color in) {
+		for (Button bt : this.windowButtons) {
+			bt.setColorInner(in);
+		}
+	}
 	public void addImage(int inX, int inY, int inImg) {this.windowImages.add(new ImageToken(inX, inY, inImg));}
 	public void clearImages() {this.windowImages.clear();}
 	public void setMoving(boolean in) {this.isMoving = in;}
 	public void removeCloseButton() {this.closeButton = null;}
 	public void removeReturnButton() {this.returnButton = null;}
+	public void forceOpen() {this.animationWidth = this.width; this.animationHeight = this.height;}
+	public void forceClose() {this.animationWidth = 0; this.animationHeight = 0;}
 
 	// Graphical methods
 	public void draw(Graphics g, Board b, ImageLibrary il) {

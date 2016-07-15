@@ -3,7 +3,7 @@ package myInterface.windows;
 import java.awt.Color;
 import java.security.InvalidParameterException;
 
-import myInterface.Button;
+import myInterface.buttons.Button;
 
 public class MenuWindow extends ListWindow {
 
@@ -28,6 +28,19 @@ public class MenuWindow extends ListWindow {
 				Button newButton = new Button(0, 0, this.title.replace(" ", "_") + "_" + titles[i].replace(" ", "_"), titles[i], exes[i], adds[i]);
 				newButton.setVisible(vises[i]);
 				newButton.setColorInner(colors[i]);
+				this.addListButton(newButton);
+			}
+		} else {
+			throw new InvalidParameterException("Lengths of input arrays do not match.");
+		}
+	}
+	
+	public void addMenuButtons(String[] titles, int[] exes, String[] adds, boolean[] vises, Color color) {
+		if (titles.length == exes.length && titles.length == adds.length && titles.length == vises.length) {
+			for (int i = 0; i < titles.length; ++i) {
+				Button newButton = new Button(0, 0, this.title.replace(" ", "_") + "_" + titles[i].replace(" ", "_"), titles[i], exes[i], adds[i]);
+				newButton.setVisible(vises[i]);
+				newButton.setColorInner(color);
 				this.addListButton(newButton);
 			}
 		} else {
