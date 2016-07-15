@@ -24,6 +24,12 @@ public class MyTextMetrics {
 	
 	public static int[] getTextSizeComplex(String text) {
 		
+		return getTextSizeComplex(text, 0);
+
+	}
+	
+	public static int[] getTextSizeComplex(String text, int spacing) {
+		
 		if (MyTextMetrics.getCountOf("\n", text) == 0) {
 			return getTextSizeFlat(text);
 		}
@@ -36,6 +42,7 @@ public class MyTextMetrics {
 			int widthS = (int)(font.getStringBounds(s, frc).getWidth());
 			if (sizes[0] < widthS) {sizes[0] = widthS;}
 			sizes[1] += (int)(font.getStringBounds(s, frc).getHeight());
+			sizes[1] += spacing;
 		}
 		
 		return sizes;
