@@ -1,0 +1,3 @@
+notifications:false
+guiscale:1
+monitor:0

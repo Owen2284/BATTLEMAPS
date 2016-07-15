@@ -13,13 +13,15 @@ import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 
+import myData.MyStrings;
 import myGame.Building;
 import myGame.City;
+import myGame.Options;
 import myGame.Ordinance;
 import myGame.OrdinanceBook;
 import myGame.Player;
-import myInterface.Button;
 import myInterface.MyTextMetrics;
+import myInterface.buttons.Button;
 import myInterface.screens.ImageTestScreen;
 import myInterface.windows.GridWindow;
 import myInterface.windows.InfoWindow;
@@ -39,16 +41,27 @@ public class ButtonExecutor {
 	}
 	
 	// Function that runs the appropriate code for buttons than are clicked on.
+	public void execute(int exec) {
+		execute(exec, "");
+	}
+	
 	public void execute(int exec, String add) {
+		execute(new Button(0,0,"","",exec,add));
+	}
+	
+	public void execute(Button button) {
 
 		if (Board.DEBUG_TRACE) {
-			String debugAdd = add;
+			String debugAdd = button.getAdditionalString();
 			if (debugAdd.equals("")) {
-				b.cmd.debug("EXECUTING BUTTON CODE NUMBER " + exec + " WITH NO ADDITIONAL STRING");     
+				b.cmd.debug("EXECUTING BUTTON CODE NUMBER " + button.getExecutionNumber() + " WITH NO ADDITIONAL STRING");     
 			} else {
-				b.cmd.debug("EXECUTING BUTTON CODE NUMBER " + exec + " WITH '" + debugAdd + "'.");        		
+				b.cmd.debug("EXECUTING BUTTON CODE NUMBER " + button.getExecutionNumber() + " WITH '" + debugAdd + "'.");        		
 			}
 		}
+		
+		int exec = button.getExecutionNumber();
+		String add = button.getAdditionalString();
 
 		// Creating commonly used variables.
 		InfoWindow wind;
@@ -672,9 +685,67 @@ public class ButtonExecutor {
 			yn.setNoAdd("Quit?");
 			b.mim.addWindowFull(yn);
 		}
-		else if (exec == 50) {
+		else if (exec == 50) {												// YNC test code.
 			YesNoCancelWindow ync = new YesNoCancelWindow("TEST", Board.WINDOW_CENTER_X, 300);
 			b.mim.addWindowFull(ync);
+		}
+		else if (exec == 51) {												// Apply button code in Options.
+			b.opt.writeToFile(Board.CONFIGFILE, Board.OPTIONSFILE);
+			b.createQuickWindow("Saved!", "Options changes saved.\nSome changes will require a game restart.");
+		}
+		else if (exec == 52) {												// Confirm button code in Options.
+			b.opt.writeToFile(Board.CONFIGFILE, Board.OPTIONSFILE);
+			execute(3,"Main");
+			b.createQuickWindow("Saved!", "Options changes saved.\nSome changes will require a game restart.");
+		}
+		else if (exec == 53) {												// Cancel button code in Options.
+			b.opt = new Options(Board.CONFIGFILE, Board.OPTIONSFILE);
+			execute(3,"Main");
+			b.createQuickWindow("Cancelled", "Options reverted to intital values.");
+		}
+		else if (exec == 54) {												// Toggle boolean option.
+			b.opt.setStatus(add, !b.opt.getStatus(add));
+			button.setButtonText(Boolean.toString(b.opt.getStatus(add)));
+		}
+		else if (exec == 55) {												// Inc/dec integer option.
+			String key = add.split("\\|")[0];
+			int value = Integer.parseInt(add.split("\\|")[1]);
+			int llim = Integer.parseInt(add.split("\\|")[2]);
+			int ulim = Integer.parseInt(add.split("\\|")[3]);
+			boolean loop = Boolean.parseBoolean(add.split("\\|")[4]);
+			b.opt.setValue(key, b.opt.getValue(key) + value);
+			if (loop) {
+				if (b.opt.getValue(key) > ulim) {b.opt.setValue(key, llim);}
+				if (b.opt.getValue(key) < llim) {b.opt.setValue(key, ulim);}
+			} else {
+				if (b.opt.getValue(key) > ulim) {b.opt.setValue(key, ulim);}
+				if (b.opt.getValue(key) < llim) {b.opt.setValue(key, llim);}
+			}
+			button.setButtonText(Integer.toString(b.opt.getValue(key)));
+		}
+		else if (exec == 56) {												// Set integer option.
+			String key = add.split("\\|")[0];
+			int value = Integer.parseInt(add.split("\\|")[1]);
+			b.opt.setValue(key, value);
+			button.setButtonText(Integer.toString(b.opt.getValue(key)));
+		}
+		else if (exec == 57) {												// Special volume control option.
+			execute(new Button(0,0,"","",55,add));
+			execute(3,b.state.substring(5));
+			b.mim.getWindow("Audio Options").forceOpen();
+		}
+		else if (exec == 58) {												// Game setting looping.
+			String key = add.split("\\|")[0];
+			String current = add.split("\\|")[1];
+			String sequence = add.split("\\|")[2];
+			String next = MyStrings.sequenceAdvance(current, sequence.split(","), true);
+			// TODO: Complete code.
+			// Change game settings.
+			// Change button text.
+		}
+		else if (exec == 59) {												// Random skirmish button.
+			b.game = b.initGame("Random");
+			execute(1);
 		}
 
 	}

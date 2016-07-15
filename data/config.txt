@@ -1,0 +1,9 @@
+fullscreen:false
+resolutionx:1000
+resolutiony:600
+fpscounter:false
+timetoactdraw:false
+volumemaster:90
+volumemusic:80
+volumesound:100
+debugall:false

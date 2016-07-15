@@ -13,9 +13,9 @@ import myGame.BuildingFactory;
 import myGame.City;
 import myGame.Game;
 import myGame.Map;
+import myGame.Options;
 import myGame.Player;
 import myGraphics.ImageLibrary;
-import myInterface.Button;
 import myInterface.CommandLine;
 import myInterface.MyInterfaceManager;
 import myInterface.MyTextMetrics;
@@ -31,9 +31,10 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 import java.awt.MouseInfo;
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -43,6 +44,8 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Random;
+
+import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 import javax.swing.SwingUtilities;
@@ -50,6 +53,9 @@ import javax.swing.SwingUtilities;
 public class Board extends JPanel implements ActionListener, MouseListener, KeyListener {
 
 	private static final long serialVersionUID = 7198933434060052457L;
+	
+	// JFrame variable
+	Main parent;
 	
 	// Timing and size variables
 	public Timer timer;
@@ -66,6 +72,7 @@ public class Board extends JPanel implements ActionListener, MouseListener, KeyL
 	public MyValidator val = new MyValidator();
 	public CommandLine cmd = new CommandLine(Board.DEBUG_ERROR);
 	public ButtonExecutor exe = new ButtonExecutor(this);
+	public Options opt = new Options(CONFIGFILE, OPTIONSFILE);
 	
 	// Random variables
 	public long randomMapSeed = System.currentTimeMillis();
@@ -81,37 +88,56 @@ public class Board extends JPanel implements ActionListener, MouseListener, KeyL
 	public final String VERSIONNUMBER = "Version 0.3";
 	public final String VERSIONNAME = "The Menu Update";
 	public final String VERSIONINFO = "This version of the game is focussed on adding functional menus to the game.";
-	public final String VERSIONCOMPLETION = "0%";
+	public final String VERSIONCOMPLETION = "25%";
 	public final int BORDER_SIZE = 40;
 	public final int DELAY = 15;
 	public final int ERRORX = 0;
 	public final int ERRORY = 40;
+	public static int SCREENCOUNT = 1;
 	
 	// Public constants
 	public static int WINDOW_CENTER_X;
-	public static final String DEFAULT_FONT_TYPE = "Trebuchet MS";
+	public static final String DEFAULTFONTTYPE = "Trebuchet MS";
 	public static final int DEFAULT_FONT_ATT = Font.PLAIN;
 	public static final int DEFAULT_FONT_SIZE = 14; 
-	public static final Font DEFAULT_FONT = new Font(DEFAULT_FONT_TYPE, DEFAULT_FONT_ATT, DEFAULT_FONT_SIZE);
+	public static final Font DEFAULT_FONT = new Font(DEFAULTFONTTYPE, DEFAULT_FONT_ATT, DEFAULT_FONT_SIZE);
+	
+	// File path constants
+	public static final String CONFIGFILE = "data/config.txt";
+	public static final String OPTIONSFILE = "data/options.txt";
 	
 	// Debug constants
-	public static final boolean DEBUG_MASTER = true;					// Master debug controller
-	public static final boolean DEBUG_CMD = true && DEBUG_MASTER;		// Allows printing of messages when true.
-	public static final boolean DEBUG_EVENTS = true && DEBUG_MASTER;	// Reports mouse clicks, screen changing, etc.
-	public static final boolean DEBUG_TRACE = true && DEBUG_MASTER;		// Displays data about variables and data structures.
-	public static final boolean DEBUG_LAUNCH = true && DEBUG_MASTER;	// Shows progress of game launch.
-	public static final boolean DEBUG_LOAD = true && DEBUG_MASTER;		// Outputs status of files loaded into the game.
-	public static final boolean DEBUG_WINDOW = true && DEBUG_MASTER;	// Allows opening of debug windows.
-	public static final boolean DEBUG_MAPS = true && DEBUG_MASTER;		// Begins game on map select.
-	public static final boolean DEBUG_ERROR = true && DEBUG_MASTER;		// Details any errors that occur at runtime.
-	public static final boolean DEBUG_FPS = false && DEBUG_MASTER;		// Displays FPS counter and time to act/draw.
+	public final boolean DEBUG_MASTER = opt.getStatusDebug();	// Master debug controller
+	public static final boolean DEBUG_CMD = true;				// Allows printing of messages when true.
+	public static final boolean DEBUG_EVENTS = true;			// Reports mouse clicks, screen changing, etc.
+	public static final boolean DEBUG_TRACE = true;				// Displays data about variables and data structures.
+	public static final boolean DEBUG_LAUNCH = true;			// Shows progress of game launch.
+	public static final boolean DEBUG_LOAD = true;				// Outputs status of files loaded into the game.
+	public static final boolean DEBUG_WINDOW = true;			// Allows opening of debug windows.
+	public static final boolean DEBUG_MAPS = true;				// Begins game on map select.
+	public static final boolean DEBUG_ERROR = true;				// Details any errors that occur at runtime.
+	public static final boolean DEBUG_FPS = false;				// Displays FPS counter and time to act/draw.
 
 	// Construction and initialisation.
-	public Board(int width, int height) {
+	public Board(Main p) {
 
-		// Store necessary values.
-		windowWidth = width;
-		windowHeight = height;
+		// Process full screen/windowed display. 
+		// (http://stackoverflow.com/questions/11570356/jframe-in-full-screen-java)
+		// (http://stackoverflow.com/questions/3680221/how-can-i-get-the-monitor-size-in-java)
+		parent = p;
+		if (opt.getStatusFullscreen()) {
+			parent.setExtendedState(JFrame.MAXIMIZED_BOTH); 
+			parent.setUndecorated(true);
+			GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+			GraphicsDevice[] gs = ge.getScreenDevices();
+			SCREENCOUNT = gs.length;
+			windowWidth = gs[opt.getValue("monitor")].getDisplayMode().getWidth();
+			windowHeight = gs[opt.getValue("monitor")].getDisplayMode().getHeight();
+			
+		} else {
+			windowWidth = opt.getValueScreenWidth();
+			windowHeight = opt.getValueScreenHeight();
+		}
 		WINDOW_CENTER_X = (windowWidth - 400) / 2;
 		
 		// Outputs the game's version info.
@@ -126,7 +152,7 @@ public class Board extends JPanel implements ActionListener, MouseListener, KeyL
 		// Sets up the MyValidator object.
 		initValidator();
 
-		// Initialise interface manager.
+		// Initialise additional classes.
 		mim = new MyInterfaceManager(this);
 
 		// Checks for debug screen choice.
@@ -254,6 +280,13 @@ public class Board extends JPanel implements ActionListener, MouseListener, KeyL
 				cityCount = 20;
 				playerCount = 8;
 				break;
+			case "Random":
+				playerCount = randomTrivial.nextInt(5) + 4;
+				cityCount = randomTrivial.nextInt(26) + playerCount + 1;
+				citiesPerPlayer = 1;
+				mapHeight = windowHeight + randomTrivial.nextInt(windowHeight) + 1;
+				mapWidth = windowWidth + randomTrivial.nextInt(windowWidth) + 1;
+				break;
 		}
 
 		// Creates the game objects and sets it up.
@@ -282,11 +315,11 @@ public class Board extends JPanel implements ActionListener, MouseListener, KeyL
 		for (int c = 0; c < citiesPerPlayer; ++c) {
 			for (int i = 0; i < allPlayers.size(); ++i) {
 				int cityNumber = randomMap.nextInt(allCities.size());
-				while (!allCities.get(cityNumber).getOwner().equals("NONE")) {
+				while (allCities.get(cityNumber).getOwner() != null) {
 					cityNumber = randomMap.nextInt(allCities.size());
 					if (DEBUG_LAUNCH) {cmd.debug("Retrying giving city to " + allPlayers.get(i).getName());}
 				}
-				allCities.get(cityNumber).setOwner(allPlayers.get(i).getID());
+				allCities.get(cityNumber).setOwner(allPlayers.get(i));
 				if (DEBUG_LAUNCH) {cmd.debug("Giving " + allCities.get(cityNumber).getName() + " to " + allPlayers.get(i).getName());}
 			}
 		}
@@ -391,46 +424,13 @@ public class Board extends JPanel implements ActionListener, MouseListener, KeyL
 
 	@Override
 	public void mouseClicked(MouseEvent e) {
-
-		// Allows for only 1 button press.
-		boolean clickThisFrame = false;
-
-		// Get buttons being hovered over.
-		ArrayList<Button> hoveredButtons = mim.getHoveredButtons();
-
-		// Execute code of clicked button.
-		for (Button button : hoveredButtons) {
-			if (!clickThisFrame && (e.getButton() == MouseEvent.BUTTON1) ) {
-				clickThisFrame = true;
-				if (button.hasAdditionalString()) {
-					exe.execute(button.getExecutionNumber(), button.getAdditionalString());
-				} else {
-					exe.execute(button.getExecutionNumber(), "");
-				}
-			}
-		}
+		
+		// MIM handling.
+		boolean clickThisFrame = mim.mouseClicked(e);
 
 		// Checks other clickable objects.
 		if (state.equals("Map")) {
-
-			// Check for clicking on cities.
-			ArrayList<City> tempCities = game.getMap().getCities();
-
-			for (int i = 0; i < tempCities.size(); ++i) {
-				
-				// Gets the city being operated on.
-				City currentCity = tempCities.get(i);
-
-				// Determines the image to be used for the city.
-				Rectangle cityBounds = game.getScrolledBoundsName(currentCity.getName());
-
-				// Checks for clicks, and executes city code if necessary.
-				if (cityBounds.contains(mim.getMousePos()) && e.getButton() == MouseEvent.BUTTON1) {
-					switchScreen("City", currentCity.getName());
-				}
-
-			}
-
+			// Nothing
 		} else if (state.substring(0,4).equals("Menu")) {
 			// Nothing.
 		} else if (state.substring(0,4).equals("City")) {
