@@ -8,14 +8,17 @@
 package myMain;
 
 import java.awt.Color;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 
+import myData.MyArrays;
 import myData.MyStrings;
 import myGame.Building;
 import myGame.City;
+import myGame.Game;
 import myGame.Options;
 import myGame.Ordinance;
 import myGame.OrdinanceBook;
@@ -734,18 +737,71 @@ public class ButtonExecutor {
 			execute(3,b.state.substring(5));
 			b.mim.getWindow("Audio Options").forceOpen();
 		}
-		else if (exec == 58) {												// Game setting looping.
-			String key = add.split("\\|")[0];
-			String current = add.split("\\|")[1];
-			String sequence = add.split("\\|")[2];
-			String next = MyStrings.sequenceAdvance(current, sequence.split(","), true);
-			// TODO: Complete code.
-			// Change game settings.
-			// Change button text.
+		else if (exec == 58) {												// Button setting looping.
+			String next = MyStrings.sequenceAdvance(button.getButtonText(), add.split("\\|"), true);
+			button.setButtonText(next);
 		}
 		else if (exec == 59) {												// Random skirmish button.
 			b.game = b.initGame("Random");
 			execute(1);
+		}
+		else if (exec == 60) {												// Open generic input window.
+			String title = add.split("\\|")[0];
+			String conte = add.split("\\|")[1];
+			String execu = add.split("\\|")[2];
+			String addit = add.split("\\|")[3];
+			InputWindow inpu = new InputWindow(title, Board.WINDOW_CENTER_X, 125, b.mim.getInputString());
+			inpu.setContent(conte);
+			inpu.getWindowButtons().get(0).setExecutionNumber(Integer.parseInt(execu));
+			inpu.getWindowButtons().get(0).setAdditionalString(addit);
+			b.mim.addWindowFull(inpu);
+		}
+		else if (exec == 61) {												// Set game name.
+			InputWindow input = (InputWindow) b.mim.getWindow("Name Game");
+			String gameName = input.getInputString();
+			InfoWindow skirmish = b.mim.getWindow("Create Skirmish");
+			Button nameButton = skirmish.getWindowButtons().get(0);
+			if (b.val.validate("Game Name", gameName)) {
+				nameButton.setButtonText(gameName);
+			} else {
+				b.createErrorWindow("Game name is too long/short, or contains invalid characters.");
+			}
+			input.close();
+			b.createQuickWindow("Success", "This game will now be called \"" + gameName + "\"!");
+		}
+		else if (exec == 62) {												// Inc/dec integer button text.
+			int value = Integer.parseInt(add.split("\\|")[0]);
+			int llim = Integer.parseInt(add.split("\\|")[1]);
+			int ulim = Integer.parseInt(add.split("\\|")[2]);
+			boolean loop = Boolean.parseBoolean(add.split("\\|")[3]);
+			int newValue = Integer.parseInt(button.getButtonText()) + value;
+			if (loop) {
+				if (newValue > ulim) {newValue = llim;}
+				if (newValue < llim) {newValue = ulim;}
+			} else {
+				if (newValue > ulim) {newValue = ulim;}
+				if (newValue < llim) {newValue = llim;}
+			}
+			button.setButtonText(Integer.toString(newValue));
+		}
+		else if (exec == 63) {												// Skirmish creation button.
+			InfoWindow skirmish = b.mim.getWindow("Create Skirmish");
+			ArrayList<Button> skb = skirmish.getWindowButtons();			
+			if (Integer.parseInt(skb.get(1).getButtonText()) <= Integer.parseInt(skb.get(5).getButtonText())) {
+				b.game = b.initGame(skb.get(0).getButtonText(), 
+						Integer.parseInt(skb.get(1).getButtonText()), 
+						Integer.parseInt(skb.get(2).getButtonText()),
+						Integer.parseInt(skb.get(3).getButtonText()), 
+						skb.get(4).getButtonText(), 
+						Integer.parseInt(skb.get(5).getButtonText()), 
+						Integer.parseInt(skb.get(6).getButtonText()), 
+						skb.get(7).getButtonText(), 
+						Integer.parseInt(skb.get(8).getButtonText())
+						);
+				execute(1);
+			} else {
+				b.createErrorWindow("Not enough cities for the requested amount of players.");
+			}
 		}
 
 	}

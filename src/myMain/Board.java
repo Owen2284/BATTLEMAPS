@@ -17,11 +17,12 @@ import myGame.Options;
 import myGame.Player;
 import myGraphics.ImageLibrary;
 import myInterface.CommandLine;
-import myInterface.MyInterfaceManager;
 import myInterface.MyTextMetrics;
+import myInterface.management.MyInterfaceManager;
 import myInterface.screens.CityScreen;
 import myInterface.screens.DebugScreen;
 import myInterface.screens.ImageTestScreen;
+import myInterface.screens.LoadingScreen;
 import myInterface.screens.MapScreen;
 import myInterface.screens.MenuScreen;
 import myInterface.screens.MyScreen;
@@ -31,6 +32,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.MouseInfo;
@@ -87,8 +89,8 @@ public class Board extends JPanel implements ActionListener, MouseListener, KeyL
 	public final String GAMENAME = "BATTLEMAPS";
 	public final String VERSIONNUMBER = "Version 0.3";
 	public final String VERSIONNAME = "The Menu Update";
-	public final String VERSIONINFO = "This version of the game is focussed on adding functional menus to the game.";
-	public final String VERSIONCOMPLETION = "25%";
+	public final String VERSIONINFO = "This version of the game is focused on adding functional menus to the game.";
+	public final String VERSIONCOMPLETION = "Completion: 80%";
 	public final int BORDER_SIZE = 40;
 	public final int DELAY = 15;
 	public final int ERRORX = 0;
@@ -155,16 +157,8 @@ public class Board extends JPanel implements ActionListener, MouseListener, KeyL
 		// Initialise additional classes.
 		mim = new MyInterfaceManager(this);
 
-		// Checks for debug screen choice.
-		if (DEBUG_MAPS) {
-			switchScreen("DEBUG", "");
-		} else {
-			// Sets up the game state.
-			game = initGame("Normal");
-
-			// Sets game state and screen.
-			switchScreen("Map", "");
-		}
+		// Sets game state and screen.
+		switchScreen("Loading", "Menu|Main");
 
 	}
 	
@@ -240,6 +234,7 @@ public class Board extends JPanel implements ActionListener, MouseListener, KeyL
 	public void initValidator() {
 		val.addRule("Random Seed", "[0-9]+", 1, 12);
 		val.addRule("City Name", "[a-zA-Z0-9\\- ]+", 1, 32);
+		val.addRule("Game Name", "[a-zA-Z0-9\\-_ ]+", 1, 64);
 	}
 
 	@SuppressWarnings("unused")
@@ -337,6 +332,77 @@ public class Board extends JPanel implements ActionListener, MouseListener, KeyL
 		randomMap = new Random(r);
 		return initGame(mapType);
 
+	}
+	
+	public Game initGame(String gameName, int playerCount, int mapWidth, int mapHeight, String landType,
+						int cityCount, int citySpacing, String victoryCondition, int maxTurns) {
+		
+		// Initialisation.
+		int citiesPerPlayer = 1;								// Number of cities each player stars with.
+		int landPoints = 12;									// Aliasing on land.
+		int landMax = (int) (1.6 * (double) City.CITY_SIZE);	// Max distance from city land points can be.
+		int landMin = (int) (2.4 * (double) City.CITY_SIZE);	// Min distance from city land points should be.
+		int landSmoothnessCount = 3;							// Amount of points surrounding previous point + 1.
+		double landSmoothnessRate = 0.36;						// Closeness to previous land point.
+
+		switch (landType) {
+			case "Smooth":
+				break;
+			case "Rugged":
+				landPoints = 16;
+				landSmoothnessCount = 1;
+			case "Crazy":
+				landPoints = 24;
+				landMax = (int) (1.0 * (double) City.CITY_SIZE);
+				landMin = (int) (3.6 * (double) City.CITY_SIZE);
+				landSmoothnessCount = 1;
+		}
+
+		// Creates the game objects and sets it up.
+		Map newMap = new Map(cityCount, mapWidth, mapHeight, BORDER_SIZE, randomMap, 
+				landPoints, landMax, landMin, landSmoothnessCount, landSmoothnessRate);
+		
+		Game game = new Game(newMap);
+		game.setName(gameName);
+		game.setVictoryCondition(victoryCondition);
+		game.setMaxTurns(maxTurns);
+		
+		if (DEBUG_LAUNCH) {
+			cmd.debug("");
+			cmd.debug("MAP DEBUG LOG START:");
+			ArrayList<String> log = game.getMap().getDebugLog();
+			for (int i = 0; i < log.size(); ++i) {
+				cmd.debug("  " + log.get(i));
+			}
+			cmd.debug("MAP DEBUG LOG END.");
+			cmd.debug("");
+		}
+
+		// Adds players to the game.
+		for (int i = 0; i < playerCount; ++i) {
+			game.addPlayer(new Player(i, "Player " + Integer.toString(i + 1)));
+		}
+
+		// Gives a random city to each player.
+		ArrayList<City> allCities = game.getMap().getCities();
+		ArrayList<Player> allPlayers = game.getPlayers();
+		for (int c = 0; c < citiesPerPlayer; ++c) {
+			for (int i = 0; i < allPlayers.size(); ++i) {
+				int cityNumber = randomMap.nextInt(allCities.size());
+				while (allCities.get(cityNumber).getOwner() != null) {
+					cityNumber = randomMap.nextInt(allCities.size());
+					if (DEBUG_LAUNCH) {cmd.debug("Retrying giving city to " + allPlayers.get(i).getName());}
+				}
+				allCities.get(cityNumber).setOwner(allPlayers.get(i));
+				if (DEBUG_LAUNCH) {cmd.debug("Giving " + allCities.get(cityNumber).getName() + " to " + allPlayers.get(i).getName());}
+			}
+		}
+
+		// Increments game turn.
+		game.incTurn();
+
+		// Returns the game object.
+		return game;
 	}
 
 	@Override
@@ -552,6 +618,11 @@ public class Board extends JPanel implements ActionListener, MouseListener, KeyL
 				if (DEBUG_EVENTS) {cmd.debug("Switching to Image Test Screen.");}
 				state = "ImageTester";
 				scr = new ImageTestScreen(this);
+				break;
+			case "Loading":
+				if (DEBUG_EVENTS) {cmd.debug("Switching to Loading Screen.");}
+				state = "Loading";
+				scr = new LoadingScreen(this, this.windowWidth, this.windowHeight, extra.split("\\|")[0], extra.split("\\|")[1], 60);
 				break;
 		}
 	}
