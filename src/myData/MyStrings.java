@@ -13,9 +13,25 @@ public class MyStrings {
 		}
 	}
 	
-	// Function for advancing one item through a sequence of strings.
+	// Function for advancing one item through a sequence of strings. Loops at end.
 	public static String sequenceAdvance(String current, String[] sequence, boolean forwards) {
-		// TODO: Complete sequence advance function.
+		for (int i = 0; i < sequence.length; ++i) {
+			if (sequence[i].equals(current)) {
+				if (forwards) {
+					if (i + 1 < sequence.length) {
+						return sequence[i+1];
+					} else {
+						return sequence[0];
+					}
+				} else {
+					if (i - 1 >= 0) {
+						return sequence[i-1];
+					} else {
+						return sequence[sequence.length - 1];
+					}
+				}
+			}
+		}
 		return "";
 	}
 
