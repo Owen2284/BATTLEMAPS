@@ -14,10 +14,14 @@ import myData.Stats;
 
 public class Game {
 
-	// Fields
+	// Fixed fields
+	private String name = "Game";
 	private Map map;
 	private ArrayList<Player> players = new ArrayList<Player>();
-	private String victory = "Conquer";
+	private String victory = "Conquest";
+	private int maxTurns = -1;
+	
+	// Changeable fields
 	private int turnNumber = 0;
 	private int playerWhoseGoItIs = 1;
 	
@@ -174,10 +178,13 @@ public class Game {
 
 	}
 
+	public String getName() {return this.name;}
 	public Player getActivePlayer() {return players.get(this.playerWhoseGoItIs - 1);}
 	public Map getMap() {return this.map;}
 	public String getVictoryCondition() {return this.victory;}
 	public int getTurn() {return this.turnNumber;}
+	public int getMaxTurns() {return this.maxTurns;}
+	public boolean hasMaxTurns() {return this.maxTurns >= 0;}
 
 	// Map super-accessors
 	public ArrayList<City> getCities() {return this.map.getCities();}
@@ -204,6 +211,7 @@ public class Game {
  	public double average(String[] cats) {return stats.average(cats);}
 
 	// Mutators
+ 	public void setName(String in) {this.name = in;}
 	public void addPlayer(Player inPlayer) {this.players.add(inPlayer);}
 	public void setMap(Map inMap) {this.map = new Map(inMap);}
 	public void setMap(MapTemplate inMap) {this.map = new Map(inMap);}
@@ -211,6 +219,7 @@ public class Game {
 	public void setTurn(int inTurn) {this.turnNumber = inTurn;}
 	public void incTurn() {this.turnNumber += 1;}
 	public void decTurn() {this.turnNumber -= 1;}
+	public void setMaxTurns(int in) {this.maxTurns = in;}
 	public void nextPlayer() {
 		// Move to the next player.
 		this.updateEndPlayer();

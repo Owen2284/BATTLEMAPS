@@ -45,7 +45,6 @@ public class ListWindow extends GridWindow {
 		for (int i = this.pageNumber * initRows; i < this.buttonList.size() && i < (this.pageNumber + 1) * initRows; ++i) {
 			returnButtons.add(this.buttonList.get(i));
 		}
-		System.out.println("Current buttons at page " + this.pageNumber + " is " + returnButtons);
 		return returnButtons;
 	}
 
