@@ -41,7 +41,7 @@ public class ImageTestScreen extends MyScreen {
 	
 	@Override
 	public void init() {
-		this.mim.initInterface(this.b.state, this.game);
+		this.mim.initInterface(this.b.state, this);
 	}
 	
 	@Override

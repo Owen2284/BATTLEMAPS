@@ -4,7 +4,7 @@ import java.awt.Graphics;
 
 import myGame.Game;
 import myGraphics.ImageLibrary;
-import myInterface.MyInterfaceManager;
+import myInterface.management.MyInterfaceManager;
 import myMain.Board;
 
 public abstract class MyScreen {
@@ -29,11 +29,13 @@ public abstract class MyScreen {
 	public String getTitle() {return title;}
 	public void setTitle(String title) {this.title = title;}
 	
+	public Board getParent() {return this.b;}
+	
 	public void act() {
 		// N/A
 	}
 	
-	public void draw(@SuppressWarnings("unused") Graphics g) {
+	public void draw(Graphics g) {
 		// N/A
 	}
 	
