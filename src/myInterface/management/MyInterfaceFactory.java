@@ -156,15 +156,66 @@ public class MyInterfaceFactory {
 						colors
 				);
 	
+			} else if (submenu.equals("Single Campaign")) {
+				
+				winMenu.setTitle("Single Player - Campaign");
+				
+				String[] titles = {"Chapter Select","","Load Chapter in Progress","","","","","","","Back"};
+				int[] exes = {3,-1,3,-1,-1,-1,-1,-1,-1,3};
+				String[] adds = {"Single Campaign Chapters","","Single Campaign Load","","","","","","","Single Main"};
+				boolean[] vises = {true,false,true,false,false,false,false,false,false,true};
+				Color[] colors = {Color.GREEN,Color.GREEN,Color.GREEN,Color.GREEN,Color.GREEN,Color.GREEN,Color.GREEN,Color.GREEN,Color.GREEN,Color.GREEN};
+				winMenu.addMenuButtons(
+						titles,
+						exes,
+						adds,
+						vises,
+						colors
+				);
+				
+			} else if (submenu.equals("Single Mission")) {
+				
+				winMenu.setTitle("Single Player - Mission");
+				
+				String[] titles = {"Mission Select","","Load Mission in Progress","","Play Custom Mission","","","","","Back"};
+				int[] exes = {3,-1,3,-1,3,-1,-1,-1,-1,3};
+				String[] adds = {"Single Mission Select","", "Single Mission Load","","Single Mission Custom","","","","","Single Main"};
+				boolean[] vises = {true,false,true,false,true,false,false,false,false,true};
+				Color[] colors = {Color.GREEN,Color.GREEN,Color.GREEN,Color.GREEN,Color.GREEN,Color.GREEN,Color.GREEN,Color.GREEN,Color.GREEN,Color.GREEN};
+				winMenu.addMenuButtons(
+						titles,
+						exes,
+						adds,
+						vises,
+						colors
+				);
+				
 			} else if (submenu.equals("Single Skirmish")) {
 				
 				winMenu.setTitle("Single Player - Skirmish");
 				
-				String[] titles = {"Create New Skirmish","Play Random Skirmish","Play Skirmish Template","","Load Game","","","","","Back"};
+				String[] titles = {"Create New Skirmish","Play Random Skirmish","Play Skirmish Template","","Load Skirmish Game","","","","","Back"};
 				int[] exes = {3,59,3,-1,3,-1,-1,-1,-1,3};
 				String[] adds = {"Single Skirmish Create","","Single Skirmish Templates","","Single Skirmish Load","","","","","Single Main"};
 				boolean[] vises = {true,true,true,false,true,false,false,false,false,true};
-				Color[] colors = {Color.GREEN,Color.GREEN,Color.GREEN,Color.GREEN,Color.GREEN,Color.WHITE,Color.GREEN,Color.WHITE,Color.WHITE,Color.WHITE};
+				Color[] colors = {Color.GREEN,Color.GREEN,Color.GREEN,Color.GREEN,Color.GREEN,Color.WHITE,Color.GREEN,Color.WHITE,Color.WHITE,Color.GREEN};
+				winMenu.addMenuButtons(
+						titles,
+						exes,
+						adds,
+						vises,
+						colors
+				);
+				
+			} else if (submenu.equals("Single Domination")) {
+				
+				winMenu.setTitle("Single Player - Domination");
+				
+				String[] titles = {"Create New Domination","Play Random Domination","","Load Domination Game","","","","","","Back"};
+				int[] exes = {3,-1,-1,3,-1,-1,-1,-1,-1,3};
+				String[] adds = {"Single Domination Create","","","Single Domination Load","","","","","","Single Main"};
+				boolean[] vises = {true,true,false,true,false,false,false,false,false,true};
+				Color[] colors = {Color.GREEN,Color.GREEN,Color.GREEN,Color.GREEN,Color.GREEN,Color.GREEN,Color.GREEN,Color.GREEN,Color.GREEN,Color.GREEN};
 				winMenu.addMenuButtons(
 						titles,
 						exes,

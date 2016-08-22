@@ -28,7 +28,24 @@ public class CityScreen extends MyScreen {
 	}
 
 	@Override
-	public void act() {}
+	public void act() {
+		
+		// Gets the city name and city.
+		if (theCity == null) {
+			theCity = game.getMap().getCityByName(b.state.substring(5));
+		}
+		
+		// Hover window processing
+		Building hovered = theCity.getBuildingAt(
+				theCity.getMousePosOnGrid(mim.getMousePos()).x, 
+				theCity.getMousePosOnGrid(mim.getMousePos()).y);
+		
+		if (hovered != null) {
+			mim.getMouseWindow().setContent("\"" + hovered.getName() + "\" the " + hovered.getType() + "\nHealth: " + Double.toString(hovered.getHealthPercentage()) + "%\nStatus:" + hovered.getStatus());
+		}
+		mim.updateHoverWindow(hovered != null);
+		
+	}
 
 	@Override
 	public void draw(Graphics g) {
@@ -140,6 +157,17 @@ public class CityScreen extends MyScreen {
 			g.drawString(positivity + theCity.getPoint(theKeys[i]), 35, this.height / 2 + (5 + MyTextMetrics.getTextSizeFlat("Text")[1]) * (i + offset));
 			++imgNum;
 		}
+		
+		// Hover window processing
+		Building hovered = theCity.getBuildingAt(
+				theCity.getMousePosOnGrid(mim.getMousePos()).x, 
+				theCity.getMousePosOnGrid(mim.getMousePos()).y);
+		if (hovered != null) {
+			mim.getMouseWindow().setOpen(true);
+			mim.getMouseWindow().setActive(true);
+		}
+		mim.updateHoverWindow(hovered != null);
+		
 	}
 	
 	@Override

@@ -87,10 +87,10 @@ public class Board extends JPanel implements ActionListener, MouseListener, KeyL
 
 	// Private constants
 	public final String GAMENAME = "BATTLEMAPS";
-	public final String VERSIONNUMBER = "Version 0.3";
-	public final String VERSIONNAME = "The Menu Update";
-	public final String VERSIONINFO = "This version of the game is focused on adding functional menus to the game.";
-	public final String VERSIONCOMPLETION = "Completion: 80%";
+	public final String VERSIONNUMBER = "Version 0.4";
+	public final String VERSIONNAME = "The Gameplay Update";
+	public final String VERSIONINFO = "This version of the game is focused on implementing key gameplay systems.";
+	public final String VERSIONCOMPLETION = "Completion: 0%";
 	public final int BORDER_SIZE = 40;
 	public final int DELAY = 15;
 	public final int ERRORX = 0;
