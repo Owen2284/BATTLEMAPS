@@ -26,5 +26,6 @@ public class YesNoWindow extends InfoWindow {
 	
 	public void setNoExec(int in) {getNo().setExecutionNumber(in);}
 	public void setNoAdd(String in) {getNo().setAdditionalString(in);}
+	public void setNoToClose() {setNoExec(7); setNoAdd(this.title);}
 	
 }

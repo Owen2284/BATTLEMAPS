@@ -34,5 +34,14 @@ public class MyStrings {
 		}
 		return "";
 	}
+	
+	// Function for turning an integer to a signed string representation of itself.
+	public static String signedString(int in) {
+		if (in >= 0) {
+			return "+" + Integer.toString(in);
+		} else {
+			return Integer.toString(in);
+		}
+	}
 
 }

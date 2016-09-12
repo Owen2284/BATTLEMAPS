@@ -100,7 +100,13 @@ public class GridWindow extends InfoWindow {
 	public void setGridX(int in) {this.gridX = in;}
 	public void setGridY(int in) {this.gridY = in;}
 	
-	// TODO: Repack window function.
+	public void resizeGridButtons() {
+		// TODO
+	}
+	
+	public void resizeGridGaps() {
+		// TODO
+	}
 
 	// Updaters
 	public void update(Point p) {

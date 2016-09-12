@@ -29,6 +29,8 @@ public class Map {
 	private int scrollY = 0;
 	
 	private ArrayList<Land> lands = new ArrayList<Land>();
+	// TODO: Add map background.
+	private String[] backgroundGrid = null;
 
 	private ArrayList<String> debug_log = new ArrayList<String>();
 	private ArrayList<Route> debug_routes;
@@ -450,30 +452,6 @@ public class Map {
 		
 	}
 
-	public int getScrollX() {
-		return scrollX;
-	}
-	
-	public void setScrollX(int in) {
-		this.scrollX = in;
-	}
-
-	public void incScrollX(int in) {
-		this.scrollX += in;
-	}
-
-	public int getScrollY() {
-		return scrollY;
-	}
-	
-	public void setScrollY(int in) {
-		this.scrollY = in;
-	}
-
-	public void incScrollY(int in) {
-		this.scrollY += in;
-	}
-
 	public ArrayList<City> getCities() {return this.cities;}
 
 	public City getCityByName(String cityName) {
@@ -563,21 +541,24 @@ public class Map {
 	}
 
 	public int getLength() {return this.length;}
-
 	public int getWidth() {return this.width;}
-	
 	public int getBorder() {return this.border_size;}
-
 	public ArrayList<String> getDebugLog() {return this.debug_log;}
-
 	public boolean isDRD() {return show_debug_routes;}
+	
+	public int getScrollX() {return scrollX;}	
+	public void setScrollX(int in) {this.scrollX = in;}
+	public void incScrollX(int in) {this.scrollX += in;}
+	public int getScrollY() {return scrollY;}	
+	public void setScrollY(int in) {this.scrollY = in;}
+	public void incScrollY(int in) {this.scrollY += in;}
 
 	public ArrayList<City> getCitiesOwnedBy(String player_id) {
 
 		ArrayList<City> return_vector = new ArrayList<City>();
 		
 		for (City city : this.cities) {
-			if (city.getOwner().equals(player_id)){
+			if (city.getOwner() != null && city.getOwner().equals(player_id)){
 				return_vector.add(city);
 			}
 		}
@@ -612,7 +593,17 @@ public class Map {
 	public ArrayList<Land> getLand() {
 		return (ArrayList<Land>) this.lands.clone();
 	}
-
+	
+	public PointSet getPointGain(Player player) {
+		PointSet gains = new PointSet();
+		for (City c : this.cities) {
+			if (c.hasOwner(player)) {
+				gains.add(c.getPointSet());
+			}
+		}
+		// TODO: Factor in actions to point gain.
+		return gains;
+	}
 	// Mutators
 	public void addCity(City inCity) {
 		this.cities.add(inCity);

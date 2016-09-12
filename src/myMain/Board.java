@@ -19,6 +19,7 @@ import myGraphics.ImageLibrary;
 import myInterface.CommandLine;
 import myInterface.MyTextMetrics;
 import myInterface.management.MyInterfaceManager;
+import myInterface.screens.ActionScreen;
 import myInterface.screens.CityScreen;
 import myInterface.screens.DebugScreen;
 import myInterface.screens.ImageTestScreen;
@@ -32,7 +33,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.MouseInfo;
@@ -90,7 +90,7 @@ public class Board extends JPanel implements ActionListener, MouseListener, KeyL
 	public final String VERSIONNUMBER = "Version 0.4";
 	public final String VERSIONNAME = "The Gameplay Update";
 	public final String VERSIONINFO = "This version of the game is focused on implementing key gameplay systems.";
-	public final String VERSIONCOMPLETION = "Completion: 0%";
+	public final String VERSIONCOMPLETION = "Completion: 20%";
 	public final int BORDER_SIZE = 40;
 	public final int DELAY = 15;
 	public final int ERRORX = 0;
@@ -228,6 +228,11 @@ public class Board extends JPanel implements ActionListener, MouseListener, KeyL
 		il.loadImage(56, "images/IconIndustry.png");
 		il.loadImage(57, "images/IconPopulation.png");
 		il.loadImage(58, "images/IconHappiness.png");
+		il.loadImage(61, "image/Map1.png");
+		il.loadImage(62, "image/Map2.png");
+		il.loadImage(63, "image/Map3.png");
+		il.loadImage(64, "image/Map4.png");
+		il.loadImage(65, "image/Map5.png");
 		
 	}
 	
@@ -452,7 +457,7 @@ public class Board extends JPanel implements ActionListener, MouseListener, KeyL
 		
 	}
 
-	private void act(@SuppressWarnings("unused") ActionEvent e) {
+	private void act(ActionEvent e) {
 
 		// Gets mouse position.
 		Point mp = MouseInfo.getPointerInfo().getLocation();
@@ -544,14 +549,14 @@ public class Board extends JPanel implements ActionListener, MouseListener, KeyL
 				// Run checks for building movement and deletion selection.
 				else {
 					if (mim.getMouseMode().equals("Move")) {
-						if (blockPoint.x > 0 && blockPoint.y > 0) {
+						if (blockPoint.x >= 0 && blockPoint.y >= 0) {
 							Building moveBldg = thisCity.popBuildingAt(blockPoint.x, blockPoint.y);
 							if (moveBldg != null) {
 								mim.setMouseBuilding(moveBldg);
 							}
 						}
 					} else if (mim.getMouseMode().equals("Destroy")) {
-						if (blockPoint.x > 0 && blockPoint.y > 0) {
+						if (blockPoint.x >= 0 && blockPoint.y >= 0) {
 							thisCity.removeBuildingAt(blockPoint.x, blockPoint.y);
 						}
 					}
@@ -593,11 +598,27 @@ public class Board extends JPanel implements ActionListener, MouseListener, KeyL
 	
 	// Screen transition function.
 	public void switchScreen(String screenName, String extra) {
+		MyScreen prevScreen = scr;
 		switch (screenName) {
 			case "Map":
 				if (DEBUG_EVENTS) {cmd.debug("Switching to Map Screen.");}
 				state = "Map";
 				scr = new MapScreen(this);
+				// Preservation code.
+				if (prevScreen.getTitle().equals("Action Screen")) {
+					ActionScreen thatScreen = (ActionScreen) prevScreen;
+					if (thatScreen.isDrawingPoints()) {exe.execute(69);}
+				}
+				break;
+			case "Action":
+				if (DEBUG_EVENTS) {cmd.debug("Switching to Action Screen.");}
+				state = "Action";
+				scr = new ActionScreen(this);
+				// Preservation code.
+				if (prevScreen.getTitle().equals("Map Screen")) {
+					MapScreen thatScreen = (MapScreen) prevScreen;
+					if (thatScreen.isDrawingPoints()) {exe.execute(70);}
+				}
 				break;
 			case "City":
 				if (DEBUG_EVENTS) {cmd.debug("Switching to City Screen.");}

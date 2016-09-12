@@ -44,8 +44,8 @@ public class Block {
 
 	public int getX() {return this.x;}
 	public int getY() {return this.y;}
-	public Rectangle getBounds() {return new Rectangle(x * BLOCK_SIZE + City.GRID_OFFSET_X, y * BLOCK_SIZE + City.GRID_OFFSET_Y, BLOCK_SIZE, BLOCK_SIZE);}
-	public boolean isOver(Point p) {return this.getBounds().contains(p);} 
+	public Rectangle getBounds(int gridX, int gridY) {return new Rectangle(x * BLOCK_SIZE + gridX, y * BLOCK_SIZE + gridY, BLOCK_SIZE, BLOCK_SIZE);}
+	public boolean isOver(Point p, int gridX, int gridY) {return this.getBounds(gridX, gridY).contains(p);} 
 
 	// Mutators
 	public void setID(String inID) {this.id = inID;}

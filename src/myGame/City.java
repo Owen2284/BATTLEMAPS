@@ -32,13 +32,21 @@ public class City {
 	// City administrative info.
 	private OrdinanceBook ob;
 	
+	// Graphical info
+	private int gridOffsetX = 200;
+	private int gridOffsetY = 90;
+	
 	// Stats module.
 	private Stats stats = new Stats();
+	
+	// Buffs module.
+	private Buffs buffs = new Buffs();
+	
+	// Modifier variables.
+	private int ordinancesForThisTurn = 1;
 
 	// Constants
 	public static final int CITY_SIZE = 32;
-	public static final int GRID_OFFSET_X = 200;
-	public static final int GRID_OFFSET_Y = 90;
 
 	// Constructor for ID, x and y coordinates, city name, city length and city width.
 	public City(String inID, int inX, int inY, String inName, int inLength, int inWidth) {
@@ -133,7 +141,7 @@ public class City {
 	public Point getMousePosOnGrid(Point in) {
 		// Scan through all blocks to test for mouse collision.
 		for (Block blok : this.blocks) {
-			if (blok.isOver(in)) {
+			if (blok.isOver(in, this.gridOffsetX, this.gridOffsetY)) {
 				return new Point(blok.getX(), blok.getY());
 			}
 		}	
@@ -181,23 +189,23 @@ public class City {
 			}
 		}
 		
-		// Map output
-		if (Board.DEBUG_TRACE) {
-			for (boolean[] row : colMap) {
-				for (boolean b : row) {
-					if (b) {
-						System.out.print("T");
-					} else {
-						System.out.print("F");
-					}
-				}
-				System.out.println();
-			}
-		}
-		
 		// Returns collision map.
 		return colMap;
 	
+	}
+	
+	public void printCollisionMap() {
+		boolean[][] debMap = getCollisionMap();
+		for (boolean[] row : debMap) {
+			for (boolean b : row) {
+				if (b) {
+					System.out.print("T");
+				} else {
+					System.out.print("F");
+				}
+			}
+			System.out.println();
+		}
 	}
 	
 	public boolean hasSpaceFor(Building inBuilding, int inX, int inY) {
@@ -224,6 +232,15 @@ public class City {
 		// Returns true if building doesn't collide with other buildings.
 		return true;
 		
+	}
+	
+	public boolean hasOwner(Player in) {
+		if (this.owner != null) {
+			if (this.owner.equals(in)) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	// Ordinances super-accessors.
@@ -262,7 +279,7 @@ public class City {
 		Building foundBldg = findBuildingAt(inX, inY);
 		removeBuilding(foundBldg);
 	}
-	
+
 	public Building popBuildingAt(int inX, int inY) {
 		Building foundBldg = findBuildingAt(inX, inY);
 		removeBuilding(foundBldg);
@@ -321,19 +338,35 @@ public class City {
 		
 	}
 	
-	public boolean hasAreaFor(Building building) {
-		return (getEmptyGridArea() >= building.getBlueprintArea());
-	}
+	public boolean hasAreaFor(Building building) {return (getEmptyGridArea() >= building.getBlueprintArea());}
+	
+	public Buffs getBuffs() {return this.buffs;}
+	public int getBuffTime(String key) {return this.buffs.get(key);}
+	public boolean getBuffActivity(String key) {return this.buffs.isActive(key);}
+	public String[] getAllBuffs() {return this.getAllBuffs();}
+	public void setBuff(String key, int value) {this.buffs.set(key, value);}
+	
+	public int getOrdinancesForThisTurn() {return this.ordinancesForThisTurn;}
+	public void setOrdinancesForThisTurn(int in) {this.ordinancesForThisTurn = in;}
+	public void incOrdinancesForThisTurn() {++this.ordinancesForThisTurn;}
+	public void decOrdinancesForThisTurn() {--this.ordinancesForThisTurn;}
+	
+	public int getGridX() {return this.gridOffsetX;}
+	public int getGridY() {return this.gridOffsetY;}
+	public void setGridX(int in) {this.gridOffsetX = in;}
+	public void setGridY(int in) {this.gridOffsetY = in;}
 	
 	// Ordinance super-mutators
 	public void enactOrdinance(String name) {
 		ob.enact(name);
 		stats.inc("Ordinances enacted", 1);
+		decOrdinancesForThisTurn();
 	}
 	
 	public void repealOrdinance(String name) {
 		ob.repeal(name);
 		stats.inc("Ordinances repealed", 1);
+		incOrdinancesForThisTurn();
 	}
 	
 	// Stats super-mutators.
@@ -342,8 +375,33 @@ public class City {
 	public void decStat(String in, int val) {stats.dec(in, val);}
 	
 	// Graphical methods.
-	public void centerGrid() {
-		// TODO: Center grid function.
+	public void centerGrid(int[] xBoundary, int[] yBoundary) {
+		int blockSize = Block.BLOCK_SIZE;
+		int gridXCount = getLength();
+		int gridYCount = getWidth();
+		int gridWidth = gridXCount * blockSize;
+		int gridHeight = gridYCount * blockSize;
+		int boundWidth = xBoundary[1] - xBoundary[0];
+		int boundHeight = yBoundary[1] - yBoundary[0];
+		int gridNewX = xBoundary[0] + (boundWidth - gridWidth) / 2;
+		int gridNewY = yBoundary[0] + (boundHeight - gridHeight) / 2;
+		this.gridOffsetX = gridNewX;
+		this.gridOffsetY = gridNewY;
+	}
+	
+	// Update methods.
+	public void act(int windowWidth, int windowHeight) {
+		int[] XBOUND = {150, 750};
+		int[] YBOUND = {20, windowHeight - 40};
+		this.centerGrid(XBOUND, YBOUND);
+	}
+	
+	public void endFullTurn() {
+		for (Building b : this.buildings) {b.update();}
+	}
+	
+	public void endPlayerTurn() {
+		this.ordinancesForThisTurn = 1;
 	}
 
 	// Overrides

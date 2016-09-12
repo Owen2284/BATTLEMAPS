@@ -17,6 +17,7 @@ public class Game {
 	// Fixed fields
 	private String name = "Game";
 	private Map map;
+	private ActionHandler actor = new ActionHandler(new ActionScript());
 	private ArrayList<Player> players = new ArrayList<Player>();
 	private String victory = "Conquest";
 	private int maxTurns = -1;
@@ -38,54 +39,6 @@ public class Game {
 		if (random) {
 			this.map = new Map();
 		}
-	}
-
-	// Constructor for just a list of players. This creates a random map.
-	public Game(String[][] inPlayerList) {
-
-		// Creates all players and adds them to the internal player list.
-		for (int i = 0; i < inPlayerList.length; ++i) {
-
-			Player newPlayer = new Player(i + 1, inPlayerList[i][0], inPlayerList[i][1]);
-			this.players.add(newPlayer);
-
-		}
-
-		// Creates default map.
-		this.map = new Map();
-
-	}
-
-	// Constructor for a player list and a map.
-	public Game(String[][] inPlayerList, Map inMap) {
-
-		// Creates all players and adds them to the internal player list.
-		for (int i = 0; i < inPlayerList.length; ++i) {
-
-			Player newPlayer = new Player(i + 1, inPlayerList[i][0], inPlayerList[i][1]);
-			this.players.add(newPlayer);
-
-		}
-
-		// Creates default map.
-		this.map = new Map(inMap);
-
-	}
-
-	// Constructor for a player list and a map template.
-	public Game(String[][] inPlayerList, MapTemplate inMapTemplate) {
-
-		// Creates all players and adds them to the internal player list.
-		for (int i = 0; i < inPlayerList.length; ++i) {
-
-			Player newPlayer = new Player(i + 1, inPlayerList[i][0], inPlayerList[i][1]);
-			this.players.add(newPlayer);
-
-		}
-
-		// Creates default map.
-		this.map = new Map(inMapTemplate);
-
 	}
 
 	// Constructor for a map.
@@ -160,9 +113,6 @@ public class Game {
 
 	}
 
-	// Private construction code.
-
-
 	// Accessors
 	public ArrayList<Player> getPlayers() {return this.players;}
 
@@ -180,6 +130,7 @@ public class Game {
 
 	public String getName() {return this.name;}
 	public Player getActivePlayer() {return players.get(this.playerWhoseGoItIs - 1);}
+	public int getActivePlayerNumber() {return playerWhoseGoItIs;}
 	public Map getMap() {return this.map;}
 	public String getVictoryCondition() {return this.victory;}
 	public int getTurn() {return this.turnNumber;}
@@ -202,6 +153,9 @@ public class Game {
 	public boolean isUniqueName(String in) {return this.map.isUniqueName(in);}
 	public ArrayList<City> getCitiesOwnedBy(String player_id) {return this.map.getCitiesOwnedBy(player_id);}
 	public int sumStatByPlayer(String player_id, String key) {return this.map.sumStatByPlayer(player_id, key);}
+	public int sumStatByPlayer(Player playerObj, String key) {return this.sumStatByPlayer(playerObj.getID(), key);}
+	public PointSet getPointGain(Player player) {return this.map.getPointGain(player);}
+	public int getPointGain(Player player, String key) {return getPointGain(player).get(key);}
 	
     // Stats super-accessors.
     public int getStat(String in) {return this.stats.get(in);}    
@@ -209,7 +163,12 @@ public class Game {
  	public String highest(String[] cats) {return stats.highest(cats);}
  	public String lowest(String[] cats) {return stats.lowest(cats);}
  	public double average(String[] cats) {return stats.average(cats);}
-
+ 	
+ 	// ActionHandler accessors.
+ 	public ActionHandler getActor() {return this.actor;}
+ 	public boolean cityUnderAttack(City in) {return this.actor.cityUnderAttack(in);}
+ 	public boolean playerUnderAttack(Player in) {return this.actor.playerUnderAttack(in);}
+ 	
 	// Mutators
  	public void setName(String in) {this.name = in;}
 	public void addPlayer(Player inPlayer) {this.players.add(inPlayer);}
@@ -224,13 +183,15 @@ public class Game {
 		// Move to the next player.
 		this.updateEndPlayer();
 		playerWhoseGoItIs += 1;
-		// TODO: Check if player is still in game.
+		// Check to see if current player still has cities/is in game.
+		//if (!getActivePlayer().hasCities()) {
 		// Increment turn counter if all players have acted.
 		if (playerWhoseGoItIs > this.players.size()) {
 			this.updateEndTurn();			
 			this.incTurn();
 			playerWhoseGoItIs = 1;
 		}
+		this.updateStartPlayer();
 	}
 
 	// Map super-mutators.
@@ -246,12 +207,29 @@ public class Game {
 	public void incStat(String in, int val) {stats.inc(in, val);}
 	public void decStat(String in, int val) {stats.dec(in, val);}
 	
-	// Updater
-	public void updateConstant() {
+	// ActionHandler mutators.
+	public void addAction(Action in) {this.actor.addAction(in);}
+	
+	// Updaters
+	public void act() {
 		// N/A
 	}
 	
+	public void updateStartPlayer() {
+		// Action processing.
+		ArrayList<String> actionMessages = this.actor.updateStartPlayer(getActivePlayer());
+		if (actionMessages.size() > 0) {
+			System.out.println(actionMessages.toString());
+		}
+	}
+	
 	public void updateEndPlayer() {
+		// City processing.
+		for (City c : getCitiesOwnedBy(getActivePlayer().getID())) {
+			c.endPlayerTurn();
+		}
+		// Action processing.
+		this.actor.updateEndPlayer(getActivePlayer());
 		// Setting player stats.
 		for (Player p : this.players) {
 			p.setStat("Cities owned", this.getCitiesOwnedBy(p.getName()).size());
@@ -259,7 +237,16 @@ public class Game {
 	}
 	
 	public void updateEndTurn() {
-		// N/A
+		// City processing.
+		for (City c : getCities()) {
+			c.endFullTurn();
+		}
+		// Action processing.
+		this.actor.updateEndTurn();
+		// Increasing player points.
+		for (Player p : this.players) {
+			p.getPointSet().add(getPointGain(p));
+		}
 	}
 	
 	// Overwrites

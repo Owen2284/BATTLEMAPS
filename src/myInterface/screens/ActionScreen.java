@@ -10,36 +10,25 @@ import myGame.City;
 import myGame.Land;
 import myGame.Map;
 import myGame.Route;
-import myGame.Traveller;
 import myInterface.MyTextMetrics;
 import myMain.Board;
 
-public class MapScreen extends MyScreen {
-	
-	private final boolean trippyMode = false;
-	private final boolean invasionMode = false;
+public class ActionScreen extends MyScreen {
 	
 	private boolean showPoints = false;
 	
-	private ArrayList<Traveller> travellers = new ArrayList<Traveller>();
-
-	public MapScreen(Board b, int inWidth, int inHeight) {
-		super(b);
-		this.title = "Map Screen";
-		this.width = inWidth;
-		this.height = inHeight;
+	public ActionScreen(Board parent, int width, int height) {
+		super(parent);
+		this.title = "Action Screen";
+		this.width = width;
+		this.height = height;
 		this.init();
-		for (City c : this.game.getMap().getCities()) {
-			ArrayList<City> n = this.game.getMap().getNeighboursOf(c.getName());
-			travellers.add(new Traveller(c, n.get(b.randomTrivial.nextInt(n.size()))));
-		}
+	}
+
+	public ActionScreen(Board parent) {
+		this(parent, parent.windowWidth, parent.windowHeight);
 	}
 	
-	public MapScreen(Board b) {
-		this(b, b.windowWidth, b.windowHeight);
-	}
-
-	@Override
 	public void act() {
 		
 		// Initialisation
@@ -56,32 +45,16 @@ public class MapScreen extends MyScreen {
 			mim.shiftButtonsBounded("Screen", game.getMap().getScrollX(), game.getMap().getScrollY());
 		}
 		
-		// Updates travellers.
-		for (int i = 0; i < travellers.size(); ++i) {
-			Traveller t = travellers.get(i);
-			if (!t.near()) {
-				t.move();
-			} else {
-				ArrayList<City> a = this.game.getMap().getCities();
-				City c = a.get(b.randomTrivial.nextInt(a.size()));
-				ArrayList<City> n = this.game.getMap().getNeighboursOf(c.getName());
-				travellers.add(new Traveller(c, n.get(b.randomTrivial.nextInt(n.size()))));
-				if (!invasionMode) {travellers.remove(t);}
-			}
-		}
-		
 	}
-
-	@Override
+	
 	public void draw(Graphics g) {
-		
 		// Draws map of all cities and routes.
 		Map tempMap = game.getMap();
 		ArrayList<City> tempCities = tempMap.getCities();
 		Color routeColor = new Color(255,255,255);
 
 		// Sets background colour.
-		b.setBackground(Color.BLUE);
+		b.setBackground(Color.RED);
 		
 		// Get terrain temporarily.
 		ArrayList<Land> tempTerrain = tempMap.getLand();
@@ -105,22 +78,10 @@ public class MapScreen extends MyScreen {
 			for (int j = 0; j < tempRoutes.size(); ++j) {
 				Route currentRoute = tempRoutes.get(j);
 				City otherCity = tempMap.getCityByName(currentRoute.getDestination(currentCity.getName()));
-				if (!trippyMode) {
-					// Normal operation.
-					g.drawLine(currentCity.getX() + tempMap.getScrollX() + City.CITY_SIZE / 2, currentCity.getY() + tempMap.getScrollY() + City.CITY_SIZE / 2,
-							otherCity.getX() + tempMap.getScrollX() + City.CITY_SIZE / 2, otherCity.getY() + tempMap.getScrollY() + City.CITY_SIZE /2);
-				} else {
-					// Weird map mode.
-					g.drawLine(currentCity.getX() + tempMap.getScrollX() + City.CITY_SIZE / 2, currentCity.getY() + tempMap.getScrollY() + City.CITY_SIZE / 2,
-							otherCity.getX() + City.CITY_SIZE / 2, otherCity.getY() + City.CITY_SIZE /2);
-				}
+				g.drawLine(currentCity.getX() + tempMap.getScrollX() + City.CITY_SIZE / 2, currentCity.getY() + tempMap.getScrollY() + City.CITY_SIZE / 2,
+						otherCity.getX() + tempMap.getScrollX() + City.CITY_SIZE / 2, otherCity.getY() + tempMap.getScrollY() + City.CITY_SIZE /2);
 			}
 
-		}
-		
-		// Traveller drawing loop.
-		for (Traveller t : travellers) {
-			t.draw(g, b);
 		}
 
 		// Hover over drawing loop.
@@ -132,10 +93,10 @@ public class MapScreen extends MyScreen {
 			// Determines the image to be used for the city.
 			Rectangle cityBounds = game.getScrolledBoundsName(currentCity.getName());
 			if (cityBounds.contains(mim.getMousePos())) {
-				g.drawImage(il.getImage(21), currentCity.getX() + tempMap.getScrollX() - 2, currentCity.getY() + tempMap.getScrollY() - 2, b);
-				ArrayList<City> currentCityNeighbours = tempMap.getNeighboursOf(currentCity.getName());
-				for (City neighbour : currentCityNeighbours) {
-					g.drawImage(il.getImage(22), neighbour.getX() + tempMap.getScrollX() - 2, neighbour.getY() + tempMap.getScrollY() - 2, b);
+				if (currentCity.getOwner() != null && currentCity.getOwner().equals(game.getActivePlayer())) {
+					g.drawImage(il.getImage(22), currentCity.getX() + tempMap.getScrollX() - 2, currentCity.getY() + tempMap.getScrollY() - 2, b);
+				} else {
+					g.drawImage(il.getImage(21), currentCity.getX() + tempMap.getScrollX() - 2, currentCity.getY() + tempMap.getScrollY() - 2, b);
 				}
 			}
 
@@ -143,32 +104,6 @@ public class MapScreen extends MyScreen {
 
 		// City drawing loop.
 		mim.drawButtons(g, "Screen", false);
-		
-		/*
-		for (int i = 0; i < tempCities.size(); ++i) {
-			
-			// Gets the city being operated on.
-			City currentCity = tempCities.get(i);
-
-			// Determines the image to be used for the city.
-			int cityImage = 11;
-			if (currentCity.getOwner() != null){
-				ArrayList<Player> allPlayers = game.getPlayers();
-				for (int j = 0; j < allPlayers.size(); ++j) {
-					if (allPlayers.get(j).equals(currentCity.getOwner())) {
-						cityImage += j + 1;
-					}
-				}
-			}
-
-			// Draws the city and it's name.
-			if (!trippyMode) {
-				g.drawImage(il.getImage(cityImage), currentCity.getX() + tempMap.getScrollX(), currentCity.getY() + tempMap.getScrollY(), b);
-			} else {
-				g.drawImage(il.getImage(cityImage), currentCity.getX() + tempMap.getScrollX() / 2, currentCity.getY() + tempMap.getScrollX() / 2, b);
-			}
-		}
-		*/
 
 		// Draws consistent GUI.
 		g.setColor(Color.WHITE);
@@ -209,21 +144,14 @@ public class MapScreen extends MyScreen {
 			g.drawImage(il.getImage(58), 42, height - 62, b);
 			g.drawString(Integer.toString(game.getPointGain(game.getActivePlayer(), "Happiness")), 70, height - 50);
 		}
-		
 	}
 	
-	@Override
 	public void init() {
 		this.mim.initInterface(this.b.state, this);
-	}
-
-	@Override
-	public void transition() {
-		// TODO: Transition system.
 	}
 	
 	// Specific screen instructions.
 	public boolean isDrawingPoints() {return this.showPoints;}
 	public void togglePointsDisplay() {this.showPoints = !this.showPoints;}
-
+	
 }

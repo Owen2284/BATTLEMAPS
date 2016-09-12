@@ -52,6 +52,7 @@ public class Player {
     public int getPoint(String in) {return this.points.get(in);}
     public PointSet getPointSet() {return this.points;}
     public Color getColour() {return this.colour;}
+    public boolean hasCities() {return this.cities.size() > 0;}
     
     // Stats super-accessors.
     public int getStat(String in) {return this.stats.get(in);}    

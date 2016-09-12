@@ -4,7 +4,7 @@ import java.util.HashMap;
 
 public class Stats {
 	
-	HashMap <String, Integer> stats;
+	protected HashMap <String, Integer> stats;
 
 	public Stats() {
 		stats = new HashMap<String, Integer>();

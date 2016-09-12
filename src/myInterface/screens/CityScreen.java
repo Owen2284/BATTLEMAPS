@@ -14,6 +14,7 @@ import myMain.Board;
 public class CityScreen extends MyScreen {
 	
 	private City theCity = null;
+	private boolean ownerViewing = false;
 	
 	public CityScreen(Board b, int inWidth, int inHeight) {
 		super(b);
@@ -33,6 +34,18 @@ public class CityScreen extends MyScreen {
 		// Gets the city name and city.
 		if (theCity == null) {
 			theCity = game.getMap().getCityByName(b.state.substring(5));
+			ownerViewing = theCity.hasOwner(game.getActivePlayer());
+		}
+		
+		// City updating.
+		theCity.act(width, height);
+		
+		// Enabling/disabling the city buttons.
+		if (ownerViewing) {
+			mim.getButtonByID("City_Build").setActive(theCity.getEmptyGridArea() > 0);
+			mim.getButtonByID("City_Move").setActive(theCity.getBuildings().size() > 0);
+			mim.getButtonByID("City_Remove").setActive(theCity.getBuildings().size() > 0);
+			mim.getButtonByID("City_Ordinances").setActive(theCity.getOrdinancesForThisTurn() > 0);
 		}
 		
 		// Hover window processing
@@ -57,6 +70,7 @@ public class CityScreen extends MyScreen {
 		// Gets the city name and city.
 		if (theCity == null) {
 			theCity = game.getMap().getCityByName(b.state.substring(5));
+			ownerViewing = theCity.hasOwner(game.getActivePlayer());
 		}
 
 		// Check to see if any city block are being hovered over.
@@ -67,16 +81,16 @@ public class CityScreen extends MyScreen {
 		for (int i = 0; i < cityBlocks.size(); ++i) {
 			Block currentBlock = cityBlocks.get(i);
 			g.setColor(Color.WHITE);
-			g.fillRect(City.GRID_OFFSET_X + (currentBlock.getX() * Block.BLOCK_SIZE), City.GRID_OFFSET_Y + (currentBlock.getY() * Block.BLOCK_SIZE), Block.BLOCK_SIZE, Block.BLOCK_SIZE);
+			g.fillRect(theCity.getGridX() + (currentBlock.getX() * Block.BLOCK_SIZE), theCity.getGridY() + (currentBlock.getY() * Block.BLOCK_SIZE), Block.BLOCK_SIZE, Block.BLOCK_SIZE);
 			g.setColor(Color.BLACK);
-			g.drawRect(City.GRID_OFFSET_X + (currentBlock.getX() * Block.BLOCK_SIZE), City.GRID_OFFSET_Y + (currentBlock.getY() * Block.BLOCK_SIZE), Block.BLOCK_SIZE, Block.BLOCK_SIZE);
+			g.drawRect(theCity.getGridX() + (currentBlock.getX() * Block.BLOCK_SIZE), theCity.getGridY() + (currentBlock.getY() * Block.BLOCK_SIZE), Block.BLOCK_SIZE, Block.BLOCK_SIZE);
 		}
 		
 		// Draws buildings.
 		for (Building building : theCity.getBuildings()) {
 			String blueprint = building.getBlueprintAsString();
-			int blptX = City.GRID_OFFSET_X + (building.getX() * Block.BLOCK_SIZE);
-			int blptY = City.GRID_OFFSET_Y + (building.getY() * Block.BLOCK_SIZE);
+			int blptX = theCity.getGridX() + (building.getX() * Block.BLOCK_SIZE);
+			int blptY = theCity.getGridY() + (building.getY() * Block.BLOCK_SIZE);
 			for (String line : blueprint.split("\n")) {
 				for (String character : line.split("|")) {
 					if (character.equals("T")) {
@@ -87,7 +101,7 @@ public class CityScreen extends MyScreen {
 					}
 					blptX += Block.BLOCK_SIZE;
 				}
-				blptX = City.GRID_OFFSET_X + (building.getX() * Block.BLOCK_SIZE);
+				blptX = theCity.getGridX() + (building.getX() * Block.BLOCK_SIZE);
 				blptY += Block.BLOCK_SIZE;
 			}
 		}
@@ -97,20 +111,20 @@ public class CityScreen extends MyScreen {
 			
 			// Draw mouse over'd city square.
 			g.setColor(Color.RED);
-			g.fillRect(City.GRID_OFFSET_X + (blockPoint.x * Block.BLOCK_SIZE), City.GRID_OFFSET_Y + (blockPoint.y * Block.BLOCK_SIZE), Block.BLOCK_SIZE, Block.BLOCK_SIZE);
+			g.fillRect(theCity.getGridX() + (blockPoint.x * Block.BLOCK_SIZE), theCity.getGridY() + (blockPoint.y * Block.BLOCK_SIZE), Block.BLOCK_SIZE, Block.BLOCK_SIZE);
 			g.setColor(Color.BLACK);
-			g.drawRect(City.GRID_OFFSET_X + (blockPoint.x * Block.BLOCK_SIZE), City.GRID_OFFSET_Y + (blockPoint.y * Block.BLOCK_SIZE), Block.BLOCK_SIZE, Block.BLOCK_SIZE);
+			g.drawRect(theCity.getGridX() + (blockPoint.x * Block.BLOCK_SIZE), theCity.getGridY() + (blockPoint.y * Block.BLOCK_SIZE), Block.BLOCK_SIZE, Block.BLOCK_SIZE);
 			
 			// Draw building blueprint.		
 			if (mim.getMouseBuilding() != null) {
 				Building mB = mim.getMouseBuilding();
 				String mBString = mB.getBlueprintAsString();
-				int blptX = City.GRID_OFFSET_X + (blockPoint.x * Block.BLOCK_SIZE);
-				int blptY = City.GRID_OFFSET_Y + (blockPoint.y * Block.BLOCK_SIZE);
+				int blptX = theCity.getGridX() + (blockPoint.x * Block.BLOCK_SIZE);
+				int blptY = theCity.getGridY() + (blockPoint.y * Block.BLOCK_SIZE);
 				for (String line : mBString.split("\n")) {
 					for (String character : line.split("|")) {
 						if (character.equals("T")) {
-							if (blptX < City.GRID_OFFSET_X + (theCity.getWidth() * Block.BLOCK_SIZE) && blptY < City.GRID_OFFSET_Y + (theCity.getWidth() * Block.BLOCK_SIZE)) {
+							if (blptX < theCity.getGridX() + (theCity.getWidth() * Block.BLOCK_SIZE) && blptY < theCity.getGridY() + (theCity.getWidth() * Block.BLOCK_SIZE)) {
 								g.setColor(Color.BLUE);
 								g.fillRect(blptX, blptY, Block.BLOCK_SIZE, Block.BLOCK_SIZE);
 							}
@@ -119,7 +133,7 @@ public class CityScreen extends MyScreen {
 						}
 						blptX += Block.BLOCK_SIZE;
 					}
-					blptX = City.GRID_OFFSET_X + (blockPoint.x * Block.BLOCK_SIZE);
+					blptX = theCity.getGridX() + (blockPoint.x * Block.BLOCK_SIZE);
 					blptY += Block.BLOCK_SIZE;
 				}
 			
@@ -131,17 +145,20 @@ public class CityScreen extends MyScreen {
 		g.setColor(Color.WHITE);
 		g.fillRect(0, 0, 80, 21);															// Turn counter.
 		g.fillRect(0, this.height - 40, this.width, 40);									// Bottom bar.
-		g.fillRect(750, 0, 250, this.height - 40);											// City buttons box.
-		g.fillRect(0, this.height / 2, City.GRID_OFFSET_X - 50, this.height - 40);			// Points box.
+		g.fillRect(750, 0, this.width - 750, this.height - 40);								// City buttons box.
+		g.fillRect(0, this.height / 2, 150, this.height - 40);								// Points box.
+		g.fillRect((this.width / 2) - 50, 0, 100, 20);										// Screen name box.
 
 		g.setColor(Color.BLACK);
 		g.drawRect(0, 0, 80, 21); 															// Turn counter.
 		g.drawRect(0, this.height - 40, this.width, this.height);							// Bottom bar.
-		g.drawRect(750, 0, 250, this.height - 40);											// City buttons box.
-		g.drawRect(0, this.height / 2, City.GRID_OFFSET_X - 50, (this.height / 2) - 40);	// Points box.
+		g.drawRect(750, 0, this.width - 750, this.height - 40);								// City buttons box.
+		g.drawRect(0, this.height / 2, 150, (this.height / 2) - 40);						// Points box.
+		g.drawRect((this.width / 2) - 50, 0, 100, 20);										// Screen name box.
 
 		// Draws text.
 		g.drawString("Turn " + Integer.toString(game.getTurn()), 4, 16);
+		g.drawString(this.title, (this.width / 2) - (MyTextMetrics.getTextSizeFlat(this.title)[0] / 2), 16);
 		g.drawString(theCity.getName(), 5, this.height / 2 + 5 + MyTextMetrics.getTextSizeFlat("Text")[1]);
 		g.drawString(theCity.getName(), 6, this.height / 2 + 5 + MyTextMetrics.getTextSizeFlat("Text")[1]);
 		int offset = 3;
@@ -156,6 +173,10 @@ public class CityScreen extends MyScreen {
 			}
 			g.drawString(positivity + theCity.getPoint(theKeys[i]), 35, this.height / 2 + (5 + MyTextMetrics.getTextSizeFlat("Text")[1]) * (i + offset));
 			++imgNum;
+		}
+		if (ownerViewing) {
+			String ordString = "Ordinance changes this turn: " + Integer.toString(theCity.getOrdinancesForThisTurn());
+			g.drawString(ordString, 750 + ((this.width - 750) / 2) - (MyTextMetrics.getTextSizeFlat(ordString)[0] / 2), 352);
 		}
 		
 		// Hover window processing

@@ -290,11 +290,9 @@ public class MyInterfaceManager {
 	
 	public void addDebug() {
 		// Debug action window button.
-		Button db = new Button(3*(windowWidth / 4) - 128, windowHeight - 36);
-		db.setID("DEBUG_ACTION_WINDOW");
+		Button db = new Button(windowWidth - 18, 0, 18, 18, "DEBUG", "!", 10);
 		db.setColorInner(Color.GREEN);
-		db.setExecutionNumber(10);
-		db.setButtonText("DEBUG_ACTION");
+		db.setDrawShadow(false);
 		buttons.add(db);
 	}
 	
@@ -563,7 +561,7 @@ public class MyInterfaceManager {
 		
 		// Running checks on buttons in order.
 		for (Button button : priorityButtons) {
-			if (!clickThisFrame && (e.getButton() == MouseEvent.BUTTON1) ) {
+			if (!clickThisFrame && (e.getButton() == MouseEvent.BUTTON1) && button.isActive()) {
 				clickThisFrame = true;
 				exe.execute(button);
 			}
@@ -578,7 +576,7 @@ public class MyInterfaceManager {
 		this.mouseHeld = newArr;
 	}
 
-	public void mouseReleased(@SuppressWarnings("unused") MouseEvent e) {
+	public void mouseReleased(MouseEvent e) {
 		boolean[] newArr = {false, false, false};
 		this.mouseHeld = newArr;
 	}
@@ -616,6 +614,16 @@ public class MyInterfaceManager {
 				cmd.debug(all);
 				break;
 		}
+	}
+
+	public Button getButtonByID(String targetID) {
+		for (Button b : this.buttons) {
+			if (b.getID().equals(targetID)) {
+				return b;
+			}
+		}
+		cmd.error("ERROR: MyInterfaceManager.getButtonByID(" + targetID + ") exited without finding the specified button.");
+		return null;
 	}
 
 }

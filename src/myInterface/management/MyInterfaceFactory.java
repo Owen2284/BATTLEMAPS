@@ -22,6 +22,10 @@ public class MyInterfaceFactory {
 	
 	public static void initInterface(MyInterfaceManager mim, String state, MyScreen scr) {
 		
+		// Gather coords.
+		int[] BOTTOMBARX = {64, scr.getParent().windowWidth / 4, (scr.getParent().windowWidth / 2) - 64, 3 * (scr.getParent().windowWidth / 4) - 128, scr.getParent().windowWidth - 192};
+		int BOTTOMBARY = scr.getParent().windowHeight - 36;
+		
 		// Clears lists.
 		mim.clearButtons();
 		mim.clearWindows();
@@ -54,43 +58,81 @@ public class MyInterfaceFactory {
 						}
 					}
 				}
-				ImageButton imgb = new ImageButton(c.getX() + game.getMap().getScrollX(), c.getY() + game.getMap().getScrollY(), "City_Button_" + c.getName().replace(" ", "_"), "", 2, c.getName(), il.getImage(cityImage));
+				ImageButton imgb = new ImageButton(c.getX(), c.getY(), "City_Button_" + c.getName().replace(" ", "_"), "", 2, c.getName(), il.getImage(cityImage));
 				imgb.setOwner("Screen");
 				imgb.setWidth(31);
 				imgb.setHeight(31);
 				imgb.setHoverText(c.getName());
 				mim.addButton(imgb);
 			}
+			mim.shiftButtonsBounded("Screen", game.getMap().getScrollX(), game.getMap().getScrollY());
 
 			// End turn button.
-			Button et = new Button(64, scr.getParent().windowHeight - 36);
-			et.setID("End Turn");
-			et.setExecutionNumber(4);
-			et.setButtonText("End Turn");
-			et.setHoverText("TEST");
+			Button et = new Button(BOTTOMBARX[4], scr.getParent().windowHeight - 36, "Map_End_Turn", "End Turn", 4);
 			mim.addButton(et);
 			
 			// Actions window button.
-			Button ac = new Button((scr.getParent().windowWidth / 4), scr.getParent().windowHeight - 36, "Actions", "View Actions", 35);
+			Button ac = new Button(BOTTOMBARX[2], scr.getParent().windowHeight - 36, "Map_To_Actions", "View Actions", 64);
 			mim.addButton(ac);
 
-			// View players button.
-			Button vp = new Button((scr.getParent().windowWidth / 2) - 64, scr.getParent().windowHeight - 36);
-			vp.setID("View Players");
-			vp.setExecutionNumber(5);
-			vp.setButtonText("View Players");
-			mim.addButton(vp);
-
-			// View stats button.
-			Button vs = new Button(scr.getParent().windowWidth - 192, scr.getParent().windowHeight - 36);
-			vs.setID("View Stats");
-			vs.setExecutionNumber(6);
-			vs.setButtonText("View Stats");
-			mim.addButton(vs);
+			// Pause menu button.
+			Button pm = new Button(BOTTOMBARX[0], scr.getParent().windowHeight - 36, "Map_Pause_Menu", "Game Menu", 71);
+			mim.addButton(pm);
+			
+			// Show points button.
+			Button pts = new Button(0, windowHeight - 60, 20, 20, "Map_Show_Points", "+", 69);
+			pts.setDrawShadow(false);
+			mim.addButton(pts);
 			
 			mim.addDebug();
 
-		} else if (state.substring(0,4).equals("City")) {
+		}
+		else if (state.equals("Action")) {
+			
+			// City buttons.
+			for (City c : game.getCities()) {
+				int cityImage = 11;
+				if (c.getOwner() != null) {
+					ArrayList<Player> allPlayers = game.getPlayers();
+					for (int j = 0; j < allPlayers.size(); ++j) {
+						if (allPlayers.get(j).equals(c.getOwner())) {
+							cityImage += j + 1;
+						}
+					}
+				}
+				ImageButton imgb = new ImageButton(c.getX(), c.getY(), "City_Button_" + c.getName().replace(" ", "_"), "", 66, c.getName(), il.getImage(cityImage));
+				if (c.getOwner() != null && c.getOwner().equals(game.getActivePlayer())) {
+					imgb.setExecutionNumber(65);
+				}
+				imgb.setOwner("Screen");
+				imgb.setWidth(31);
+				imgb.setHeight(31);
+				imgb.setHoverText(c.getName());
+				mim.addButton(imgb);
+			}
+			mim.shiftButtonsBounded("Screen", game.getMap().getScrollX(), game.getMap().getScrollY());
+
+			// End turn button.
+			Button et = new Button(BOTTOMBARX[4], BOTTOMBARY, "Action_End_Turn", "End Turn", 4);
+			mim.addButton(et);
+			
+			// Map button.
+			Button ac = new Button(BOTTOMBARX[2], BOTTOMBARY, "Action_To_Map", "View Map", 1);
+			mim.addButton(ac);
+			
+			// Pause menu button.
+			Button pm = new Button(BOTTOMBARX[0], BOTTOMBARY, "Action_Pause_Menu", "Game Menu", 71);
+			mim.addButton(pm);
+
+			// Show points button.
+			Button pts = new Button(0, windowHeight - 60, 20, 20, "Action_Show_Points", "+", 70);
+			pts.setDrawShadow(false);
+			mim.addButton(pts);
+			
+			mim.addDebug();
+			
+		}
+		else if (state.substring(0,4).equals("City")) {
 
 			// Get the city.
 			String theName = state.substring(5);
@@ -473,6 +515,8 @@ public class MyInterfaceFactory {
 			}
 			
 			if (winMenu != null) {mim.addWindowFullForce(winMenu);}
+			
+			mim.addDebug();
 			
 
 		} else if (state.equals("DEBUG")) {

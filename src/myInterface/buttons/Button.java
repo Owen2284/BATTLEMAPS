@@ -26,109 +26,56 @@ public class Button extends Sprite {
 	private Color colorBorder = Color.BLACK;
 	private Color colorHover = Color.YELLOW;
 	private Color colorText = Color.BLACK;
-	private String buttonText;
+	private Color colorInactiveInner = Color.LIGHT_GRAY;
+	private Color colorInactiveText = Color.GRAY;
+	private String buttonText = "-";
 	private boolean centerText = true;
 	private boolean resizeText = true;
-	private int exec;
-	private String add;
+	private int exec = -1;
+	private String add = "";
 	private boolean useAdd;
-	private String belongsTo;
+	private String belongsTo = "Basic";
 	private int ownerX;
 	private int ownerY;
 	private String hoverText = "";
+	private boolean drawShadow = true;
+	private boolean active = true;
 
 	// Constructors
 	public Button(int x, int y) {
-
-		super(x, y);
-		this.width = 128;
-		this.height = 32;
-		this.id = "";
-		this.buttonText = "NULL";
-		this.exec = -1;
-		this.add = "";
+		this(x, y, "no_id");
 		this.useAdd = false;
-		this.belongsTo = "Basic";
-		this.ownerX = this.x;
-		this.ownerY = this.y;
-
 	}
 
-	public Button(int x, int y, String in_id) {
-
-		super(x, y);
-		this.width = 128;
-		this.height = 32;
-		this.id = in_id;
-		this.buttonText = "NULL";
-		this.exec = -1;
-		this.add = "";
+	public Button(int x, int y, String inID) {
+		this(x, y, inID, "-", -1);
 		this.useAdd = false;
-		this.belongsTo = "Basic";
-		this.ownerX = this.x;
-		this.ownerY = this.y;
-
 	}
 
-	public Button(int x, int y, String in_id, String b_text, int ex_int) {
-
-		super(x, y);
-		this.width = 128;
-		this.height = 32;
-		this.id = in_id;
-		this.buttonText = b_text;
-		this.exec = ex_int;
-		this.add = "";
+	public Button(int x, int y, String inID, String bText, int exInt) {
+		this(x, y, inID, bText, exInt, "");
 		this.useAdd = false;
-		this.belongsTo = "Basic";
-		this.ownerX = this.x;
-		this.ownerY = this.y;
-
 	}
 
-	public Button(int x, int y, String in_id, String b_text, int ex_int, String add_str) {
-
-		super(x, y);
-		this.width = 128;
-		this.height = 32;
-		this.id = in_id;
-		this.buttonText = b_text;
-		this.exec = ex_int;
-		this.add = add_str;
-		this.useAdd = true;
-		this.belongsTo = "Basic";
-		this.ownerX = this.x;
-		this.ownerY = this.y;
-
+	public Button(int x, int y, String inID, String bText, int exInt, String addStr) {
+		this(x, y, 128, 32, inID, bText, exInt, addStr);
 	}
 
-	public Button(int x, int y, int wid, int hei, String in_id, String b_text, int ex_int) {
+	public Button(int x, int y, int wid, int hei, String inID, String bText, int exInt) {
+		this(x, y, wid, hei, inID, bText, exInt, "");
+		this.useAdd = false;
+	}
+
+	public Button(int x, int y, int wid, int hei, String inID, String bText, int exInt, String addStr) {
 
 		super(x, y);
 		this.width = wid;
 		this.height = hei;
-		this.id = in_id;
-		this.buttonText = b_text;
-		this.exec = ex_int;
-		this.add = "";
-		this.useAdd = false;
-		this.belongsTo = "Basic";
-		this.ownerX = this.x;
-		this.ownerY = this.y;
-
-	}
-
-	public Button(int x, int y, int wid, int hei, String in_id, String b_text, int ex_int, String add_str) {
-
-		super(x, y);
-		this.width = wid;
-		this.height = hei;
-		this.id = in_id;
-		this.buttonText = b_text;
-		this.exec = ex_int;
-		this.add = add_str;
+		this.id = inID;
+		this.buttonText = bText;
+		this.exec = exInt;
+		this.add = addStr;
 		this.useAdd = true;
-		this.belongsTo = "Basic";
 		this.ownerX = this.x;
 		this.ownerY = this.y;
 
@@ -149,8 +96,11 @@ public class Button extends Sprite {
 		this.colorBorder = that.getColorBorder();
 		this.colorText = that.getColorText();
 		this.colorHover = that.getColorHover();
+		this.colorInactiveInner = that.getColorInactiveInner();
+		this.colorInactiveText = that.getColorInactiveText();
 		this.ownerX = that.getOwnerX();
 		this.ownerY = that.getOwnerY();
+		this.active = that.isActive();
 	}
 
 	// Accessors
@@ -159,6 +109,8 @@ public class Button extends Sprite {
 	public Color getColorBorder() {return this.colorBorder;}
 	public Color getColorText() {return this.colorText;}
 	public Color getColorHover() {return this.colorHover;}
+	public Color getColorInactiveInner() {return this.colorInactiveInner;}
+	public Color getColorInactiveText() {return this.colorInactiveText;}
 	public String getButtonText() {return this.buttonText;}
 	public int getExecutionNumber() {return this.exec;}
 	public String getAdditionalString() {return this.add;}
@@ -168,6 +120,8 @@ public class Button extends Sprite {
 	public int getOwnerY() {return this.ownerY;}
 	public String getHoverText() {return hoverText;}
 	public boolean hasHoverText() {return !hoverText.equals("");}
+	public boolean drawsShadow() {return this.drawShadow;}
+	public boolean isActive() {return this.active;}
 
 	// Mutators
 	public void setID(String in) {this.id = in;}
@@ -177,14 +131,14 @@ public class Button extends Sprite {
 	public void setColorBorder(Color in) {this.colorBorder = in;}
 	public void setColorText(Color in) {this.colorText = in;}
 	public void setColorHover(Color in) {this.colorHover = in;}
+	public void setColorInactiveInner(Color in) {this.colorInactiveInner = in;}
+	public void setColorInactiveText(Color in) {this.colorInactiveText = in;}
 	public void setButtonText(String in) {this.buttonText = in;}
 	public void setExecutionNumber(int in) {this.exec = in;}
-
 	public void setAdditionalString(String in) {
 		this.add = in;
 		this.useAdd = true;
 	}
-
 	public void setAdditionalStringUsage(boolean in) {this.useAdd = in;}
 	public void setOwner(String in) {this.belongsTo = in;}
 	public void setOwnerX(int in) {this.ownerX = in;}
@@ -192,6 +146,8 @@ public class Button extends Sprite {
 	public void setCenterText(boolean in) {this.centerText = in;}
 	public void setResizeText(boolean in) {this.resizeText = in;}
 	public void setHoverText(String hoverText) {this.hoverText = hoverText;}
+	public void setDrawShadow(boolean in) {this.drawShadow = in;}
+	public void setActive(boolean in) {this.active = in;}
 
 	public void cloneFrom(Button that) {
 		this.x = that.getX();
@@ -229,7 +185,7 @@ public class Button extends Sprite {
 
 	// Graphics
 	public void drawAll(Graphics g, Point p) {
-		this.drawShadow(g);                        
+		if (this.drawShadow) {this.drawShadow(g);}                        
 		this.drawBasic(g, p);
 	}
 
@@ -244,7 +200,8 @@ public class Button extends Sprite {
 	public void drawButton(Graphics g) {
 		
 		if (vis) {
-			g.setColor(this.colorInner);
+			if (active) {g.setColor(this.colorInner);}
+			else {g.setColor(this.colorInactiveInner);}
 			g.fillRect(this.x, this.y, this.width, this.height);
 			g.setColor(this.colorBorder);
 			g.drawRect(this.x, this.y, this.width, this.height);
@@ -256,7 +213,8 @@ public class Button extends Sprite {
 	public void drawButton(Graphics g, int inX, int inY) {
 		
 		if (vis) {
-			g.setColor(this.colorInner);
+			if (active) {g.setColor(this.colorInner);}
+			else {g.setColor(this.colorInactiveInner);}
 			g.fillRect(inX, inY, this.width, this.height);
 			g.setColor(this.colorBorder);
 			g.drawRect(inX, inY, this.width, this.height);
@@ -268,7 +226,8 @@ public class Button extends Sprite {
 	public void drawHover(Graphics g) {
 
 		if (vis) {
-			g.setColor(this.colorHover);
+			if (active) {g.setColor(this.colorHover);}
+			else {g.setColor(this.colorInactiveInner);}
 			g.fillRect(this.x, this.y, this.width, this.height);
 			g.setColor(this.colorBorder);
 			g.drawRect(this.x, this.y, this.width, this.height);
@@ -280,7 +239,8 @@ public class Button extends Sprite {
 	public void drawHover(Graphics g, int inX, int inY) {
 
 		if (vis) {
-			g.setColor(this.colorHover);
+			if (active) {g.setColor(this.colorHover);}
+			else {g.setColor(this.colorInactiveInner);}
 			g.fillRect(inX, inY, this.width, this.height);
 			g.setColor(this.colorBorder);
 			g.drawRect(inX, inY, this.width, this.height);
@@ -309,8 +269,9 @@ public class Button extends Sprite {
 
 	public void drawText(Graphics g) {
 
-		// Sets text color.
-		g.setColor(this.colorText);	
+		// Sets text colour.
+		if (active) {g.setColor(this.colorText);} 
+		else {g.setColor(this.colorInactiveText);}
 
 		int FUCK_UP_CORRECTION = 4;
 		

@@ -14,22 +14,24 @@ import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 
-import myData.MyArrays;
 import myData.MyStrings;
+import myGame.Action;
 import myGame.Building;
 import myGame.City;
-import myGame.Game;
 import myGame.Options;
 import myGame.Ordinance;
 import myGame.OrdinanceBook;
 import myGame.Player;
 import myInterface.MyTextMetrics;
 import myInterface.buttons.Button;
+import myInterface.screens.ActionScreen;
 import myInterface.screens.ImageTestScreen;
+import myInterface.screens.MapScreen;
 import myInterface.windows.GridWindow;
 import myInterface.windows.InfoWindow;
 import myInterface.windows.InputWindow;
 import myInterface.windows.ListWindow;
+import myInterface.windows.MenuWindow;
 import myInterface.windows.YesNoCancelWindow;
 import myInterface.windows.YesNoWindow;
 
@@ -106,9 +108,9 @@ public class ButtonExecutor {
 			b.game.nextPlayer();
 		}
 		else if (exec == 5)	{												// View players.
-			if (!b.mim.checkWindowsFor("Player Info")) {
+			if (!b.mim.checkWindowsFor("Players")) {
 				// Creating the new window.
-				wind = new InfoWindow("Player Info", (b.windowWidth - 400) / 2, 100);
+				wind = new InfoWindow("Players", (b.windowWidth - 400) / 2, 100);
 				butt = wind.getCloseButton();
 				cont = "| Player Name\t| Commander Name\n|------------------------------------------------------------\n";
 				for (int i = 0; i < b.game.getPlayers().size(); ++i) {
@@ -136,9 +138,9 @@ public class ButtonExecutor {
 			if (Board.DEBUG_TRACE) {b.mim.debug("Buttons");}
 		}
 		else if (exec == 6) { 												// View stats.
-			if (!b.mim.checkWindowsFor("Game Stats")) {
+			if (!b.mim.checkWindowsFor("Stats")) {
 				// Creating window.
-				wind = new InfoWindow("Game Stats", (b.windowWidth - 400) / 2, 100);
+				wind = new InfoWindow("Stats", (b.windowWidth - 400) / 2, 100);
 				butt = wind.getCloseButton();
 				cont = "Stats\n------\nWhat do I even put here.";
 				wind.setContent(cont);
@@ -802,6 +804,135 @@ public class ButtonExecutor {
 			} else {
 				b.createErrorWindow("Not enough cities for the requested amount of players.");
 			}
+		}
+		else if (exec == 64) {												// Go to action screen.
+			b.switchScreen("Action", "");
+		}
+		else if (exec == 65) {												// Open friendly action window.
+			int INIT_X = 100;
+			int INIT_Y = 100;
+			GridWindow actWindow = new GridWindow("Actions for " + add + " - Friendly", INIT_X, INIT_Y, 4, 6);
+			actWindow.setWidth(b.windowWidth - 2 * INIT_X);
+			actWindow.setHeight(b.windowHeight - 2 * INIT_Y);
+			int colNum = 0;
+			for (String categ : b.buildDex.getCategories()) {
+				if ((!categ.equals("Residential")) && (!categ.equals("Happiness"))) {
+					for (int power = 1; power <= 3; ++power) {
+						actWindow.addGridButton(power, colNum, new Button(0,0,"Action_Friendly_" + add.replace(" ", "_") + "_" + categ + "_" + Integer.toString(power), categ + " " + Integer.toString(power), 67, add + "|" + categ + "|" + Integer.toString(power)));
+					}
+					colNum += 1;
+				}
+			}
+			b.mim.addWindowFull(actWindow);
+		}
+		else if (exec == 66) {												// Open enemy action window.
+			int INIT_X = 100;
+			int INIT_Y = 100;
+			GridWindow actWindow = new GridWindow("Actions for " + add + " - Enemy", INIT_X, INIT_Y, 4, 6);
+			actWindow.setWidth(b.windowWidth - 2 * INIT_X);
+			actWindow.setHeight(b.windowHeight - 2 * INIT_Y);
+			int colNum = 0;
+			for (String categ : b.buildDex.getCategories()) {
+				if ((!categ.equals("Residential")) && (!categ.equals("Happiness"))) {
+					for (int power = 1; power <= 3; ++power) {
+						actWindow.addGridButton(power, colNum, new Button(0,0,"Action_Enemy_" + add.replace(" ", "_") + "_" + categ + "_" + Integer.toString(power), categ + " " + Integer.toString(power), 68, add + "|" + categ + "|" + Integer.toString(power)));
+					}
+					colNum += 1;
+				}
+			}
+			b.mim.addWindowFull(actWindow);
+		} 
+		else if (exec == 67) {											// Add defensive action to action queue.
+			String citName = add.split("\\|")[0];
+			String categ = add.split("\\|")[1];
+			int powerLev = Integer.parseInt(add.split("\\|")[2]);
+			//b.game.addAction(new Action(categ, powerLev, b.game.getCityByName(citName), "Defend"));
+			// TODO: Deduct point cost of action when creating action.
+			b.createQuickWindow("Action Launched", "The " + categ + " " + Integer.toString(powerLev) + " action has been launched on " + citName + ".");
+		} 
+		else if (exec == 68) {											// Add offensive action to action queue.
+			String citName = add.split("\\|")[0];
+			String categ = add.split("\\|")[1];
+			int powerLev = Integer.parseInt(add.split("\\|")[2]);
+			//b.game.addAction(new Action(categ, powerLev, b.game.getCityByName(citName), "Attack"));
+			// TODO: Deduct point cost of action when creating action.
+			b.createQuickWindow("Action Launched", "The " + categ + " " + Integer.toString(powerLev) + " action has been launched on " + citName + ".");
+		} 
+		else if (exec == 69) {											// Show points button - Map screen
+			MapScreen pScr = (MapScreen) b.scr;
+			pScr.togglePointsDisplay();
+			Button pluMin = b.mim.getButtonByID("Map_Show_Points");
+			if (pluMin.getButtonText().equals("+")) {
+				pluMin.setButtonText("-");
+			} else {
+				pluMin.setButtonText("+");
+			}
+		}
+		else if (exec == 70) {											// Show points button - Action screen
+			ActionScreen pScr = (ActionScreen) b.scr;
+			pScr.togglePointsDisplay();
+			Button pluMin = b.mim.getButtonByID("Action_Show_Points");
+			if (pluMin.getButtonText().equals("+")) {
+				pluMin.setButtonText("-");
+			} else {
+				pluMin.setButtonText("+");
+			}
+		}
+		else if (exec == 71) {											// Pause menu.
+			MenuWindow pauseMenu = new MenuWindow("Game Menu", (b.scr.getParent().windowWidth - 400) / 2, 0, 10);
+			pauseMenu.setHeight(b.scr.getParent().windowHeight - 40);
+			pauseMenu.setGridX(20);
+			pauseMenu.setGridY(10);
+			pauseMenu.setButtonGap(12);
+			pauseMenu.setButtonWidth(pauseMenu.getWidth() - 40);
+			pauseMenu.removeCloseButton();
+			
+			String[] titles = {"Return to Game", "-", "Players", "Stats", "History", "Options", "-", "Save Game", "Load Game", "Back to Menu"};
+			int[] exes = {7, -1, 72, 73, 74, 75, -1, 76, 77, 78};
+			String[] adds = {pauseMenu.getTitle(), "", "", "", "", "", "", "", "", ""};
+			boolean[] vises = {true, false, true, true, true, true, false, true, true, true};
+			Color[] colors = {Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE};
+			pauseMenu.addMenuButtons(titles, exes, adds, vises, colors);
+			
+			b.mim.addWindowFull(pauseMenu);
+		}
+		else if (exec == 72) {											// Open player window from pause menu.
+			execute(5);
+			execute(7, "Game Menu");
+			b.mim.getWindow("Players").addReturnButton(79, "Players");
+		}
+		else if (exec == 73) {											// Open stats window from pause window.
+			execute(6);
+			execute(7, "Game Menu");
+			b.mim.getWindow("Stats").addReturnButton(79, "Stats");
+		}
+		else if (exec == 74) {											// Open history window from pause window.
+			
+		}
+		else if (exec == 75) {											// Open options window from pause window.
+			
+		}
+		else if (exec == 76) {											// Open save game window from pause window.
+			
+		}
+		else if (exec == 77) {											// Open load game window from pause window.
+			
+		}
+		else if (exec == 78) {											// Return to menu button in pause menu.
+			YesNoWindow soQuitYeah = new YesNoWindow("Return to the Main Menu?", Board.WINDOW_CENTER_X, 300);
+			soQuitYeah.setYesExec(3);
+			soQuitYeah.setYesAdd("Single Skirmish");
+			soQuitYeah.setNoToClose();
+			soQuitYeah.setContent("Are you sure you want to quit?\nAny unsaved progress will be lost.");
+			soQuitYeah.setContentY(-3);
+			b.mim.addWindowFull(soQuitYeah);
+		}
+		else if (exec == 79) {											// Reopen pause menu.
+			execute(7, add);
+			execute(71);
+		}
+		else {
+			b.cmd.alert("ButtonExecutor: No entry for execution code " + Integer.toString(exec) + ".");
 		}
 
 	}
