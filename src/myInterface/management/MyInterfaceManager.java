@@ -14,6 +14,7 @@ import myInterface.buttons.Button;
 import myInterface.screens.MyScreen;
 import myInterface.windows.HoverWindow;
 import myInterface.windows.InfoWindow;
+import myInterface.windows.MenuWindow;
 import myMain.Board;
 import myMain.ButtonExecutor;
 
@@ -624,6 +625,15 @@ public class MyInterfaceManager {
 		}
 		cmd.error("ERROR: MyInterfaceManager.getButtonByID(" + targetID + ") exited without finding the specified button.");
 		return null;
+	}
+
+	public InfoWindow createWindow(String name, MyScreen scr) {
+		InfoWindow returnWindow = MyInterfaceFactory.initWindow(name, scr);
+		return returnWindow;
+	}
+	
+	public void createAndAddWindow(String name, MyScreen scr) {
+		addWindowFull(createWindow(name, scr));
 	}
 
 }

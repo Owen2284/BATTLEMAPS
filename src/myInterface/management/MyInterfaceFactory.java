@@ -139,7 +139,11 @@ public class MyInterfaceFactory {
 			City theCity = game.getCityByName(theName);
 
 			// Back to map button.
-			mim.addButton(new Button(windowWidth - 192, windowHeight - 36, "CityBackToMap", "Back to Map", 1));
+			mim.addButton(new Button(BOTTOMBARX[4], BOTTOMBARY, "City_Back_To_Map", "Back to Map", 1));
+			
+			// Pause menu button.
+			Button pm = new Button(BOTTOMBARX[0], scr.getParent().windowHeight - 36, "City_Pause_Menu", "Game Menu", 71);
+			mim.addButton(pm);
 
 			// City editing buttons.
 			if (game.getActivePlayer().equals(theCity.getOwner())) {
@@ -362,136 +366,28 @@ public class MyInterfaceFactory {
 				
 			} else if (submenu.equals("Options Main")) {
 				
-				winMenu.setTitle("Options");
-				
-				String[] titles = {"Video","Audio","Gameplay","Online","Debug","-","-","Apply","Confirm","Cancel"};
-				int[] exes = {3,3,3,3,10,-1,-1,51,52,53};
-				String[] adds = {"Options Video","Options Audio","Options Gameplay","Options Online","","","","Options Main","Main","Main"};
-				boolean[] vises = {true,true,true,true,scr.getParent().DEBUG_MASTER,false,false,true,true,true};
-				Color[] colors = {Color.PINK,Color.PINK,Color.PINK,Color.PINK,Color.DARK_GRAY,Color.WHITE,Color.WHITE,Color.PINK,Color.PINK,Color.PINK};
-				winMenu.addMenuButtons(
-						titles,
-						exes,
-						adds,
-						vises,
-						colors
-				);
+				winMenu = null;
+				mim.addWindowFull(MyInterfaceFactory.initWindow(submenu, scr));
 				
 			} else if (submenu.equals("Options Video")) {
 				
 				winMenu = null;
-				InfoWindow newWindow = new InfoWindow("Video Options", 50, 100);
-				newWindow.setHeight(scr.getParent().windowHeight);
-				newWindow.setWidth(scr.getParent().windowWidth - 100);
-				newWindow.setLineSpacing(3);
-				String content = "";
-				content += "Fullscreen:\n";
-				newWindow.addWindowButton(new Button(240, MyTextMetrics.getTextSizeComplex(content,3)[1], 160, 
-						textHeight + 1, "Option_Fullscreen", Boolean.toString(scr.getParent().opt.getStatusFullscreen()), 
-						54, "fullscreen"));
-				content += "Resolution:\n\n";
-				newWindow.addWindowButton(new Button(240, MyTextMetrics.getTextSizeComplex(content,3)[1], 160, 
-						textHeight + 1, "Option_Resolution", 
-						"-", 0, ""));
-				content += "Show FPS:\n";
-				newWindow.addWindowButton(new Button(240, MyTextMetrics.getTextSizeComplex(content,3)[1], 160, 
-						textHeight + 1, "Option_FPS", 
-						Boolean.toString(scr.getParent().opt.getStatusFPS()), 54, "fpscounter"));
-				content += "Show Time to Act/Draw:\n\n";
-				newWindow.addWindowButton(new Button(240, MyTextMetrics.getTextSizeComplex(content,3)[1], 160, 
-						textHeight + 1, "Option_TTAD", 
-						Boolean.toString(scr.getParent().opt.getStatusTTAD()), 54, "timetoactdraw"));
-				content += "Gui Scale:\n\n";
-				newWindow.addWindowButton(new Button(240, MyTextMetrics.getTextSizeComplex(content,3)[1], 160, 
-						textHeight + 1, "Option_Scale", 
-						Integer.toString(scr.getParent().opt.getValue("guiscale")), 55, "guiscale|1|1|4|true"));
-				content += "Primary Monitor:\n\n";
-				newWindow.addWindowButton(new Button(240, MyTextMetrics.getTextSizeComplex(content,3)[1], 160, 
-						textHeight + 1, "Option_Monitor", 
-						Integer.toString(scr.getParent().opt.getValue("monitor")), 55, 
-						"monitor|1|0|" + Integer.toString(Board.SCREENCOUNT - 1) + "|true"));
-				content += "\n";
-				newWindow.setContent(content);
-				newWindow.addWindowButton(new Button(160, newWindow.getHeight() - 74, "Options_Goto_Audio", "Audio", 3, "Options Audio"));
-				newWindow.addWindowButton(new Button(310, newWindow.getHeight() - 74, "Options_Goto_Gameplay", "Gameplay", 3, "Options Gameplay"));
-				newWindow.addWindowButton(new Button(460, newWindow.getHeight() - 74, "Options_Goto_Online", "Online", 3, "Options Online"));
-				newWindow.addWindowButton(new Button((newWindow.getWidth() - 138), newWindow.getHeight() - 74, "Options_Goto_Back", "Back", 3, "Options Main"));
-				newWindow.setButtonsColorInner(Color.PINK);
-				newWindow.removeCloseButton();
-				mim.addWindowFullForce(newWindow);
+				mim.addWindowFull(MyInterfaceFactory.initWindow(submenu, scr));
 							
 			} else if (submenu.equals("Options Audio")) {
 				
 				winMenu = null;
-				InfoWindow newWindow = new InfoWindow("Audio Options", 50, 100);
-				newWindow.setHeight(scr.getParent().windowHeight);
-				newWindow.setWidth(scr.getParent().windowWidth - 100);
-				newWindow.setLineSpacing(3);
-				String content = "";
-				content += "Master Volume:\t" + scr.getParent().opt.getValueVolumeMaster() + "\n";
-				newWindow.addWindowButton(new Button(300, MyTextMetrics.getTextSizeComplex(content, 3)[1], 40, 
-						textHeight + 1, "Option_Master_Down", "-", 57, "volumemaster|-10|0|100|false"));
-				newWindow.addWindowButton(new Button(350, MyTextMetrics.getTextSizeComplex(content, 3)[1], 40, 
-						textHeight + 1, "Option_Master_Up", "+", 57, "volumemaster|10|0|100|false"));
-				content += "Music Volume:\t" + scr.getParent().opt.getValueVolumeMusic() + "\n";
-				newWindow.addWindowButton(new Button(300, MyTextMetrics.getTextSizeComplex(content, 3)[1], 40, 
-						textHeight + 1, "Option_Music_Down", "-", 57, "volumemusic|-10|0|100|false"));
-				newWindow.addWindowButton(new Button(350, MyTextMetrics.getTextSizeComplex(content, 3)[1], 40, 
-						textHeight + 1, "Option_Music_Up", "+", 57, "volumemusic|10|0|100|false"));
-				content += "SFX Volume:\t" + scr.getParent().opt.getValueVolumeSound() + "\n";
-				newWindow.addWindowButton(new Button(300, MyTextMetrics.getTextSizeComplex(content, 3)[1], 40, 
-						textHeight + 1, "Option_Sound_Down", "-", 57, "volumesound|-10|0|100|false"));
-				newWindow.addWindowButton(new Button(350, MyTextMetrics.getTextSizeComplex(content, 3)[1], 40, 
-						textHeight + 1, "Option_Sound_Up", "+", 57, "volumesound|10|0|100|false"));
-				content += "\n";
-				newWindow.setContent(content);
-				newWindow.addWindowButton(new Button(10, newWindow.getHeight() - 74, "Options_Goto_Video", "Video", 3, "Options Video"));
-				newWindow.addWindowButton(new Button(310, newWindow.getHeight() - 74, "Options_Goto_Gameplay", "Gameplay", 3, "Options Gameplay"));
-				newWindow.addWindowButton(new Button(460, newWindow.getHeight() - 74, "Options_Goto_Online", "Online", 3, "Options Online"));
-				newWindow.addWindowButton(new Button((newWindow.getWidth() - 138), newWindow.getHeight() - 74, "Options_Goto_Back", "Back", 3, "Options Main"));
-				newWindow.setButtonsColorInner(Color.PINK);
-				newWindow.removeCloseButton();
-				mim.addWindowFullForce(newWindow);
+				mim.addWindowFull(MyInterfaceFactory.initWindow(submenu, scr));
 				
 			} else if (submenu.equals("Options Gameplay")) {
 				
 				winMenu = null;
-				InfoWindow newWindow = new InfoWindow("Gameplay Options", 50, 100);
-				newWindow.setHeight(scr.getParent().windowHeight);
-				newWindow.setWidth(scr.getParent().windowWidth - 100);
-				newWindow.setLineSpacing(3);
-				String content = "";
-				content += "Notifications:\n";
-				newWindow.addWindowButton(new Button(240, MyTextMetrics.getTextSizeComplex(content, 3)[1], 160, 
-						textHeight + 1, "Option_Notifications", Boolean.toString(opt.getStatus("notifications")), 
-						54, "notifications"));
-				content += "\n";
-				newWindow.setContent(content);
-				newWindow.addWindowButton(new Button(10, newWindow.getHeight() - 74, "Options_Goto_Video", "Video", 3, "Options Video"));
-				newWindow.addWindowButton(new Button(160, newWindow.getHeight() - 74, "Options_Goto_Audio", "Audio", 3, "Options Audio"));
-				newWindow.addWindowButton(new Button(460, newWindow.getHeight() - 74, "Options_Goto_Online", "Online", 3, "Options Online"));
-				newWindow.addWindowButton(new Button((newWindow.getWidth() - 138), newWindow.getHeight() - 74, "Options_Goto_Back", "Back", 3, "Options Main"));
-				newWindow.setButtonsColorInner(Color.PINK);
-				newWindow.removeCloseButton();
-				mim.addWindowFullForce(newWindow);
+				mim.addWindowFull(MyInterfaceFactory.initWindow(submenu, scr));
 				
 			} else if (submenu.equals("Options Online")) {
 				
 				winMenu = null;
-				InfoWindow newWindow = new InfoWindow("Online Options", 50, 100);
-				newWindow.setHeight(windowHeight);
-				newWindow.setWidth(windowWidth - 100);
-				newWindow.setLineSpacing(3);
-				String content = "";
-				content += "\n";
-				newWindow.setContent(content);
-				newWindow.addWindowButton(new Button(10, newWindow.getHeight() - 74, "Options_Goto_Video", "Video", 3, "Options Video"));
-				newWindow.addWindowButton(new Button(160, newWindow.getHeight() - 74, "Options_Goto_Audio", "Audio", 3, "Options Audio"));
-				newWindow.addWindowButton(new Button(310, newWindow.getHeight() - 74, "Options_Goto_Gameplay", "Gameplay", 3, "Options Gameplay"));
-				newWindow.addWindowButton(new Button((newWindow.getWidth() - 138), newWindow.getHeight() - 74, "Options_Goto_Back", "Back", 3, "Options Main"));
-				newWindow.setButtonsColorInner(Color.PINK);
-				newWindow.removeCloseButton();
-				mim.addWindowFullForce(newWindow);
+				mim.addWindowFull(MyInterfaceFactory.initWindow(submenu, scr));
 				
 			} else {
 				
@@ -565,6 +461,174 @@ public class MyInterfaceFactory {
 			
 		}
 		
+	}
+	
+	public static InfoWindow initWindow(String name, MyScreen scr) {
+		
+		if (Board.DEBUG_LAUNCH) {System.out.println("Creating the window " + name + ".");}
+				
+		// Acquiring relevant variables.
+		int windowWidth = scr.getParent().windowWidth;
+		int windowHeight = scr.getParent().windowHeight;
+		Options opt = scr.getParent().opt;
+		Game game = scr.getParent().game;
+		ImageLibrary il = scr.getParent().il;
+		int textHeight = MyTextMetrics.getTextSizeFlat("Test")[1];
+		
+		if (name.equals("Options Main")) {
+			
+			MenuWindow newWindow = new MenuWindow("Options", (windowWidth - 400) / 2, 0, 10);
+			newWindow.setHeight(scr.getParent().windowHeight);
+			newWindow.setGridX(10);
+			newWindow.setGridY(10);
+			newWindow.setButtonGap(15);
+			newWindow.setButtonWidth(newWindow.getWidth() - 20);
+			newWindow.removeCloseButton();
+			
+			if (scr.getTitle().equals("Menu Screen")) {
+				String[] titles = {"Video","Audio","Gameplay","Online","Debug","-","-","Apply","Confirm","Cancel"};
+				int[] exes = {3,3,3,3,10,-1,-1,51,52,53};
+				String[] adds = {"Options Video","Options Audio","Options Gameplay","Options Online","","","","Options Main","Main","Main"};
+				boolean[] vises = {true,true,true,true,scr.getParent().DEBUG_MASTER,false,false,true,true,true};
+				Color[] colors = {Color.PINK,Color.PINK,Color.PINK,Color.PINK,Color.DARK_GRAY,Color.WHITE,Color.WHITE,Color.PINK,Color.PINK,Color.PINK};
+				newWindow.addMenuButtons(
+						titles,
+						exes,
+						adds,
+						vises,
+						colors
+				);
+			} else {
+				String[] titles = {"Video","Audio","Gameplay","Online","-","-","-","Apply","Confirm","Cancel"};
+				int[] exes = {3,3,3,3,-1,-1,-1,51,80,81};
+				String[] adds = {"Options Video","Options Audio","Options Gameplay","Options Online","","","","Options Main","Options","Options"};
+				boolean[] vises = {true,true,true,true,false,false,false,true,true,true};
+				Color[] colors = {Color.PINK,Color.PINK,Color.PINK,Color.PINK,Color.DARK_GRAY,Color.WHITE,Color.WHITE,Color.PINK,Color.PINK,Color.PINK};
+				newWindow.addMenuButtons(
+						titles,
+						exes,
+						adds,
+						vises,
+						colors
+				);
+			}
+
+			return newWindow;
+			
+		} else if (name.equals("Options Video")) {
+			
+			InfoWindow newWindow = new InfoWindow("Video Options", 50, 100);
+			newWindow.setHeight(scr.getParent().windowHeight);
+			newWindow.setWidth(scr.getParent().windowWidth - 100);
+			newWindow.setLineSpacing(3);
+			String content = "";
+			content += "Fullscreen:\n";
+			newWindow.addWindowButton(new Button(240, MyTextMetrics.getTextSizeComplex(content,3)[1], 160, 
+					textHeight + 1, "Option_Fullscreen", Boolean.toString(scr.getParent().opt.getStatusFullscreen()), 
+					54, "fullscreen"));
+			content += "Resolution:\n\n";
+			newWindow.addWindowButton(new Button(240, MyTextMetrics.getTextSizeComplex(content,3)[1], 160, 
+					textHeight + 1, "Option_Resolution", 
+					"-", 0, ""));
+			content += "Show FPS:\n";
+			newWindow.addWindowButton(new Button(240, MyTextMetrics.getTextSizeComplex(content,3)[1], 160, 
+					textHeight + 1, "Option_FPS", 
+					Boolean.toString(scr.getParent().opt.getStatusFPS()), 54, "fpscounter"));
+			content += "Show Time to Act/Draw:\n\n";
+			newWindow.addWindowButton(new Button(240, MyTextMetrics.getTextSizeComplex(content,3)[1], 160, 
+					textHeight + 1, "Option_TTAD", 
+					Boolean.toString(scr.getParent().opt.getStatusTTAD()), 54, "timetoactdraw"));
+			content += "Gui Scale:\n\n";
+			newWindow.addWindowButton(new Button(240, MyTextMetrics.getTextSizeComplex(content,3)[1], 160, 
+					textHeight + 1, "Option_Scale", 
+					Integer.toString(scr.getParent().opt.getValue("guiscale")), 55, "guiscale|1|1|4|true"));
+			content += "Primary Monitor:\n\n";
+			newWindow.addWindowButton(new Button(240, MyTextMetrics.getTextSizeComplex(content,3)[1], 160, 
+					textHeight + 1, "Option_Monitor", 
+					Integer.toString(scr.getParent().opt.getValue("monitor")), 55, 
+					"monitor|1|0|" + Integer.toString(Board.SCREENCOUNT - 1) + "|true"));
+			content += "\n";
+			newWindow.setContent(content);
+			newWindow.addWindowButton(new Button(160, newWindow.getHeight() - 74, "Options_Goto_Audio", "Audio", 3, "Options Audio"));
+			newWindow.addWindowButton(new Button(310, newWindow.getHeight() - 74, "Options_Goto_Gameplay", "Gameplay", 3, "Options Gameplay"));
+			newWindow.addWindowButton(new Button(460, newWindow.getHeight() - 74, "Options_Goto_Online", "Online", 3, "Options Online"));
+			newWindow.addWindowButton(new Button((newWindow.getWidth() - 138), newWindow.getHeight() - 74, "Options_Goto_Back", "Back", 3, "Options Main"));
+			newWindow.setButtonsColorInner(Color.PINK);
+			newWindow.removeCloseButton();
+			return newWindow;
+						
+		} else if (name.equals("Options Audio")) {
+			
+			InfoWindow newWindow = new InfoWindow("Audio Options", 50, 100);
+			newWindow.setHeight(scr.getParent().windowHeight);
+			newWindow.setWidth(scr.getParent().windowWidth - 100);
+			newWindow.setLineSpacing(3);
+			String content = "";
+			content += "Master Volume:\t" + scr.getParent().opt.getValueVolumeMaster() + "\n";
+			newWindow.addWindowButton(new Button(300, MyTextMetrics.getTextSizeComplex(content, 3)[1], 40, 
+					textHeight + 1, "Option_Master_Down", "-", 57, "volumemaster|-10|0|100|false"));
+			newWindow.addWindowButton(new Button(350, MyTextMetrics.getTextSizeComplex(content, 3)[1], 40, 
+					textHeight + 1, "Option_Master_Up", "+", 57, "volumemaster|10|0|100|false"));
+			content += "Music Volume:\t" + scr.getParent().opt.getValueVolumeMusic() + "\n";
+			newWindow.addWindowButton(new Button(300, MyTextMetrics.getTextSizeComplex(content, 3)[1], 40, 
+					textHeight + 1, "Option_Music_Down", "-", 57, "volumemusic|-10|0|100|false"));
+			newWindow.addWindowButton(new Button(350, MyTextMetrics.getTextSizeComplex(content, 3)[1], 40, 
+					textHeight + 1, "Option_Music_Up", "+", 57, "volumemusic|10|0|100|false"));
+			content += "SFX Volume:\t" + scr.getParent().opt.getValueVolumeSound() + "\n";
+			newWindow.addWindowButton(new Button(300, MyTextMetrics.getTextSizeComplex(content, 3)[1], 40, 
+					textHeight + 1, "Option_Sound_Down", "-", 57, "volumesound|-10|0|100|false"));
+			newWindow.addWindowButton(new Button(350, MyTextMetrics.getTextSizeComplex(content, 3)[1], 40, 
+					textHeight + 1, "Option_Sound_Up", "+", 57, "volumesound|10|0|100|false"));
+			content += "\n";
+			newWindow.setContent(content);
+			newWindow.addWindowButton(new Button(10, newWindow.getHeight() - 74, "Options_Goto_Video", "Video", 3, "Options Video"));
+			newWindow.addWindowButton(new Button(310, newWindow.getHeight() - 74, "Options_Goto_Gameplay", "Gameplay", 3, "Options Gameplay"));
+			newWindow.addWindowButton(new Button(460, newWindow.getHeight() - 74, "Options_Goto_Online", "Online", 3, "Options Online"));
+			newWindow.addWindowButton(new Button((newWindow.getWidth() - 138), newWindow.getHeight() - 74, "Options_Goto_Back", "Back", 3, "Options Main"));
+			newWindow.setButtonsColorInner(Color.PINK);
+			newWindow.removeCloseButton();
+			return newWindow;
+			
+		} else if (name.equals("Options Gameplay")) {
+			
+			InfoWindow newWindow = new InfoWindow("Gameplay Options", 50, 100);
+			newWindow.setHeight(scr.getParent().windowHeight);
+			newWindow.setWidth(scr.getParent().windowWidth - 100);
+			newWindow.setLineSpacing(3);
+			String content = "";
+			content += "Notifications:\n";
+			newWindow.addWindowButton(new Button(240, MyTextMetrics.getTextSizeComplex(content, 3)[1], 160, 
+					textHeight + 1, "Option_Notifications", Boolean.toString(opt.getStatus("notifications")), 
+					54, "notifications"));
+			content += "\n";
+			newWindow.setContent(content);
+			newWindow.addWindowButton(new Button(10, newWindow.getHeight() - 74, "Options_Goto_Video", "Video", 3, "Options Video"));
+			newWindow.addWindowButton(new Button(160, newWindow.getHeight() - 74, "Options_Goto_Audio", "Audio", 3, "Options Audio"));
+			newWindow.addWindowButton(new Button(460, newWindow.getHeight() - 74, "Options_Goto_Online", "Online", 3, "Options Online"));
+			newWindow.addWindowButton(new Button((newWindow.getWidth() - 138), newWindow.getHeight() - 74, "Options_Goto_Back", "Back", 3, "Options Main"));
+			newWindow.setButtonsColorInner(Color.PINK);
+			newWindow.removeCloseButton();
+			return newWindow;
+			
+		} else if (name.equals("Options Online")) {
+			
+			InfoWindow newWindow = new InfoWindow("Online Options", 50, 100);
+			newWindow.setHeight(windowHeight);
+			newWindow.setWidth(windowWidth - 100);
+			newWindow.setLineSpacing(3);
+			String content = "";
+			content += "\n";
+			newWindow.setContent(content);
+			newWindow.addWindowButton(new Button(10, newWindow.getHeight() - 74, "Options_Goto_Video", "Video", 3, "Options Video"));
+			newWindow.addWindowButton(new Button(160, newWindow.getHeight() - 74, "Options_Goto_Audio", "Audio", 3, "Options Audio"));
+			newWindow.addWindowButton(new Button(310, newWindow.getHeight() - 74, "Options_Goto_Gameplay", "Gameplay", 3, "Options Gameplay"));
+			newWindow.addWindowButton(new Button((newWindow.getWidth() - 138), newWindow.getHeight() - 74, "Options_Goto_Back", "Back", 3, "Options Main"));
+			newWindow.setButtonsColorInner(Color.PINK);
+			newWindow.removeCloseButton();
+			return newWindow;
+			
+		}
+		return null;
 	}
 
 }

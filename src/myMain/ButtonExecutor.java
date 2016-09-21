@@ -15,7 +15,6 @@ import java.util.Random;
 import java.util.Scanner;
 
 import myData.MyStrings;
-import myGame.Action;
 import myGame.Building;
 import myGame.City;
 import myGame.Options;
@@ -24,6 +23,7 @@ import myGame.OrdinanceBook;
 import myGame.Player;
 import myInterface.MyTextMetrics;
 import myInterface.buttons.Button;
+import myInterface.management.MyInterfaceFactory;
 import myInterface.screens.ActionScreen;
 import myInterface.screens.ImageTestScreen;
 import myInterface.screens.MapScreen;
@@ -698,14 +698,14 @@ public class ButtonExecutor {
 			b.opt.writeToFile(Board.CONFIGFILE, Board.OPTIONSFILE);
 			b.createQuickWindow("Saved!", "Options changes saved.\nSome changes will require a game restart.");
 		}
-		else if (exec == 52) {												// Confirm button code in Options.
+		else if (exec == 52) {												// Confirm button code in Options - Menu version.
 			b.opt.writeToFile(Board.CONFIGFILE, Board.OPTIONSFILE);
-			execute(3,"Main");
+			execute(3,add);
 			b.createQuickWindow("Saved!", "Options changes saved.\nSome changes will require a game restart.");
 		}
-		else if (exec == 53) {												// Cancel button code in Options.
+		else if (exec == 53) {												// Cancel button code in Options - Menu version.
 			b.opt = new Options(Board.CONFIGFILE, Board.OPTIONSFILE);
-			execute(3,"Main");
+			execute(3,add);
 			b.createQuickWindow("Cancelled", "Options reverted to intital values.");
 		}
 		else if (exec == 54) {												// Toggle boolean option.
@@ -910,7 +910,8 @@ public class ButtonExecutor {
 			
 		}
 		else if (exec == 75) {											// Open options window from pause window.
-			
+			execute(7, "Game Menu");
+			b.mim.createAndAddWindow("Options Main", b.scr);
 		}
 		else if (exec == 76) {											// Open save game window from pause window.
 			
@@ -931,7 +932,19 @@ public class ButtonExecutor {
 			execute(7, add);
 			execute(71);
 		}
-		else {
+		else if (exec == 80) {											// Confirm button code in Options - Game version.
+			b.opt.writeToFile(Board.CONFIGFILE, Board.OPTIONSFILE);
+			execute(7,add);
+			b.createQuickWindow("Saved!", "Options changes saved.\nSome changes will require a game restart.");
+			execute(71);
+		}
+		else if (exec == 81) {											// Cancel button code in Options - Game version.
+			b.opt = new Options(Board.CONFIGFILE, Board.OPTIONSFILE);
+			execute(7,add);
+			b.createQuickWindow("Cancelled", "Options reverted to initial values.");
+			execute(71);
+		}
+		else {															// Fail state.
 			b.cmd.alert("ButtonExecutor: No entry for execution code " + Integer.toString(exec) + ".");
 		}
 
