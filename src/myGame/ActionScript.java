@@ -15,13 +15,13 @@ public class ActionScript {
 	}
 	
 	public void executeAttack(Action in) {
-		String actionName = in.getName();
+		String actionCode = in.getCode();
 		String actionPointType = in.getType();
 		City actionTarget = in.getTarget();
 		Player actionAttacker = in.getAuthor();
 		Player actionDefender = in.getTargetPlayer();
 		
-		switch(actionName) {
+		switch(actionCode) {
 			case "ATTUP":		// Attack up.
 				break;
 			case "ATTDW":		// Attack down.
@@ -59,6 +59,18 @@ public class ActionScript {
 			case "POGMX":		// Point gain mix up.
 				break;
 			case "PTBAL":		// Point balance.
+				break;
+			case "TAKMI":		// Militaristic takeover.
+				break;
+			case "TAKDI":		// Diplomatic takeover.
+				break;
+			case "TAKTE":		// Technological takeover.
+				break;
+			case "TAKCO":		// Commercial takeover.
+				break;
+			case "TAKNA":		// Natural takeover.
+				break;
+			case "TAKIN":		// Industrial takeover.
 				break;
 			default:
 				throw new IllegalArgumentException("Invalid action name.");

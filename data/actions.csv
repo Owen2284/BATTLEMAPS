@@ -1,2 +1,19 @@
-"Code	Text	Window	X	Y	Point Type	Cost	Hover Text"
-"ATTUP	Boost Attack	Friendly	1	1	Military	20	Increase theamount of points needed to repel an enemy attack."
+Code,Name,Window,X,Y,Type,Cost,Description
+ATTUP,Boost Attack,Friendly,1,1,Military,20,Increase the amount of point an neighbouring city will need to repel a takeover by 20%.
+ATTDW,Lower Attack,Enemy,2,1,Diplomacy,20,Decrease the amount of points needed to repel a takeover from this city by 20%.
+DEFUP,Boost Defence,Friendly,2,1,Diplomacy,30,Raises the defence of this city| lowering the cost to repel takeovers targeted on this city by 20%.
+DEFDW,Lower Defence,Enemy,1,1,Military,30,Lowers the defences of this city| causing takeovers to cost 20% more to repel in this city.
+HAPUP,Boost Happiness,Friendly,3,1,Nature,40,-
+HAPDW,Lower Happiness,Enemy,3,1,Nature,30,-
+BLDUP,Speed Building Construction,Friendly,4,1,Industry,50,-
+BLDDW,Slow Building Construction,Enemy,4,1,Industry,20,-
+POGUP,Increase Point Gain,Friendly,5,1,Commerce,50,-
+POGDW,Decrease Point Gain,Enemy,5,1,Commerce,20,-
+ORDUP,Allow Another Ordinance,Friendly,6,1,Technology,20,-
+ORDDW,Block Ordinance Changing,Enemy,6,1,Technology,50,-
+TAKMI,Military Coup,Enemy,1,3,Military,200,-
+TAKDI,Diplomatic Treaty,Enemy,2,3,Diplomacy,200,-
+TAKTE,Technological Eclipse,Enemy,6,3,Technology,200,-
+TAKCO,Commercial Dominance,Enemy,5,3,Commerce,200,-
+TAKNA,Natural Power,Enemy,3,3,Nature,200,-
+TAKIN,Industrial Force,Enemy,4,3,Industry,200,-
