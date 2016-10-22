@@ -101,7 +101,28 @@ public class GridWindow extends InfoWindow {
 	public void setGridY(int in) {this.gridY = in;}
 	
 	public void resizeGridButtons() {
-		// TODO
+		int fixedGridX = this.gridX;
+		int fixedGridY = this.gridY;
+		int fixedButtonGap = this.buttonGap;
+		int oldButtonWidth = this.buttonWidth;
+		int oldButtonHeight = this.buttonHeight;
+		
+		int fixedAreaX = this.width - (2 * fixedGridX);
+		int fixedAreaY = this.height - TOP_BAR_HEIGHT - (2 * fixedGridY);
+		
+		int rowCount = this.gridButtons.length;
+		int colCount = this.gridButtons[0].length;
+		
+		int newButtonWidth = (fixedAreaX - ((colCount - 1) * fixedButtonGap) ) / colCount;
+		int newButtonHeight = (fixedAreaY - ((rowCount - 1) * fixedButtonGap) ) / rowCount;
+		
+		for (Button[] bu : this.gridButtons) {
+			for (Button b : bu) {
+				b.setWidth(newButtonWidth);
+				b.setHeight(newButtonHeight);
+			}
+		}
+		
 	}
 	
 	public void resizeGridGaps() {
