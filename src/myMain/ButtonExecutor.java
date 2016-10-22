@@ -11,16 +11,19 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Scanner;
 
 import myData.MyStrings;
+import myGame.Action;
 import myGame.Building;
 import myGame.City;
 import myGame.Options;
 import myGame.Ordinance;
 import myGame.OrdinanceBook;
 import myGame.Player;
+import myGame.PointSet;
 import myInterface.MyTextMetrics;
 import myInterface.buttons.Button;
 import myInterface.management.MyInterfaceFactory;
@@ -81,6 +84,11 @@ public class ButtonExecutor {
 		String[] theKeys = {"Residential", "Happiness", "Military", "Diplomacy", "Technology", "Commerce", "Nature", "Industry"};
 		Color[] theColors = {new Color(200,200,200), new Color(234,242,10), new Color(194,2,50), new Color(235,237,175), new Color(10,242,231), new Color(83,74,240), new Color(17,153,42), new Color(245,155,66)};
 
+		Map<String, Color> keyToColor = new HashMap<String, Color>();
+		for (int blar = 0; blar < theKeys.length; ++blar) {
+			keyToColor.put(theKeys[blar], theColors[blar]);
+		}
+		
 		// Creating a hash map for important values.
 		HashMap<String, Integer> iconMap = new HashMap<String, Integer>();
 		iconMap.put("Military", 51);
@@ -811,16 +819,24 @@ public class ButtonExecutor {
 		else if (exec == 65) {												// Open friendly action window.
 			int INIT_X = 100;
 			int INIT_Y = 100;
-			GridWindow actWindow = new GridWindow("Actions for " + add + " - Friendly", INIT_X, INIT_Y, 4, 6);
+			String cityName = add;
+			GridWindow actWindow = new GridWindow("Actions for " + cityName + " - Friendly", INIT_X, INIT_Y, 4, 6);
 			actWindow.setWidth(b.windowWidth - 2 * INIT_X);
 			actWindow.setHeight(b.windowHeight - 2 * INIT_Y);
-			int colNum = 0;
-			for (String categ : b.buildDex.getCategories()) {
-				if ((!categ.equals("Residential")) && (!categ.equals("Happiness"))) {
-					for (int power = 1; power <= 3; ++power) {
-						actWindow.addGridButton(power, colNum, new Button(0,0,"Action_Friendly_" + add.replace(" ", "_") + "_" + categ + "_" + Integer.toString(power), categ + " " + Integer.toString(power), 67, add + "|" + categ + "|" + Integer.toString(power)));
-					}
-					colNum += 1;
+			HashMap<String,String[]> actionData = b.game.getActor().getData();
+			for (String key : actionData.keySet()) {
+				String[] arr = actionData.get(key);
+				if (arr[1].equals("Friendly")) {
+					String actName = arr[0];
+					int actButtX = Integer.parseInt(arr[2]);
+					int actButtY = Integer.parseInt(arr[3]);
+					String actPointType = arr[4];
+					int actCost = Integer.parseInt(arr[5]);
+					String actDescription = arr[6];
+					Button actButton = new Button(0,0,"Action_Friendly_" + cityName.replace(" ", "_") + "_" + key, actName, 67, cityName + "|" + actName + "|" + key + "|" + actPointType + "|" + actCost);
+					actButton.setColorInner(keyToColor.get(actPointType));
+					actButton.setHoverText(actDescription + "\nCost: " + actCost);
+					actWindow.addGridButton(actButtY, actButtX, actButton);
 				}
 			}
 			b.mim.addWindowFull(actWindow);
@@ -828,35 +844,53 @@ public class ButtonExecutor {
 		else if (exec == 66) {												// Open enemy action window.
 			int INIT_X = 100;
 			int INIT_Y = 100;
-			GridWindow actWindow = new GridWindow("Actions for " + add + " - Enemy", INIT_X, INIT_Y, 4, 6);
+			String cityName = add;
+			GridWindow actWindow = new GridWindow("Actions for " + cityName + " - Enemy", INIT_X, INIT_Y, 4, 6);
 			actWindow.setWidth(b.windowWidth - 2 * INIT_X);
 			actWindow.setHeight(b.windowHeight - 2 * INIT_Y);
-			int colNum = 0;
-			for (String categ : b.buildDex.getCategories()) {
-				if ((!categ.equals("Residential")) && (!categ.equals("Happiness"))) {
-					for (int power = 1; power <= 3; ++power) {
-						actWindow.addGridButton(power, colNum, new Button(0,0,"Action_Enemy_" + add.replace(" ", "_") + "_" + categ + "_" + Integer.toString(power), categ + " " + Integer.toString(power), 68, add + "|" + categ + "|" + Integer.toString(power)));
-					}
-					colNum += 1;
+			HashMap<String,String[]> actionData = b.game.getActor().getData();
+			for (String key : actionData.keySet()) {
+				String[] arr = actionData.get(key);
+				if (arr[1].equals("Enemy")) {
+					String actName = arr[0];
+					int actButtX = Integer.parseInt(arr[2]);
+					int actButtY = Integer.parseInt(arr[3]);
+					String actPointType = arr[4];
+					int actCost = Integer.parseInt(arr[5]);
+					String actDescription = arr[6];
+					Button actButton = new Button(0,0,"Action_Friendly_" + cityName.replace(" ", "_") + "_" + key, actName, 68, cityName + "|" + actName + "|" + key + "|" + actPointType + "|" + actCost);
+					actButton.setColorInner(keyToColor.get(actPointType));
+					actButton.setHoverText(actDescription + "\nCost: " + actCost);
+					actWindow.addGridButton(actButtY-1, actButtX-1, actButton);
 				}
 			}
 			b.mim.addWindowFull(actWindow);
 		} 
 		else if (exec == 67) {											// Add defensive action to action queue.
-			String citName = add.split("\\|")[0];
-			String categ = add.split("\\|")[1];
-			int powerLev = Integer.parseInt(add.split("\\|")[2]);
-			//b.game.addAction(new Action(categ, powerLev, b.game.getCityByName(citName), "Defend"));
-			// TODO: Deduct point cost of action when creating action.
-			b.createQuickWindow("Action Launched", "The " + categ + " " + Integer.toString(powerLev) + " action has been launched on " + citName + ".");
+			String cityName = add.split("\\|")[0];
+			String actionName = add.split("\\|")[1];
+			String code = add.split("\\|")[2];
+			String pointType = add.split("\\|")[3];
+			int cost = Integer.parseInt(add.split("\\|")[4]);
+			Action toAct = new Action(actionName, code, pointType, b.game.getActivePlayer(), b.game.getCityByName(cityName), "Defend", cost);
+			b.game.addAction(toAct);
+			PointSet toDeduct = new PointSet();
+			toDeduct.set(pointType, -1 * cost);
+			b.game.getActivePlayer().getPointSet().add(toDeduct);
+			b.createQuickWindow("Action Launched", "The action \"" + actionName + "\" has been launched on " + cityName + ".");
 		} 
 		else if (exec == 68) {											// Add offensive action to action queue.
-			String citName = add.split("\\|")[0];
-			String categ = add.split("\\|")[1];
-			int powerLev = Integer.parseInt(add.split("\\|")[2]);
-			//b.game.addAction(new Action(categ, powerLev, b.game.getCityByName(citName), "Attack"));
-			// TODO: Deduct point cost of action when creating action.
-			b.createQuickWindow("Action Launched", "The " + categ + " " + Integer.toString(powerLev) + " action has been launched on " + citName + ".");
+			String cityName = add.split("\\|")[0];
+			String actionName = add.split("\\|")[1];
+			String code = add.split("\\|")[2];
+			String pointType = add.split("\\|")[3];
+			int cost = Integer.parseInt(add.split("\\|")[4]);
+			Action toAct = new Action(actionName, code, pointType, b.game.getActivePlayer(), b.game.getCityByName(cityName), "Attack", cost);
+			b.game.addAction(toAct);
+			PointSet toDeduct = new PointSet();
+			toDeduct.set(pointType, -1 * cost);
+			b.game.getActivePlayer().getPointSet().add(toDeduct);
+			b.createQuickWindow("Action Launched", "The action \"" + actionName + "\" has been launched on " + cityName + ".");
 		} 
 		else if (exec == 69) {											// Show points button - Map screen
 			MapScreen pScr = (MapScreen) b.scr;

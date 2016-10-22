@@ -142,8 +142,7 @@ public class MyInterfaceFactory {
 			mim.addButton(new Button(BOTTOMBARX[4], BOTTOMBARY, "City_Back_To_Map", "Back to Map", 1));
 			
 			// Pause menu button.
-			Button pm = new Button(BOTTOMBARX[0], scr.getParent().windowHeight - 36, "City_Pause_Menu", "Game Menu", 71);
-			mim.addButton(pm);
+			mim.addButton(new Button(BOTTOMBARX[0], scr.getParent().windowHeight - 36, "City_Pause_Menu", "Game Menu", 71));
 
 			// City editing buttons.
 			if (game.getActivePlayer().equals(theCity.getOwner())) {

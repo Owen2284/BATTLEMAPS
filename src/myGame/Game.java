@@ -17,7 +17,7 @@ public class Game {
 	// Fixed fields
 	private String name = "Game";
 	private Map map;
-	private ActionHandler actor = new ActionHandler(new ActionScript());
+	private ActionHandler actor = new ActionHandler("data/actions.csv", new ActionScript());
 	private ArrayList<Player> players = new ArrayList<Player>();
 	private String victory = "Conquest";
 	private int maxTurns = -1;
@@ -136,6 +136,7 @@ public class Game {
 	public int getTurn() {return this.turnNumber;}
 	public int getMaxTurns() {return this.maxTurns;}
 	public boolean hasMaxTurns() {return this.maxTurns >= 0;}
+	public ActionHandler getActionHandler() {return this.actor;}
 
 	// Map super-accessors
 	public ArrayList<City> getCities() {return this.map.getCities();}
