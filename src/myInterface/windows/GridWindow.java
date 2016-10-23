@@ -43,7 +43,7 @@ public class GridWindow extends InfoWindow {
 	}
 
 	public int getButtonWidth() {return this.buttonWidth;}
-	public int getButtonHeight() {return this.buttonHeight;}y
+	public int getButtonHeight() {return this.buttonHeight;}
 	public int getButtonGap() {return this.buttonGap;}
 	public int getGridX() {return this.gridX;}
 	public int getGridY() {return this.gridY;}
@@ -119,8 +119,10 @@ public class GridWindow extends InfoWindow {
 		
 		for (Button[] bu : this.gridButtons) {
 			for (Button b : bu) {
-				b.setWidth(newButtonWidth);
-				b.setHeight(newButtonHeight);
+				if (b != null) {
+					b.setWidth(newButtonWidth);
+					b.setHeight(newButtonHeight);
+				}
 			}
 		}
 		

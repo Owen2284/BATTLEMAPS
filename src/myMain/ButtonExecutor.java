@@ -861,9 +861,13 @@ public class ButtonExecutor {
 					Button actButton = new Button(0,0,"Action_Friendly_" + cityName.replace(" ", "_") + "_" + key, actName, 68, cityName + "|" + actName + "|" + key + "|" + actPointType + "|" + actCost);
 					actButton.setColorInner(keyToColor.get(actPointType));
 					actButton.setHoverText(actDescription + "\nCost: " + actCost);
-					actWindow.addGridButton(actButtY-1, actButtX-1, actButton);
+					actWindow.addGridButton(actButtY-1, actButtX-1, actButton); 
 				}
 			}
+			actWindow.setGridX(0);
+			actWindow.setGridY(0);
+			actWindow.setButtonGap(0);
+			actWindow.resizeGridButtons();
 			b.mim.addWindowFull(actWindow);
 		} 
 		else if (exec == 67) {											// Add defensive action to action queue.
