@@ -61,16 +61,34 @@ public class ActionScript {
 			case "PTBAL":		// Point balance.
 				break;
 			case "TAKMI":		// Militaristic takeover.
+				if (actionDefender != null) {actionDefender.removeOwnedCity(actionTarget);}
+				actionAttacker.addOwnedCity(actionTarget);
+				actionTarget.setOwner(actionAttacker);
 				break;
 			case "TAKDI":		// Diplomatic takeover.
+				if (actionDefender != null) {actionDefender.removeOwnedCity(actionTarget);}
+				actionAttacker.addOwnedCity(actionTarget);
+				actionTarget.setOwner(actionAttacker);
 				break;
 			case "TAKTE":		// Technological takeover.
+				if (actionDefender != null) {actionDefender.removeOwnedCity(actionTarget);}
+				actionAttacker.addOwnedCity(actionTarget);
+				actionTarget.setOwner(actionAttacker);
 				break;
 			case "TAKCO":		// Commercial takeover.
+				if (actionDefender != null) {actionDefender.removeOwnedCity(actionTarget);}
+				actionAttacker.addOwnedCity(actionTarget);
+				actionTarget.setOwner(actionAttacker);
 				break;
 			case "TAKNA":		// Natural takeover.
+				if (actionDefender != null) {actionDefender.removeOwnedCity(actionTarget);}
+				actionAttacker.addOwnedCity(actionTarget);
+				actionTarget.setOwner(actionAttacker);
 				break;
 			case "TAKIN":		// Industrial takeover.
+				if (actionDefender != null) {actionDefender.removeOwnedCity(actionTarget);}
+				actionAttacker.addOwnedCity(actionTarget);
+				actionTarget.setOwner(actionAttacker);
 				break;
 			default:
 				throw new IllegalArgumentException("Invalid action name.");

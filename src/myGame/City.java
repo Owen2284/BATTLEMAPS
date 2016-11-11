@@ -10,9 +10,9 @@ package myGame;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
+import java.util.List;
 
 import myData.Stats;
-import myMain.Board;
 
 public class City {
 
@@ -42,8 +42,11 @@ public class City {
 	// Buffs module.
 	private Buffs buffs = new Buffs();
 	
-	// Modifier variables.
+	// Ordinances variable.
 	private int ordinancesForThisTurn = 1;
+	
+	// Level variable.
+	private int level = 1;
 
 	// Constants
 	public static final int CITY_SIZE = 32;
@@ -74,6 +77,9 @@ public class City {
 		this.buildings = that.getBuildings();
 		this.owner = that.getOwner();
 		this.ob = that.getAllOrdinances();
+		this.stats = that.getAllStats();
+		this.buffs = that.getBuffs();
+		this.level = that.getLevel();
 	}
 
 	// Common constructor code.
@@ -345,6 +351,75 @@ public class City {
 	public boolean getBuffActivity(String key) {return this.buffs.isActive(key);}
 	public String[] getAllBuffs() {return this.getAllBuffs();}
 	public void setBuff(String key, int value) {this.buffs.set(key, value);}
+	public double getCityModifier(String in) {
+		double returner = 0.0;
+		switch (in) {
+		case "Attack":
+			returner = 1.0;
+			if (getBuffActivity("ATTUP")) {returner += 0.5;}
+			if (getBuffActivity("ATTDW")) {returner -= 0.5;}
+			break;
+		case "Defense":
+			returner = 1.0;
+			if (getBuffActivity("DEFUP")) {returner += 0.5;}
+			if (getBuffActivity("DEFDW")) {returner -= 0.5;}
+			break;
+		case "Happiness":
+			returner = 0.0;
+			if (getBuffActivity("HAPUP")) {returner += 10;}
+			if (getBuffActivity("HAPDW")) {returner -= 10;}
+			break;
+		case "PointGain":
+			returner = 1.0;
+			if (getBuffActivity("POGUP")) {returner += 0.25;}
+			if (getBuffActivity("POGDW")) {returner -= 0.25;}
+			break;
+		case "BuildTime":
+			returner = 1.0;
+			if (getBuffActivity("BLDUP")) {returner += 0.2;}
+			if (getBuffActivity("BLDDW")) {returner -= 0.2;}
+			break;
+		case "PointStop":
+			returner = 0.0;
+			if (getBuffActivity("POGST")) {returner = 1.0;}
+			break;
+		case "PointSyphon":
+			returner = 0.0;
+			if (getBuffActivity("POGSP")) {returner = 1.0;}
+			break;
+		case "PointMixUp":
+			returner = 0.0;
+			if (getBuffActivity("POGMX")) {returner = 1.0;}
+			break;
+		default:
+			throw new IllegalArgumentException("Invalid city value.");
+		}
+		return returner;
+	}
+	public List<String> getActiveCityModifiers() {
+		List<String> ret = new ArrayList<String>();
+		if (getBuffActivity("ATTUP") || getBuffActivity("ATTDW")) {ret.add("Attack");}
+		if (getBuffActivity("DEFUP") || getBuffActivity("DEFDW")) {ret.add("Defense");}
+		if (getBuffActivity("HAPUP") || getBuffActivity("HAPDW")) {ret.add("Happiness");}
+		if (getBuffActivity("POGUP") || getBuffActivity("POGDW")) {ret.add("PointGain");}
+		if (getBuffActivity("BLDUP") || getBuffActivity("BLDDW")) {ret.add("BuildTime");}
+		if (getBuffActivity("POGST")) {ret.add("PointStop");}
+		if (getBuffActivity("POGSP")) {ret.add("PointSyphon");}
+		if (getBuffActivity("POGMX")) {ret.add("PointMixUp");}
+		return ret;
+	}	
+	public String[] getAllCityModifiers() {
+		String[] vals = {"Attack", "Defense", "Happiness", "PointGain", "BuildTime", "PointStop", "PointSyphon", "PointMixUp"};
+		return vals;
+	}
+	public String getVerboseCityModifier(String val) {
+		String[] vals = getAllCityModifiers();
+		String[] verbs = {"Attack Power", "Defense Power", "Happiness Boost", "Point Gain Modifier", "Build Time Modifier", "Point Stop Active", "Point Syphon Active", "Point Mix Up Active"};
+		for (int vvv = 0; vvv < vals.length && vvv < verbs.length; ++vvv) {
+			if (val.equals(vals[vvv])) {return verbs[vvv];}
+		}
+		return "";
+	}
 	
 	public int getOrdinancesForThisTurn() {return this.ordinancesForThisTurn;}
 	public void setOrdinancesForThisTurn(int in) {this.ordinancesForThisTurn = in;}
@@ -356,6 +431,14 @@ public class City {
 	public void setGridX(int in) {this.gridOffsetX = in;}
 	public void setGridY(int in) {this.gridOffsetY = in;}
 	
+	public int getLevel() {
+		return level;
+	}
+
+	public void setLevel(int level) {
+		this.level = level;
+	}
+
 	// Ordinance super-mutators
 	public void enactOrdinance(String name) {
 		ob.enact(name);

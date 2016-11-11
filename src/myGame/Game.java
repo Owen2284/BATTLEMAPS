@@ -11,6 +11,7 @@ import java.awt.Rectangle;
 import java.util.ArrayList;
 
 import myData.Stats;
+import myMain.Board;
 
 public class Game {
 
@@ -180,7 +181,7 @@ public class Game {
 	public void incTurn() {this.turnNumber += 1;}
 	public void decTurn() {this.turnNumber -= 1;}
 	public void setMaxTurns(int in) {this.maxTurns = in;}
-	public void nextPlayer() {
+	public void nextPlayer(Board b) {
 		// Move to the next player.
 		this.updateEndPlayer();
 		playerWhoseGoItIs += 1;
@@ -192,7 +193,7 @@ public class Game {
 			this.incTurn();
 			playerWhoseGoItIs = 1;
 		}
-		this.updateStartPlayer();
+		this.updateStartPlayer(b);
 	}
 
 	// Map super-mutators.
@@ -216,10 +217,15 @@ public class Game {
 		// N/A
 	}
 	
-	public void updateStartPlayer() {
+	public void updateStartPlayer(Board b) {
 		// Action processing.
 		ArrayList<String> actionMessages = this.actor.updateStartPlayer(getActivePlayer());
-		if (actionMessages.size() > 0) {
+		if (Board.DEBUG_TRACE && actionMessages.size() > 0) {
+			for (String m : actionMessages) {
+				if (m.substring(0,1).equals("#")) {
+					b.createQuickWindow("Takeover Executed!", m.substring(1));
+				}
+			}
 			System.out.println(actionMessages.toString());
 		}
 	}

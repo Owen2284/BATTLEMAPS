@@ -105,8 +105,6 @@ public class GridWindow extends InfoWindow {
 		int fixedGridX = this.gridX;
 		int fixedGridY = this.gridY;
 		int fixedButtonGap = this.buttonGap;
-		int oldButtonWidth = this.buttonWidth;
-		int oldButtonHeight = this.buttonHeight;
 		
 		int fixedAreaX = this.width - (2 * fixedGridX);
 		int fixedAreaY = this.height - TOP_BAR_HEIGHT - (2 * fixedGridY);
@@ -117,19 +115,35 @@ public class GridWindow extends InfoWindow {
 		int newButtonWidth = (fixedAreaX - ((colCount - 1) * fixedButtonGap) ) / colCount;
 		int newButtonHeight = (fixedAreaY - ((rowCount - 1) * fixedButtonGap) ) / rowCount;
 		
-		for (Button[] bu : this.gridButtons) {
-			for (Button b : bu) {
-				if (b != null) {
-					b.setWidth(newButtonWidth);
-					b.setHeight(newButtonHeight);
-				}
-			}
-		}
+		this.buttonWidth = newButtonWidth;
+		this.buttonHeight = newButtonHeight;
 		
 	}
 	
 	public void resizeGridGaps() {
-		// TODO
+		
+		int oldGridX = this.gridX;
+		int oldGridY = this.gridY;
+		int fixedButtonWidth = this.buttonWidth;
+		int fixedButtonHeight = this.buttonHeight;
+		
+		int fixedAreaX = this.width - (2 * oldGridX);
+		int fixedAreaY = this.height - TOP_BAR_HEIGHT - (2 * oldGridY);
+		
+		int rowCount = this.gridButtons.length;
+		int colCount = this.gridButtons[0].length;
+		
+		int newButtonGapX = (fixedAreaX - (fixedButtonWidth * colCount)) / (colCount - 1);
+		int newButtonGapY = (fixedAreaY - (fixedButtonHeight * rowCount)) / (rowCount - 1);
+		
+		// Set new button gap.
+		this.buttonGap = Math.min(newButtonGapX, newButtonGapY);
+		
+		// Re-adjust grid X.
+		this.gridX = (this.width - (fixedButtonWidth * colCount) - (this.buttonGap * (colCount - 1))) / 2;
+		// Re-adjust grid Y.
+		this.gridY = (this.height - TOP_BAR_HEIGHT - (fixedButtonHeight * rowCount) - (this.buttonGap * (rowCount - 1))) / 2;
+
 	}
 
 	// Updaters

@@ -1,6 +1,7 @@
 package myInterface.management;
 
 import java.awt.Color;
+import java.awt.List;
 import java.util.ArrayList;
 
 import myGame.City;
@@ -62,7 +63,20 @@ public class MyInterfaceFactory {
 				imgb.setOwner("Screen");
 				imgb.setWidth(31);
 				imgb.setHeight(31);
-				imgb.setHoverText(c.getName());
+				String additionalInfo = "";
+				ArrayList<String> activeMods = (ArrayList<String>) c.getActiveCityModifiers();
+				if (activeMods.size() > 0) {
+					additionalInfo += "\n";
+					for (String s : activeMods) {
+						additionalInfo += c.getVerboseCityModifier(s);
+						double oh = c.getCityModifier(s);
+						String ooh = "x";
+						if (s.equals("Happiness")) {ooh = "+";}
+						if (oh != 1.0) {additionalInfo += ":" + ooh + oh;}
+						if (activeMods.get(activeMods.size() - 1).equals(s)) {additionalInfo += "\n";}
+					}
+				}
+				imgb.setHoverText(c.getName() + additionalInfo);
 				mim.addButton(imgb);
 			}
 			mim.shiftButtonsBounded("Screen", game.getMap().getScrollX(), game.getMap().getScrollY());

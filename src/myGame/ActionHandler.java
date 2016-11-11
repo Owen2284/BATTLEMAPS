@@ -45,20 +45,40 @@ public class ActionHandler {
 		return returner;
 	}
 	
-	private ArrayList<Action> getActionsByPlayer(Player target) {
+	private ArrayList<Action> getActionsByAuthor(Player target) {
 		ArrayList<Action> returner = new ArrayList<Action>();
 		for (Action a : acts) {
-			if (a.getTargetPlayer().equals(target)) {
+			if (a.getAuthor() != null && a.getAuthor().equals(target)) {
 				returner.add(a);
 			}
 		}
 		return returner;
 	}
 	
-	private ArrayList<Action> getHistoryByPlayer(Player target) {
+	private ArrayList<Action> getActionsByTargetPlayer(Player target) {
+		ArrayList<Action> returner = new ArrayList<Action>();
+		for (Action a : acts) {
+			if (a.getTargetPlayer() != null && a.getTargetPlayer().equals(target)) {
+				returner.add(a);
+			}
+		}
+		return returner;
+	}
+	
+	private ArrayList<Action> getHistoryByAuthor(Player target) {
 		ArrayList<Action> returner = new ArrayList<Action>();
 		for (Action a : hist) {
-			if (a.getTargetPlayer().equals(target)) {
+			if (a.getAuthor() != null && a.getAuthor().equals(target)) {
+				returner.add(a);
+			}
+		}
+		return returner;
+	}
+	
+	private ArrayList<Action> getHistoryByTargetPlayer(Player target) {
+		ArrayList<Action> returner = new ArrayList<Action>();
+		for (Action a : hist) {
+			if (a.getTargetPlayer() != null && a.getTargetPlayer().equals(target)) {
 				returner.add(a);
 			}
 		}
@@ -80,13 +100,13 @@ public class ActionHandler {
 	}
 	
 	public boolean playerUnderAttack(Player target) {
-		return MyArrays.intersection(getActionsByPlayer(target), getActionsByIntent("Attack")).size() != 0;
+		return MyArrays.intersection(getActionsByTargetPlayer(target), getActionsByIntent("Attack")).size() != 0;
 	}
 	
 	public ArrayList<String> updateStartPlayer(Player pla) {
 		ArrayList<Action> toExecute = new ArrayList<Action>();
 		ArrayList<String> returnMessages = new ArrayList<String>();
-		for (Action a : getActionsByPlayer(pla)) {
+		for (Action a : getActionsByAuthor(pla)) {
 			if (a.getAge() >= 1) {
 				toExecute.add(a);
 			}
@@ -96,7 +116,9 @@ public class ActionHandler {
 			b.setAge(0);
 			if (!b.isCountered()) {
 				script.execute(b);
-				returnMessages.add("Action executed: " + b.toString());
+				String newMessage = "Action executed: " + b.toString();
+				if (b.getCode().substring(0,3).equals("TAK")) {newMessage = "#" + newMessage;}
+				returnMessages.add(newMessage);
 			}
 			this.hist.add(b);
 		}
@@ -104,8 +126,8 @@ public class ActionHandler {
 	}
 	
 	public void updateEndPlayer(Player pla) {
-		for (Action a : getActionsByPlayer(pla)) {a.incAge();}
-		for (Action a : getHistoryByPlayer(pla)) {a.incAge();}
+		for (Action a : getActionsByAuthor(pla)) {a.incAge();}
+		for (Action a : getHistoryByAuthor(pla)) {a.incAge();}
 	}
 	
 	public void updateEndTurn() {

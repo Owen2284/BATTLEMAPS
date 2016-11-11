@@ -113,7 +113,13 @@ public class ButtonExecutor {
 			b.switchScreen("Menu", add);
 		}
 		else if (exec == 4) { 												// End turn action.
-			b.game.nextPlayer();
+			b.game.nextPlayer(b);
+			if (b.scr.getTitle().equals("Map Screen")) { 
+				b.scr.init();
+			} else {
+				execute(1);
+			}
+			
 		}
 		else if (exec == 5)	{												// View players.
 			if (!b.mim.checkWindowsFor("Players")) {
@@ -820,9 +826,9 @@ public class ButtonExecutor {
 			int INIT_X = 100;
 			int INIT_Y = 100;
 			String cityName = add;
-			GridWindow actWindow = new GridWindow("Actions for " + cityName + " - Friendly", INIT_X, INIT_Y, 4, 6);
+			GridWindow actWindow = new GridWindow("Actions for " + cityName + " - Friendly", INIT_X, INIT_Y, 3, 6);
 			actWindow.setWidth(b.windowWidth - 2 * INIT_X);
-			actWindow.setHeight(b.windowHeight - 2 * INIT_Y);
+			actWindow.setHeight(b.windowHeight - 3 * INIT_Y);
 			HashMap<String,String[]> actionData = b.game.getActor().getData();
 			for (String key : actionData.keySet()) {
 				String[] arr = actionData.get(key);
@@ -833,21 +839,22 @@ public class ButtonExecutor {
 					String actPointType = arr[4];
 					int actCost = Integer.parseInt(arr[5]);
 					String actDescription = arr[6];
-					Button actButton = new Button(0,0,"Action_Friendly_" + cityName.replace(" ", "_") + "_" + key, actName, 67, cityName + "|" + actName + "|" + key + "|" + actPointType + "|" + actCost);
+					Button actButton = new Button(0,0,"Action_Friendly_" + cityName.replace(" ", "_") + "_" + key, actName.replaceAll(" ", "\n"), 67, cityName + "|" + actName + "|" + key + "|" + actPointType + "|" + actCost);
 					actButton.setColorInner(keyToColor.get(actPointType));
 					actButton.setHoverText(actDescription + "\nCost: " + actCost);
-					actWindow.addGridButton(actButtY, actButtX, actButton);
+					actWindow.addGridButton(actButtY-1, actButtX-1, actButton);
 				}
 			}
+			actWindow.resizeGridButtons();
 			b.mim.addWindowFull(actWindow);
 		}
 		else if (exec == 66) {												// Open enemy action window.
 			int INIT_X = 100;
 			int INIT_Y = 100;
 			String cityName = add;
-			GridWindow actWindow = new GridWindow("Actions for " + cityName + " - Enemy", INIT_X, INIT_Y, 4, 6);
+			GridWindow actWindow = new GridWindow("Actions for " + cityName + " - Enemy", INIT_X, INIT_Y, 3, 6);
 			actWindow.setWidth(b.windowWidth - 2 * INIT_X);
-			actWindow.setHeight(b.windowHeight - 2 * INIT_Y);
+			actWindow.setHeight(b.windowHeight - 3 * INIT_Y);
 			HashMap<String,String[]> actionData = b.game.getActor().getData();
 			for (String key : actionData.keySet()) {
 				String[] arr = actionData.get(key);
@@ -858,15 +865,12 @@ public class ButtonExecutor {
 					String actPointType = arr[4];
 					int actCost = Integer.parseInt(arr[5]);
 					String actDescription = arr[6];
-					Button actButton = new Button(0,0,"Action_Friendly_" + cityName.replace(" ", "_") + "_" + key, actName, 68, cityName + "|" + actName + "|" + key + "|" + actPointType + "|" + actCost);
+					Button actButton = new Button(0,0,"Action_Enemy_" + cityName.replace(" ", "_") + "_" + key, actName.replace(" ", "\n"), 68, cityName + "|" + actName + "|" + key + "|" + actPointType + "|" + actCost);
 					actButton.setColorInner(keyToColor.get(actPointType));
 					actButton.setHoverText(actDescription + "\nCost: " + actCost);
 					actWindow.addGridButton(actButtY-1, actButtX-1, actButton); 
 				}
 			}
-			actWindow.setGridX(0);
-			actWindow.setGridY(0);
-			actWindow.setButtonGap(0);
 			actWindow.resizeGridButtons();
 			b.mim.addWindowFull(actWindow);
 		} 
